@@ -4,12 +4,14 @@ import type {
   UpdateClusterBody,
 } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
+import type { ClusterEventName, ClusterEventPayload, EventContext } from '../events/app-events.service'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { AdminAuthorized, ClusterPrivacySchema } from '@cpn-console/shared'
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { getFailedPlugins } from '../plugin/plugin.utils'
 import {
   createCluster,
   deleteCluster,
@@ -84,7 +86,7 @@ export class ClusterService {
       return clusterCreated
     })
 
-    await this.appEvents.emitClusterEvent('cluster.upsert', { clusterId: clusterCreated.id, zoneId }, {
+    await this.emitClusterEventAndThrowOnFailure('cluster.upsert', { clusterId: clusterCreated.id, zoneId }, {
       action: 'Create Cluster',
       userId,
       requestId,
@@ -117,7 +119,7 @@ export class ClusterService {
       await syncClusterStageLinks(tx, clusterUpdated, clusterId, stageIds)
     })
 
-    await this.appEvents.emitClusterEvent('cluster.upsert', { clusterId, zoneId: dbCluster.zoneId }, {
+    await this.emitClusterEventAndThrowOnFailure('cluster.upsert', { clusterId, zoneId: dbCluster.zoneId }, {
       action: 'Update Cluster',
       userId,
       requestId,
@@ -143,7 +145,7 @@ export class ClusterService {
     // and its (forced) environments only disappear once every plugin reported
     // OK — a KO leaves everything replayable instead of a 204 with a dangling
     // cluster.
-    await this.appEvents.emitClusterEvent('cluster.delete', { clusterId }, {
+    await this.emitClusterEventAndThrowOnFailure('cluster.delete', { clusterId }, {
       action: 'Delete Cluster',
       userId,
       requestId,
@@ -156,6 +158,19 @@ export class ClusterService {
     }
     await deleteCluster(this.prisma, clusterId)
     return forcedCount
+  }
+
+  private async emitClusterEventAndThrowOnFailure(
+    event: ClusterEventName,
+    payload: ClusterEventPayload,
+    context: EventContext,
+    failureMessage: string,
+  ): Promise<void> {
+    const results = await this.appEvents.emitClusterEvent(event, payload, context)
+
+    if (getFailedPlugins(results).length) {
+      throw new UnprocessableEntityException(failureMessage)
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 import type { ConfigType } from '@nestjs/config'
 import type { PluginResults } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from '../project/project-queries.utils'
-import { Inject, Injectable, Logger, UnprocessableEntityException } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -103,7 +103,6 @@ export class AppEventsService {
     event: ProjectEventName,
     projectOrId: string | ProjectWithDetails,
     context: EventContext,
-    failureMessage?: string,
   ): Promise<PluginResults> {
     const project = typeof projectOrId === 'string'
       ? await getProject(this.prisma, projectOrId)
@@ -116,7 +115,6 @@ export class AppEventsService {
 
     const results = await this.emitAndLog(event, project, project.id, context)
     await this.updateProjectStatus(event, project.id, results)
-    this.throwOnPluginFailure(event, results, failureMessage)
     return results
   }
 
@@ -124,9 +122,8 @@ export class AppEventsService {
     event: ProjectMemberEventName,
     payload: ProjectMemberEventPayload,
     context: EventContext,
-    failureMessage?: string,
   ): Promise<PluginResults> {
-    return this.emitAndLog(event, payload, payload.projectId, context, failureMessage)
+    return this.emitAndLog(event, payload, payload.projectId, context)
   }
 
   /**
@@ -138,23 +135,22 @@ export class AppEventsService {
     event: RepositoryEventName,
     payload: RepositorySyncEventPayload,
     context: EventContext,
-    failureMessage?: string,
   ): Promise<PluginResults> {
-    return this.emitAndLog(event, payload, payload.projectId, context, failureMessage)
+    return this.emitAndLog(event, payload, payload.projectId, context)
   }
 
   /**
-   * Emits a cluster event. Parity with the legacy server: pass a failure message so a listener
-   * KO surfaces as a 422, and only emit the delete after every plugin cleaned up
-   * successfully (the caller must not have removed the row yet).
+   * Emits a cluster event. The caller awaits the merged results and answers 422 on
+   * failure, mirroring emitZoneEvent consumers (legacy hooks 422 on KO), and only
+   * emits the delete after every plugin cleaned up successfully (the caller must
+   * not have removed the row yet).
    */
   async emitClusterEvent(
     event: ClusterEventName,
     payload: ClusterEventPayload,
     context: EventContext,
-    failureMessage?: string,
   ): Promise<PluginResults> {
-    return this.emitAndLog(event, payload, null, context, failureMessage)
+    return this.emitAndLog(event, payload, null, context)
   }
 
   // Emits a zone event. Zones have no project row: the log carries no project id
@@ -173,7 +169,6 @@ export class AppEventsService {
     payload: unknown,
     projectId: string | null,
     context: EventContext,
-    failureMessage?: string,
   ): Promise<PluginResults> {
     const start = process.hrtime.bigint()
     const responses = await this.eventEmitter.emitAsync(event, payload)
@@ -190,17 +185,7 @@ export class AppEventsService {
       projectId,
     })
 
-    this.throwOnPluginFailure(event, results, failureMessage)
     return results
-  }
-
-  /** A listener KO surfaces as a 422 on the caller's request. */
-  private throwOnPluginFailure(event: string, results: PluginResults, failureMessage?: string): void {
-    const failed = getFailedPlugins(results)
-    if (failureMessage && failed.length) {
-      this.logger.error(`${event} failed (failed=${failed.join(',')})`)
-      throw new UnprocessableEntityException(failureMessage)
-    }
   }
 
   /**

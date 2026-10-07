@@ -43,7 +43,9 @@ describe('environmentService', () => {
     autosync: true,
   } satisfies CreateEnvironment
 
-  const failedReconciliation = new InternalServerErrorException('Echec des services')
+  const failedReconciliation = {
+    gitlab: { status: 'KO', message: 'Unable to provision environment', executionTime: 1, error: new Error('boom') },
+  } as const
 
   const validUpdateEnvironment = {
     cpu: 4,
@@ -110,7 +112,7 @@ describe('environmentService', () => {
         action: 'Create Environment',
         userId,
         requestId,
-      }, expect.any(String))
+      })
       expect(result).toEqual(environment)
     })
 
@@ -118,7 +120,7 @@ describe('environmentService', () => {
       const environment = makeEnvironment({ id: environmentId, projectId, clusterId, stageId })
       validation.validateCreate.mockResolvedValue(undefined)
       datastore.createEnvironment.mockResolvedValue(environment)
-      appEvents.emitProjectEvent.mockRejectedValue(failedReconciliation)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.createEnvironment(projectId, validCreateEnvironment, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)
@@ -152,7 +154,7 @@ describe('environmentService', () => {
         action: 'Update Environment',
         userId,
         requestId,
-      }, expect.any(String))
+      })
       expect(result).toEqual(updated)
     })
 
@@ -161,7 +163,7 @@ describe('environmentService', () => {
       datastore.getProjectEnvironment.mockResolvedValue(existing)
       validation.validateUpdate.mockResolvedValue(undefined)
       datastore.updateEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId, ...validUpdateEnvironment }))
-      appEvents.emitProjectEvent.mockRejectedValue(failedReconciliation)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.updateEnvironment(projectId, environmentId, validUpdateEnvironment, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)
@@ -202,13 +204,13 @@ describe('environmentService', () => {
         action: 'Delete Environment',
         userId,
         requestId,
-      }, expect.any(String))
+      })
     })
 
     it('should wait for the reconciliation and reject when a service fails', async () => {
       datastore.getProjectEnvironment.mockResolvedValue(makeEnvironmentWithCluster({ id: environmentId, projectId }))
       datastore.deleteEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId }))
-      appEvents.emitProjectEvent.mockRejectedValue(failedReconciliation)
+      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.deleteEnvironment(projectId, environmentId, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)

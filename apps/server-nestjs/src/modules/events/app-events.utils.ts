@@ -3,7 +3,7 @@ import type { PluginName, PluginResult, PluginResults } from '../plugin/plugin.u
 import { getErrorHttpDetails } from '../../utils/http.utils'
 import { getFailedPlugins } from '../plugin/plugin.utils'
 
-/** Per-service result as persisted in the admin logs (parsed by LogSchema). */
+/** Per-service result as persisted in the admin logs (legacy hooks format, parsed by LogSchema). */
 export interface LoggablePluginResult {
   status: {
     result: 'OK' | 'KO'
