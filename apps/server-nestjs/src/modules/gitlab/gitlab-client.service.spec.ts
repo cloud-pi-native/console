@@ -69,7 +69,7 @@ describe('gitlab-client', () => {
     expect(service).toBeDefined()
   })
 
-  describe('getOrCreateInfraProject', () => {
+  describe('ensureInfraGroupRepo', () => {
     it('should create infra project if not exists', async () => {
       const zoneSlug = 'zone-1'
       const rootId = 123
@@ -103,7 +103,7 @@ describe('gitlab-client', () => {
         http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
       }))
 
-      const result = await service.getOrCreateInfraGroupRepo(zoneSlug)
+      const result = await service.ensureInfraGroupRepo(zoneSlug)
 
       expect(result).toEqual(expect.objectContaining({
         id: projectId,
@@ -271,7 +271,7 @@ describe('gitlab-client', () => {
     })
   })
 
-  describe('getOrCreateProjectGroup', () => {
+  describe('ensureProjectGroup', () => {
     it('should create project group if not exists', async () => {
       const projectSlug = 'project-1'
       const rootId = 123
@@ -289,7 +289,7 @@ describe('gitlab-client', () => {
       })
       gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}` }))
 
-      const result = await service.getOrCreateProjectSubGroup(projectSlug)
+      const result = await service.ensureProjectSubGroup(projectSlug)
 
       expect(result).toEqual(expect.objectContaining({ id: groupId, name: projectSlug }))
       expect(gitlabApi.Groups.create).toHaveBeenCalledWith(projectSlug, projectSlug, expect.objectContaining({
@@ -315,7 +315,7 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const result = await service.getOrCreateProjectSubGroup(projectSlug)
+      const result = await service.ensureProjectSubGroup(projectSlug)
 
       expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' })
       expect(gitlabApi.Groups.create).not.toHaveBeenCalled()
@@ -339,7 +339,7 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const result = await service.getOrCreateProjectGroupInternalRepoUrl(projectSlug, repoName)
+      const result = await service.ensureProjectGroupInternalRepoUrl(projectSlug, repoName)
       expect(result).toBe('https://gitlab.internal/forge/project-1/repo-1.git')
     })
 
@@ -355,7 +355,7 @@ describe('gitlab-client', () => {
 
       gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
 
-      const result = await service.upsertProjectMirrorRepo(projectSlug)
+      const result = await service.ensureProjectMirrorRepo(projectSlug)
 
       expect(result).toEqual(expect.objectContaining({ id: repoId, name: 'mirror' }))
       expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
@@ -373,7 +373,7 @@ describe('gitlab-client', () => {
       gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
       gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
 
-      const result = await service.upsertProjectGroupRepo(projectSlug, repoName, { description: 'desc' })
+      const result = await service.ensureProjectGroupRepoSettings(projectSlug, repoName, { description: 'desc' })
 
       expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
@@ -462,7 +462,7 @@ describe('gitlab-client', () => {
       })
     })
 
-    describe('upsertUser', () => {
+    describe('ensureUser', () => {
       it('should create user and set custom attribute if not exists', async () => {
         const consoleUser = { id: 'u1', email: 'new@example.com', firstName: 'New', lastName: 'User' }
         const gitlabUser = {
@@ -474,7 +474,7 @@ describe('gitlab-client', () => {
         gitlabUsersAllMock.mockResolvedValue([])
         gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
 
-        const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
+        const result = await service.ensureUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 999, email: consoleUser.email }))
         expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -499,7 +499,7 @@ describe('gitlab-client', () => {
         const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
         gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email })])
 
-        const result = await service.upsertUser(gitlabUser, { cpnUserId: consoleUser.id })
+        const result = await service.ensureUser(gitlabUser, { cpnUserId: consoleUser.id })
 
         expect(result).toEqual(expect.objectContaining({ id: 1000, email: consoleUser.email }))
         expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
@@ -525,7 +525,7 @@ describe('gitlab-client', () => {
         gitlabUsersAllMock.mockResolvedValue([])
         gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
 
-        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+        await service.ensureUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
 
         expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
           email: 'admin@example.com',
@@ -550,7 +550,7 @@ describe('gitlab-client', () => {
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
         ])
 
-        await service.upsertUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
+        await service.ensureUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
 
         expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
           admin: true,
@@ -569,7 +569,7 @@ describe('gitlab-client', () => {
           makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
         ])
 
-        await service.upsertUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+        await service.ensureUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
 
         expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
           auditor: true,
@@ -597,7 +597,7 @@ describe('gitlab-client', () => {
 
       gitlabApi.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
 
-      const result = await service.getOrCreateMirrorPipelineTriggerToken(projectSlug)
+      const result = await service.ensureMirrorPipelineTriggerToken(projectSlug)
 
       expect(result).toEqual(expect.objectContaining({ id: 2, description: tokenDescription }))
       expect(gitlabApi.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
@@ -673,7 +673,7 @@ describe('gitlab-client', () => {
     })
   })
 
-  describe('getOrCreateProjectGroupRepo', () => {
+  describe('ensureProjectGroupRepo', () => {
     it('should return existing repo', async () => {
       const subGroupPath = 'project-1'
       const repoName = 'repo-1'
@@ -686,7 +686,7 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
@@ -720,7 +720,7 @@ describe('gitlab-client', () => {
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
-      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
       expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -759,7 +759,7 @@ describe('gitlab-client', () => {
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
-      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath, GITLAB_CI_CONFIG_PATH)
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath, GITLAB_CI_CONFIG_PATH)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
       expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -794,7 +794,7 @@ describe('gitlab-client', () => {
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
-      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
 
       expect(result).toEqual(expect.objectContaining({ id: projectId }))
       expect(gitlabApi.Projects.create).not.toHaveBeenCalledWith(expect.objectContaining({
@@ -839,7 +839,7 @@ describe('gitlab-client', () => {
       }))
       gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
-      const result = await service.getOrCreateProjectGroupRepo(subGroupPath, fullPath)
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
 
       expect(gitlabApi.Projects.show).toHaveBeenCalledWith(`forge/${fullPath}`)
       expect(result).toEqual(expect.objectContaining({ id: projectId }))

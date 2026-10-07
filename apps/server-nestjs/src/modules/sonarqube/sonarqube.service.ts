@@ -268,7 +268,7 @@ export class SonarqubeService implements OnModuleInit {
       this.getSecurityGroupPath(),
       getAll(this.findProjectsForSlug(project.slug)),
       this.vault.readSonarqubeUser(project.slug),
-      this.gitlab.getOrCreateProjectGroup(),
+      this.gitlab.ensureProjectGroup(),
     ])
 
     // SONAR_TOKEN is shared across every repository of the project; expose it once at the group level.
@@ -316,7 +316,7 @@ export class SonarqubeService implements OnModuleInit {
     projectKey: string,
     sonarSecret: { data: SonarqubeUserSecret } | null,
   ): Promise<void> {
-    const repo = await this.gitlab.getOrCreateProjectGroupRepo(project.slug, `${project.slug}/${repository.internalRepoName}`)
+    const repo = await this.gitlab.ensureProjectGroupRepo(project.slug, `${project.slug}/${repository.internalRepoName}`)
     const variables: { key: string, value: string, variableType: 'env_var' | 'file', masked: boolean }[] = [
       { key: 'PROJECT_KEY', value: projectKey, variableType: 'env_var', masked: false },
       { key: 'PROJECT_NAME', value: `${project.slug}-${repository.internalRepoName}`, variableType: 'env_var', masked: false },

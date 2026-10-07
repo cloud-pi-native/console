@@ -190,7 +190,7 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling GitLab project group (${project.slug})`)
-    const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
+    const group = await this.gitlab.ensureProjectSubGroup(project.slug)
     const members = await this.gitlab.getGroupMembers(group)
     this.logger.verbose(`Loaded GitLab project group state (${project.slug}): groupId=${group.id} members=${members.length}`)
     await this.ensureProjectGroupMembers(project, group, members)
@@ -227,7 +227,7 @@ export class GitlabService {
     const accessLevelByUserId = generateAccessLevelMapping(project, groupPaths)
 
     await Promise.all(project.members.map(async ({ user }) => {
-      const gitlabUser = await this.gitlab.upsertUser({
+      const gitlabUser = await this.gitlab.ensureUser({
         email: user.email,
         username: generateUsername(user.email),
         name: generateName(user.firstName, user.lastName),
@@ -277,7 +277,7 @@ export class GitlabService {
     adminRoleIds: string[],
     auditorRoleIds: string[],
   ) {
-    const gitlabUser = await this.gitlab.upsertUser({
+    const gitlabUser = await this.gitlab.ensureUser({
       email: project.owner.email,
       username: generateUsername(project.owner.email),
       name: generateName(project.owner.firstName, project.owner.lastName),
@@ -418,7 +418,7 @@ export class GitlabService {
         ...(externalHost ? { 'repository.external.host': externalHost } : {}),
         'repository.external': !!repo.externalRepoUrl,
       })
-      await this.gitlab.upsertProjectGroupRepo(project.slug, repo.internalRepoName, {
+      await this.gitlab.ensureProjectGroupRepoSettings(project.slug, repo.internalRepoName, {
         ciConfigPath: repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
       })
 
@@ -485,7 +485,7 @@ export class GitlabService {
       this.logger.warn(`No existing mirror credentials found in Vault; rotating new credentials (project=${project.slug}, repoName=${repo.internalRepoName})`)
     }
 
-    const internalRepoUrl = await this.gitlab.getOrCreateProjectGroupInternalRepoUrl(project.slug, repo.internalRepoName)
+    const internalRepoUrl = await this.gitlab.ensureProjectGroupInternalRepoUrl(project.slug, repo.internalRepoName)
     const externalRepoUrn = repo.externalRepoUrl.split('://')[1]
     const internalRepoUrn = internalRepoUrl.split('://')[1]
     span?.setAttribute('repository.externalRepoUrn', externalRepoUrn)
@@ -519,11 +519,11 @@ export class GitlabService {
   }
 
   private async ensureInfraAppsRepo(project: ProjectWithDetails) {
-    await this.gitlab.upsertProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
+    await this.gitlab.ensureProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
   }
 
   private async ensureMirrorRepo(project: ProjectWithDetails) {
-    const mirrorRepo = await this.gitlab.upsertProjectMirrorRepo(project.slug)
+    const mirrorRepo = await this.gitlab.ensureProjectMirrorRepo(project.slug)
     if (mirrorRepo.empty_repo) {
       await this.gitlab.commitMirror(mirrorRepo.id)
     }
@@ -534,7 +534,7 @@ export class GitlabService {
   private async ensureMirrorRepoTriggerToken(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const triggerToken = await this.gitlab.getOrCreateMirrorPipelineTriggerToken(project.slug)
+    const triggerToken = await this.gitlab.ensureMirrorPipelineTriggerToken(project.slug)
     const gitlabSecret = {
       PROJECT_SLUG: project.slug,
       GIT_MIRROR_PROJECT_ID: triggerToken.repoId,

@@ -68,18 +68,18 @@ describe('gitlabService', () => {
         parent_id: 1,
       })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectGroupRepo.mockResolvedValue(makeProjectSchema({ id: 1 }))
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/repo')
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
-      gitlab.upsertUser.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
+      gitlab.ensureProjectGroupRepoSettings.mockResolvedValue(makeProjectSchema({ id: 1 }))
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/repo')
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureUser.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
 
       await service.handleUpsert(project)
 
-      expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith(project.slug)
+      expect(gitlab.ensureProjectSubGroup).toHaveBeenCalledWith(project.slug)
       expect(gitlab.getGroupMembers).toHaveBeenCalledWith(group)
       expect(gitlab.getRepos).toHaveBeenCalledWith(project.slug)
     })
@@ -90,11 +90,11 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 999, username: 'orphan' })])
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -107,11 +107,11 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 888, username: 'group_123_bot' })])
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -122,11 +122,11 @@ describe('gitlabService', () => {
       const project = makeProjectWithDetails()
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 999, username: 'orphan' })])
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -142,15 +142,15 @@ describe('gitlabService', () => {
       const orphanRepo = makeProjectSchema({ name: 'orphan-repo', topics: [TOPIC_PLUGIN_MANAGED] })
       const unmanagedRepo = makeProjectSchema({ name: 'unmanaged-repo', topics: [] })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield orphanRepo
         yield unmanagedRepo
       })())
       gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -168,14 +168,14 @@ describe('gitlabService', () => {
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       const orphanRepo = makeProjectSchema({ name: 'orphan-repo', topics: [TOPIC_PLUGIN_MANAGED] })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield orphanRepo
       })())
       gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -190,7 +190,7 @@ describe('gitlabService', () => {
       const mirror = makeProjectSchema({ name: MIRROR_REPO_NAME, topics: [TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED] })
       const userRepo = makeProjectSchema({ name: 'user-repo', topics: [TOPIC_PLUGIN_MANAGED] })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield infraApps
@@ -198,8 +198,8 @@ describe('gitlabService', () => {
         yield userRepo
       })())
       gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -215,15 +215,15 @@ describe('gitlabService', () => {
       const observabilityRepo = makeProjectSchema({ name: OBSERVABILITY_REPOSITORY, topics: [TOPIC_PLUGIN_MANAGED, TOPIC_SYSTEM_MANAGED] })
       const userRepo = makeProjectSchema({ name: 'user-repo', topics: [TOPIC_PLUGIN_MANAGED] })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield observabilityRepo
         yield userRepo
       })())
       gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -240,13 +240,13 @@ describe('gitlabService', () => {
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       const orphanRepoWithoutTopic = makeProjectSchema({ name: 'orphan-repo', topics: [] })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockImplementation(() => (async function* () {
         yield orphanRepoWithoutTopic
       })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -260,9 +260,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: user.email === 'new@example.com' ? 999 : 998,
           email: user.email,
@@ -271,16 +271,16 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'new@example.com' }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'owner@example.com' }),
         expect.objectContaining({ cpnUserId: 'o1' }),
       )
@@ -308,9 +308,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         const idByEmail: Record<string, number> = {
           'reporter@example.com': 101,
           'developer@example.com': 102,
@@ -327,8 +327,8 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -351,9 +351,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: user.email === 'devops@example.com' ? 101 : 100,
           email: user.email,
@@ -362,8 +362,8 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -382,9 +382,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: user.email === 'security@example.com' ? 105 : 100,
           email: user.email,
@@ -393,8 +393,8 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -408,9 +408,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 105, username: 'no-access', access_level: AccessLevel.REPORTER })])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: user.email === 'no-access@example.com' ? 105 : 100,
           email: user.email,
@@ -419,8 +419,8 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
@@ -448,9 +448,9 @@ describe('gitlabService', () => {
         { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
       ])
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: faker.number.int(),
           email: user.email,
@@ -459,20 +459,20 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: false }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'auditor@example.com', admin: false, auditor: true }),
         expect.objectContaining({ cpnUserId: 'u2' }),
       )
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: false }),
         expect.objectContaining({ cpnUserId: 'o1' }),
       )
@@ -493,9 +493,9 @@ describe('gitlabService', () => {
         { id: 'security-role-id', oidcGroup: '/console/security' },
       ])
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async (user) => {
+      gitlab.ensureUser.mockImplementation(async (user) => {
         return makeExpandedUserSchema({
           id: faker.number.int(),
           email: user.email,
@@ -504,17 +504,17 @@ describe('gitlabService', () => {
         })
       })
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
       expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/readonly', '/console/security'])
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'security@example.com', auditor: true }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
-      expect(gitlab.upsertUser).toHaveBeenCalledWith(
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'auditor@example.com', auditor: true }),
         expect.objectContaining({ cpnUserId: 'u2' }),
       )
@@ -540,21 +540,21 @@ describe('gitlabService', () => {
         access_level: 40,
       })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue(undefined)
       gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
-      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
+      gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
       vault.readTechnReadOnlyCreds.mockResolvedValue(null)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleUpsert(project)
 
       expect(gitlab.createMirrorAccessToken).toHaveBeenCalledWith('project-1')
-      expect(gitlab.upsertProjectMirrorRepo).toHaveBeenCalledWith('project-1')
+      expect(gitlab.ensureProjectMirrorRepo).toHaveBeenCalledWith('project-1')
 
       expect(vault.writeGitlabMirrorCreds).toHaveBeenCalledWith(
         'project-1',
@@ -597,15 +597,15 @@ describe('gitlabService', () => {
         },
       })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
       gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
-      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
+      gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
       vault.readTechnReadOnlyCreds.mockResolvedValue(recentSecret)
 
       await service.handleUpsert(project)
@@ -643,16 +643,16 @@ describe('gitlabService', () => {
         },
       })
 
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
       gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
-      gitlab.getOrCreateProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
+      gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
       gitlab.revokeProjectToken.mockResolvedValue(undefined)
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
       vault.readTechnReadOnlyCreds.mockResolvedValue(staleSecret)
 
       await service.handleUpsert(project)
@@ -698,16 +698,16 @@ describe('gitlabService', () => {
       datastore.getAllProjects.mockResolvedValue(projects)
 
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getRepos.mockReturnValue((async function* () { })())
-      gitlab.upsertProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
-      gitlab.getOrCreateMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
       await service.handleCron()
 
       expect(datastore.getAllProjects).toHaveBeenCalled()
-      expect(gitlab.getOrCreateProjectSubGroup).toHaveBeenCalledWith('project-1')
+      expect(gitlab.ensureProjectSubGroup).toHaveBeenCalledWith('project-1')
     })
   })
 

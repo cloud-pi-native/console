@@ -29,9 +29,9 @@ describe('vaultService', () => {
       createSysMount: vi.fn().mockResolvedValue(undefined),
       tuneSysMount: vi.fn().mockResolvedValue(undefined),
       deleteSysMounts: vi.fn().mockResolvedValue(undefined),
-      upsertSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
+      ensureSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
       deleteSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
-      upsertAuthApproleRole: vi.fn().mockResolvedValue(undefined),
+      ensureAuthApproleRole: vi.fn().mockResolvedValue(undefined),
       deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
       getIdentityGroupName: vi.fn(async (groupName: string) => makeVaultSecret({ data: { id: 'gid', name: groupName } })),
       deleteIdentityGroupName: vi.fn().mockResolvedValue(undefined),
@@ -102,38 +102,38 @@ describe('vaultService', () => {
     await service.handleUpsert(project)
 
     expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`, expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`, expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
-    expect(client.upsertIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--devops`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith('platform--admin', expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith('platform--readonly', expect.any(Object))
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith('platform--security', expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith('console-admin', expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith('console-readonly', expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith('console-security', expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`, expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`, expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
 
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
     })
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
     })
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, {
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`, {
       policy: [
         `path "${project.slug}/metadata/*" { capabilities = ["list"] }`,
         `path "transit/keys/${project.slug}/*" { capabilities = ["list"] }`,
       ].join('\n'),
     })
-    expect(client.upsertSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, {
+    expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`tech--${project.slug}--ro`, {
       policy: `path "forge-dso/data/forge/${project.slug}/REGISTRY/ro-robot" { capabilities = ["read"] }`,
     })
   })
