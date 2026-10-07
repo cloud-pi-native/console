@@ -1,6 +1,7 @@
 import type { ResourceById, ResourceByKey } from './types.js'
 import shortUUID from 'short-uuid'
 import { longestEnvironmentName } from './const.js'
+import { endOfToday } from './date.js'
 
 /**
  * @param {*} value Value wanted to be return as is
@@ -252,10 +253,7 @@ export function generateRandomPassword(length = 24, chars = 'abcdefghijklmnopqrs
 }
 
 export function isAtLeastTomorrow(actualTime: Date) {
-  const tomorrow = new Date(Date.now())
-  tomorrow.setUTCHours(23, 59, 59, 999)
-
-  return actualTime.getTime() > tomorrow.getTime()
+  return actualTime.getTime() > endOfToday().getTime()
 }
 
 export function insert<T>(pseudoArray: T[] | undefined, element: T): T[] {

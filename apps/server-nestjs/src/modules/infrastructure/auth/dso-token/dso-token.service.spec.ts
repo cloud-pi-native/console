@@ -1,11 +1,11 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { createHash } from 'node:crypto'
 import { faker } from '@faker-js/faker'
 import { UnauthorizedException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { hashToken } from '../../../../utils/crypto.utils'
 import { PrismaService } from '../../database/prisma.service'
 import { makeAdminToken, makePersonalAccessToken } from '../auth-testing.utils'
 import { DsoTokenService } from './dso-token.service'
@@ -40,7 +40,7 @@ describe('dsoTokenService', () => {
     const result = await service.validateToken(rawToken, { includeAdminRoleIds: true, includeUserType: true })
 
     expect(prisma.personalAccessToken.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { hash: createHash('sha256').update(rawToken).digest('hex') } }),
+      expect.objectContaining({ where: { hash: hashToken(rawToken) } }),
     )
     expect(result).toBeDefined()
     if (result?.kind !== 'personal') throw new Error('Expected personal token result')

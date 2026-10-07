@@ -2,9 +2,9 @@ import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../auth-user.decorator'
 import type { AuthProvider, AuthRequirements } from '../auth.utils'
 import type { AdminTokenWithOwner, AuthToken, PersonalAccessTokenWithOwner } from './dso-token.utils'
-import { createHash } from 'node:crypto'
 import { tokenHeaderName } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
+import { hashToken } from '../../../../utils/crypto.utils'
 import { PrismaService } from '../../database/prisma.service'
 import { makeAdminTokenSelect, makePersonalAccessTokenSelect, validateToken } from './dso-token.utils'
 
@@ -54,7 +54,7 @@ export class DsoTokenService implements AuthProvider {
     requirements: Required<AuthRequirements>,
   ): Promise<AuthToken | undefined> {
     this.logger.debug(`validateToken started`)
-    const hash = createHash('sha256').update(rawToken).digest('hex')
+    const hash = hashToken(rawToken)
     const result = await this.findAndValidateToken(hash, requirements)
     if (!result) {
       this.logger.warn(`validateToken token not found`)
