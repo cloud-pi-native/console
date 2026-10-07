@@ -24,8 +24,8 @@ describe('keycloakService', () => {
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
-      getOrCreateConsoleGroup: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' })),
-      getOrCreateEnvironmentGroups: vi.fn().mockResolvedValue({
+      ensureConsoleGroup: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' })),
+      ensureEnvironmentGroups: vi.fn().mockResolvedValue({
         roGroup: makeGroupRepresentation({ id: 'ro-id', name: 'RO' }),
         rwGroup: makeGroupRepresentation({ id: 'rw-id', name: 'RW' }),
       }),
@@ -73,7 +73,7 @@ describe('keycloakService', () => {
 
       await service.handleCron()
 
-      expect(keycloak.getOrCreateGroupByPath).not.toHaveBeenCalledWith('/console/system-external')
+      expect(keycloak.ensureGroupByPath).not.toHaveBeenCalledWith('/console/system-external')
       expect(keycloak.getGroupMembers).not.toHaveBeenCalled()
       expect(keycloak.addUserToGroup).not.toHaveBeenCalled()
       expect(keycloak.removeUserFromGroup).not.toHaveBeenCalled()
@@ -92,7 +92,7 @@ describe('keycloakService', () => {
       datastore.getAllUsersWithAdminRoleIds.mockResolvedValue(users)
 
       const adminGroup = makeGroupRepresentation({ id: 'kc-group-id', name: 'admin', path: '/console/admin' })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(adminGroup)
+      keycloak.ensureGroupByPath.mockResolvedValue(adminGroup)
 
       keycloak.getGroupMembers.mockResolvedValue([
         makeUserRepresentation({ id: 'user-2' }),
@@ -100,7 +100,7 @@ describe('keycloakService', () => {
 
       await service.handleCron()
 
-      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/console/admin')
+      expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/console/admin')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'kc-group-id')
     })
@@ -119,15 +119,15 @@ describe('keycloakService', () => {
         yield projectGroup
         yield orphanGroup
       })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
       keycloak.getGroupMembers.mockResolvedValue([])
-      keycloak.getOrCreateSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
+      keycloak.ensureSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
       keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
       await service.handleCron()
 
       expect(datastore.getAllProjects).toHaveBeenCalled()
       expect(keycloak.getAllGroups).toHaveBeenCalled()
-      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/test-project')
+      expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/test-project')
       expect(keycloak.deleteGroup).toHaveBeenCalledWith('orphan-id')
     })
 
@@ -144,14 +144,14 @@ describe('keycloakService', () => {
       datastore.getAllProjects.mockResolvedValue([projectWithMembers])
 
       const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
 
       // Current members: user-2 (extra), missing user-1
       keycloak.getGroupMembers.mockResolvedValue([
         makeUserRepresentation({ id: 'user-2', email: 'user2@example.com' }),
       ])
 
-      keycloak.getOrCreateSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
+      keycloak.ensureSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
       keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
 
       await service.handleCron()
@@ -187,12 +187,12 @@ describe('keycloakService', () => {
       const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
       const roleGroup = makeGroupRepresentation({ id: 'role-group-id', name: 'oidc-group', path: '/test-project/console/oidc-group' })
 
-      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
       })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateRoleGroup.mockResolvedValue(roleGroup)
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(roleGroup)
 
       // Project members: owner
       keycloak.getGroupMembers.mockImplementation((groupId) => {
@@ -207,7 +207,7 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       // Should create/get role group (relative to console group)
-      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/oidc-group')
+      expect(keycloak.ensureRoleGroup).toHaveBeenCalledWith(consoleGroup, '/oidc-group')
       // Should add user-1 to role group
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'role-group-id')
       // Should remove user-2 from role group
@@ -232,12 +232,12 @@ describe('keycloakService', () => {
       const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
       const adminGroup = makeGroupRepresentation({ id: 'admin-group-id', name: 'admin', path: '/test-project/console/admin' })
 
-      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
       })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateRoleGroup.mockResolvedValue(adminGroup)
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(adminGroup)
 
       // Owner is in the project group but missing from the admin role group
       keycloak.getGroupMembers.mockImplementation((groupId) => {
@@ -272,12 +272,12 @@ describe('keycloakService', () => {
       const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
       const developerGroup = makeGroupRepresentation({ id: 'developer-group-id', name: 'developer', path: '/test-project/console/developer' })
 
-      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
       })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateRoleGroup.mockResolvedValue(developerGroup)
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(developerGroup)
 
       keycloak.getGroupMembers.mockImplementation((groupId) => {
         if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
@@ -304,17 +304,17 @@ describe('keycloakService', () => {
         name: 'test-project',
         subGroups: [makeGroupRepresentation({ name: 'console', id: 'console-id' })],
       })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
       keycloak.getGroupMembers.mockResolvedValue([])
 
       // Mock console group retrieval
       const consoleGroup = makeGroupRepresentation({ id: 'console-id', name: 'console', path: '/test-project/console' })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateEnvironmentGroups.mockResolvedValue({
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureEnvironmentGroups.mockResolvedValue({
         roGroup: makeGroupRepresentation({ id: 'dev-ro-id', name: 'RO' }),
         rwGroup: makeGroupRepresentation({ id: 'dev-rw-id', name: 'RW' }),
       })
-      keycloak.getOrCreateSubGroupByName.mockImplementation((_parentId, name) => {
+      keycloak.ensureSubGroupByName.mockImplementation((_parentId, name) => {
         if (name === 'console') return Promise.resolve(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
         if (name === 'dev') return Promise.resolve(makeGroupRepresentation({ id: 'dev-id', name: 'dev' }))
         if (name === 'RO') return Promise.resolve(makeGroupRepresentation({ id: 'dev-ro-id', name: 'RO' }))
@@ -336,9 +336,9 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       // Should create dev group
-      expect(keycloak.getOrCreateConsoleGroup).toHaveBeenCalledWith(projectGroup)
+      expect(keycloak.ensureConsoleGroup).toHaveBeenCalledWith(projectGroup)
       // Should create RO/RW groups
-      expect(keycloak.getOrCreateEnvironmentGroups).toHaveBeenCalledWith(consoleGroup, projectWithEnv.environments[0])
+      expect(keycloak.ensureEnvironmentGroups).toHaveBeenCalledWith(consoleGroup, projectWithEnv.environments[0])
       // Should delete staging group
       expect(keycloak.deleteGroup).toHaveBeenCalledWith('staging-id')
     })
@@ -377,9 +377,9 @@ describe('keycloakService', () => {
         name: 'test-project',
         subGroups: [makeGroupRepresentation({ name: 'console', id: 'console-id' })],
       })
-      keycloak.getOrCreateGroupByPath.mockResolvedValue(projectGroup)
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console', path: '/test-project/console' }))
-      keycloak.getOrCreateEnvironmentGroups.mockResolvedValue({
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureConsoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console', path: '/test-project/console' }))
+      keycloak.ensureEnvironmentGroups.mockResolvedValue({
         roGroup: makeGroupRepresentation({ id: 'dev-ro-id', name: 'RO' }),
         rwGroup: makeGroupRepresentation({ id: 'dev-rw-id', name: 'RW' }),
       })
@@ -394,7 +394,7 @@ describe('keycloakService', () => {
         return Promise.resolve([])
       })
 
-      keycloak.getOrCreateSubGroupByName.mockImplementation((_parentId, name) => {
+      keycloak.ensureSubGroupByName.mockImplementation((_parentId, name) => {
         if (name === 'console') return Promise.resolve(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
         if (name === 'dev') return Promise.resolve(makeGroupRepresentation({ id: 'dev-id', name: 'dev' }))
         if (name === 'RO') return Promise.resolve(makeGroupRepresentation({ id: 'dev-ro-id', name: 'RO' }))
@@ -437,12 +437,12 @@ describe('keycloakService', () => {
       const externalGroup = makeGroupRepresentation({ id: 'external-id', name: 'external-group' })
       const globalGroup = makeGroupRepresentation({ id: 'global-id', name: 'global-group' })
 
-      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
       })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateRoleGroup.mockImplementation((_consoleGroup, oidcGroup) => {
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockImplementation((_consoleGroup, oidcGroup) => {
         if (oidcGroup === '/managed-group') return Promise.resolve({ ...managedGroup, path: '/test-project/console/managed-group' })
         if (oidcGroup === '/external-group') return Promise.resolve({ ...externalGroup, path: '/test-project/console/external-group' })
         if (oidcGroup === '/global-group') return Promise.resolve({ ...globalGroup, path: '/test-project/console/global-group' })
@@ -470,17 +470,17 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       // Managed: should add user-1, remove user-2
-      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/managed-group')
+      expect(keycloak.ensureRoleGroup).toHaveBeenCalledWith(consoleGroup, '/managed-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'managed-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'managed-id')
 
       // External: should add user-1, NOT remove user-2
-      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/external-group')
+      expect(keycloak.ensureRoleGroup).toHaveBeenCalledWith(consoleGroup, '/external-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'external-id')
       expect(keycloak.removeUserFromGroup).not.toHaveBeenCalledWith('user-2', 'external-id')
 
       // Global: should sync group but no members
-      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/global-group')
+      expect(keycloak.ensureRoleGroup).toHaveBeenCalledWith(consoleGroup, '/global-group')
     })
 
     it('should treat system-prefixed role types as their base type', async () => {
@@ -502,12 +502,12 @@ describe('keycloakService', () => {
       const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
       const systemManagedGroup = makeGroupRepresentation({ id: 'system-managed-id', name: 'system-managed-group' })
 
-      keycloak.getOrCreateGroupByPath.mockImplementation((path) => {
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
         if (path === '/test-project') return Promise.resolve(projectGroup)
-        throw new Error(`Unexpected getOrCreateGroupByPath call: ${path}`)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
       })
-      keycloak.getOrCreateConsoleGroup.mockResolvedValue(consoleGroup)
-      keycloak.getOrCreateRoleGroup.mockResolvedValue({ ...systemManagedGroup, path: '/test-project/console/system-managed-group' })
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue({ ...systemManagedGroup, path: '/test-project/console/system-managed-group' })
 
       keycloak.getGroupMembers.mockImplementation((groupId) => {
         if (groupId === 'group-id') return Promise.resolve([makeUserRepresentation({ id: 'owner-id' })])
@@ -522,7 +522,7 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       // system:managed behaves like managed: add user-1, remove user-2
-      expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/system-managed-group')
+      expect(keycloak.ensureRoleGroup).toHaveBeenCalledWith(consoleGroup, '/system-managed-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'system-managed-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
     })

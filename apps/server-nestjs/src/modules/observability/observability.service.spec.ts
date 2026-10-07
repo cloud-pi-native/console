@@ -27,21 +27,21 @@ describe('observabilityService', () => {
   beforeEach(async () => {
     datastore = mockDeep<ObservabilityDatastoreService>()
     client = mockDeep<ObservabilityClientService>({
-      getOrCreateValuesRepo: vi.fn().mockResolvedValue({ id: 1 }),
+      ensureValuesRepo: vi.fn().mockResolvedValue({ id: 1 }),
       updateProjectConfig: vi.fn().mockResolvedValue('updated'),
       deleteProjectConfig: vi.fn().mockResolvedValue(undefined),
     })
     gitlab = mockDeep<GitlabClientService>({
-      upsertProjectGroupRepo: vi.fn().mockResolvedValue({ id: 42 }),
-      getOrCreateProjectGroupRepo: vi.fn().mockResolvedValue({ id: 42 }),
-      getOrCreateProjectGroupPublicUrl: vi.fn().mockResolvedValue('https://gitlab.test/proj'),
+      ensureProjectGroupRepoSettings: vi.fn().mockResolvedValue({ id: 42 }),
+      ensureProjectGroupRepo: vi.fn().mockResolvedValue({ id: 42 }),
+      ensureProjectGroupPublicUrl: vi.fn().mockResolvedValue('https://gitlab.test/proj'),
       generateCreateOrUpdateAction: vi.fn().mockResolvedValue(null),
       maybeCreateCommit: vi.fn().mockResolvedValue(undefined),
     })
     keycloak = mockDeep<KeycloakClientService>({
       getGroupByPath: vi.fn().mockResolvedValue({ id: 'group-1' }),
       getSubGroups: vi.fn(async function* () {}),
-      getOrCreateSubGroupByName: vi.fn().mockResolvedValue({ id: 'sub-1' }),
+      ensureSubGroupByName: vi.fn().mockResolvedValue({ id: 'sub-1' }),
       getGroupMembers: vi.fn().mockResolvedValue([]),
       addUserToGroup: vi.fn().mockResolvedValue(undefined),
       removeUserFromGroup: vi.fn().mockResolvedValue(undefined),
@@ -77,7 +77,7 @@ describe('observabilityService', () => {
       })
       const result = await service.handleUpsert(project)
       expect(result.observability.status).toBe('OK')
-      expect(gitlab.upsertProjectGroupRepo).not.toHaveBeenCalled()
+      expect(gitlab.ensureProjectGroupRepoSettings).not.toHaveBeenCalled()
     })
   })
 
@@ -136,7 +136,7 @@ describe('observabilityService', () => {
           if (parentId === 'group-1') yield { id: 'g-grafana', name: 'grafana' }
         })(),
       )
-      keycloak.getOrCreateSubGroupByName.mockImplementation((_parentId: string, name: string) =>
+      keycloak.ensureSubGroupByName.mockImplementation((_parentId: string, name: string) =>
         Promise.resolve(pairs[name] ?? { id: `sub-${name}`, name, path: `/test-project/grafana/${name}` }),
       )
       keycloak.getGroupMembers.mockImplementation((groupId: string) =>

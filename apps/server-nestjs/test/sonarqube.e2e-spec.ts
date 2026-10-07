@@ -180,7 +180,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
     // Per-repo CI variables must be provisioned for the repository
     const sonarProjectKey = generateProjectKey(testProjectSlug, testRepoName)
-    const repo = await gitlabClient.getOrCreateProjectGroupRepo(testProjectSlug, `${testProjectSlug}/${testRepoName}`)
+    const repo = await gitlabClient.ensureProjectGroupRepo(testProjectSlug, `${testProjectSlug}/${testRepoName}`)
     const repoVars = await gitlabClient.readProjectVariables(repo.id, '*')
     const expectedRepoVars = ['PROJECT_KEY', 'PROJECT_NAME', 'SONAR_PROJECT_PROPERTIES', 'SONAR_TOKEN']
     for (const key of expectedRepoVars) {
