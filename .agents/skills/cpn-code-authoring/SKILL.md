@@ -2,9 +2,10 @@
 name: cpn-code-authoring
 description:
   "Use when writing or reviewing domain code in cloud-pi-native/console:
-  naming consensus, layer discipline, fixture shape, and migration parity
-  rules for apps/server-nestjs and nginx routing."
-version: 1.1.0
+  naming consensus, client-service verb vocabulary, layer discipline,
+  fixture shape, and migration parity rules for apps/server-nestjs and
+  nginx routing."
+version: 1.2.0
 license: Apache-2.0
 ---
 
@@ -70,6 +71,30 @@ go through the target's controller-exported service.
   service arguments.
 - Configuration arrives by injection (`@Inject(xxxConfigFactory.KEY)` +
   `ConfigType<...>`), never `process.env`.
+
+## Client-service vocabulary
+
+External-system client services (`gitlab-`, `keycloak-`, `nexus-`,
+`registry-`, `sonarqube-`, `vault-`) expose three verbs, decided in #2832:
+
+- `get*` — read. No side effects, no convergence.
+- `create*` — non-idempotent write. Fails on collision; the raw API call.
+- `ensure*` — desired state in, converged state out. Must route through the
+  module's `ensure({ create, reload, onCollision })` util in
+  `<module>.utils.ts` (module-specific, never shared); a collision reloads
+  and returns the existing entity. Never deletes.
+- `reconcile*` — level-triggered drift correction over a collection, called
+  for effect (no consumed return value); may create, update and delete.
+  Reserve for scheduled sweeps (vault cron `reconcileZones`/`reconcileProjects`).
+
+External-API verbs are mirrored verbatim (`Upsert*Request` types, vault
+`read`/`write`, nexus `update*`): the client is the API's shadow, not its
+translator. DB layer keeps Prisma vocabulary (`prisma.upsert`,
+`upsert*` in queries-utils).
+
+An `ensure*` that must reuse a scarce side effect (secret, token) checks
+first instead of creating and catching the collision — util's create-first
+would rotate it every sync (`ensureAuthApproleRoleSecretId`).
 
 ## Naming consensus
 
