@@ -23,7 +23,7 @@ export const adminRoleContract = contractInstance.router({
     path: '',
     body: AdminRoleSchema.pick({ name: true }),
     responses: {
-      200: AdminRoleSchema,
+      201: AdminRoleSchema.array(),
       400: ErrorSchema,
       401: ErrorSchema,
       403: ErrorSchema,
