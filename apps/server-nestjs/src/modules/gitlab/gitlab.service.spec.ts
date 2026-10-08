@@ -7,6 +7,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
+import { makeAdminRoleEventMember, makeAdminRoleEventPayload } from '../events/app-events-testing.utils'
 import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constants'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
@@ -732,6 +733,66 @@ describe('gitlabService', () => {
       await expect(service.handleDelete(project)).resolves.not.toThrow()
 
       expect(gitlab.deleteGroup).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('handleAdminRoleUpsert', () => {
+    it('should skip roles outside managed group paths', async () => {
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ oidcGroup: '/other' }))
+
+      expect(gitlab.upsertUser).not.toHaveBeenCalled()
+    })
+
+    it('should flag admin for the admin group and auditor otherwise', async () => {
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
+        oidcGroup: '/console/admin',
+        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
+      }))
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
+
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
+        oidcGroup: '/console/readonly',
+        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
+      }))
+      expect(gitlab.upsertUser).toHaveBeenLastCalledWith(expect.objectContaining({ auditor: true, admin: undefined }), expect.anything())
+    })
+
+    it('should recognize every configured admin group path', async () => {
+      vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue('/console/admin,/console/ops')
+      try {
+        await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
+          oidcGroup: '/console/ops',
+          members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
+        }))
+      } finally {
+        vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue(undefined)
+      }
+
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
+    })
+  })
+
+  describe('handleAdminRoleDelete', () => {
+    it('should clear the admin flag on revoke', async () => {
+      gitlab.getUserByEmail.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
+
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
+        oidcGroup: '/console/admin',
+        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
+      }))
+
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
+    })
+
+    it('should skip absent GitLab accounts instead of provisioning them', async () => {
+      gitlab.getUserByEmail.mockResolvedValue(null)
+
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
+        oidcGroup: '/console/admin',
+        members: [makeAdminRoleEventMember({ id: 'u1', email: 'ghost@b.c' })],
+      }))
+
+      expect(gitlab.upsertUser).not.toHaveBeenCalled()
     })
   })
 })

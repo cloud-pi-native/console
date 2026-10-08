@@ -101,20 +101,28 @@ export class GitlabService {
     span?.setAttribute('admin_role.id', role.id)
     this.logger.log(`Handling an admin role ${enabled ? 'upsert' : 'delete'} event for ${role.id}`)
 
-    const adminGroupPath = await this.getAdminGroupPath()
+    const adminGroupPaths = parseGroupPaths(await this.getAdminGroupPath())
     const auditorGroupPaths = parseGroupPaths(await this.getAuditorGroupPath())
-    const isAuditorRole = auditorGroupPaths.includes(role.oidcGroup ?? '')
-    if (role.oidcGroup !== adminGroupPath && !isAuditorRole) {
+    const oidcGroup = role.oidcGroup ?? ''
+    const isAdminRole = adminGroupPaths.includes(oidcGroup)
+    const isAuditorRole = auditorGroupPaths.includes(oidcGroup)
+    if (!isAdminRole && !isAuditorRole) {
       this.logger.verbose(`Not a managed role for GitLab plugin (roleId=${role.id})`)
       return
     }
 
     for (const member of role.members) {
+      if (!enabled && await this.gitlab.getUserByEmail(member.email) === null) {
+        // GitLab provisions users via OIDC at first login; a revoke must not
+        // create the account it is clearing flags on.
+        this.logger.verbose(`Skipping revoked member without a GitLab account (email=${member.email})`)
+        continue
+      }
       await this.gitlab.upsertUser({
         email: member.email,
         username: generateUsername(member.email),
         name: generateName(member.firstName, member.lastName),
-        admin: role.oidcGroup === adminGroupPath ? enabled : undefined,
+        admin: isAdminRole ? enabled : undefined,
         auditor: isAuditorRole ? enabled : undefined,
       }, {
         cpnUserId: member.id,

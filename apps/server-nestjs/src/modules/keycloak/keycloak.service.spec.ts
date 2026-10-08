@@ -3,6 +3,7 @@ import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } fro
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeAdminRoleEventPayload } from '../events/app-events-testing.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
@@ -524,6 +525,29 @@ describe('keycloakService', () => {
       expect(keycloak.getOrCreateRoleGroup).toHaveBeenCalledWith(consoleGroup, '/system-managed-group')
       expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'system-managed-id')
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
+    })
+  })
+
+  describe('handleAdminRoleUpsert', () => {
+    it('should sync the impacted role group on adminRole.upsert', async () => {
+      datastore.getAllAdminRoles.mockResolvedValue([{ id: 'role-1', oidcGroup: '/console/admin', type: 'global' }])
+      datastore.getAllUsersWithAdminRoleIds.mockResolvedValue([{ id: 'user-1', adminRoleIds: ['role-1'] }])
+      keycloak.getOrCreateGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'kc-group-id', name: 'admin' }))
+      keycloak.getGroupMembers.mockResolvedValue([makeUserRepresentation({ id: 'user-2' })])
+
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1', oidcGroup: '/console/admin', members: [] }))
+
+      expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/console/admin')
+      expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'kc-group-id')
+    })
+  })
+
+  describe('handleAdminRoleDelete', () => {
+    it('should warn and no-op when the role no longer exists', async () => {
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'gone', oidcGroup: '/console/admin', members: [] }))
+
+      expect(keycloak.getOrCreateGroupByPath).not.toHaveBeenCalled()
     })
   })
 })
