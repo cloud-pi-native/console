@@ -152,6 +152,9 @@ Playwright E2E needs Docker and is judged in CI, not locally.
 
 ## Known exceptions
 
+- `user-queries.utils.ts` keeps `buildAllUsersWhere`/`buildMatchingUsersWhere`
+  and `getUsers`/`getMatchingUsers` (findMany): they predate the convention and
+  are renamed when the user module is touched, not before.
 - `auth-testing.utils.ts` `makeAdminToken` keeps custom overrides: its owner
   shape `{ id, adminRoleIds, type }` is not `AdminTokenRecord['owner']`.
 - `ZodValidationPipe` collapses to a bare string message when all issues
