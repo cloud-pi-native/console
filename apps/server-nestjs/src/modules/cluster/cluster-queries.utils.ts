@@ -3,6 +3,7 @@ import type { Cluster, Prisma } from '@prisma/client'
 import { ClusterPrivacySchema } from '@cpn-console/shared'
 
 const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
+const CLUSTER_DEDICATED = ClusterPrivacySchema.enum.dedicated
 
 export const clusterListSelect = {
   id: true,
@@ -217,6 +218,31 @@ export async function syncClusterStageLinks(
     if (!stageIds.includes(stage.id)) {
       await removeClusterFromStage(tx, clusterUpdated.id, stage.id)
     }
+  }
+}
+
+export async function syncClusterProjectLinks(
+  tx: Prisma.TransactionClient,
+  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
+  clusterId: string,
+  projectIds: string[] | undefined,
+) {
+  if (projectIds && clusterUpdated.privacy === CLUSTER_DEDICATED) {
+    await linkClusterToProjects(tx, clusterId, projectIds)
+  }
+
+  if (clusterUpdated.privacy === CLUSTER_PUBLIC) {
+    const dbProjects = await getProjectsByClusterId(tx, clusterId)
+    for (const projectId of dbProjects?.map(project => project.id) ?? []) {
+      await removeClusterFromProject(tx, clusterUpdated.id, projectId)
+    }
+    return
+  }
+
+  const dbProjects = await getProjectsByClusterId(tx, clusterId)
+  const dbProjectIds = dbProjects?.map(project => project.id) ?? []
+  for (const projectId of dbProjectIds.filter(dbProjectId => !projectIds?.includes(dbProjectId))) {
+    await removeClusterFromProject(tx, clusterUpdated.id, projectId)
   }
 }
 

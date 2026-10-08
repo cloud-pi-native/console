@@ -3,7 +3,6 @@ import type {
   CreateClusterBody,
   UpdateClusterBody,
 } from '@cpn-console/shared'
-import type { Prisma } from '@prisma/client'
 import type { ClusterEventName, ClusterEventPayload, EventContext } from '../events/app-events.service'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
@@ -21,18 +20,16 @@ import {
   getClusterDetails,
   getClusterEnvironments,
   getClusterUsage,
-  getProjectsByClusterId,
   linkClusterToProjects,
   linkClusterToStages,
   linkZoneToClusters,
   listClusters,
-  removeClusterFromProject,
+  syncClusterProjectLinks,
   syncClusterStageLinks,
   updateCluster,
 } from './cluster-queries.utils'
 
 const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
-const CLUSTER_DEDICATED = ClusterPrivacySchema.enum.dedicated
 
 @Injectable()
 export class ClusterService {
@@ -170,36 +167,5 @@ export class ClusterService {
     if (getFailedPlugins(results).length) {
       throw new UnprocessableEntityException(failureMessage)
     }
-  }
-}
-
-function projectsToRemoveFrom(clusterPrivacy: typeof CLUSTER_PUBLIC | typeof CLUSTER_DEDICATED, projectIds: string[] | undefined, dbProjectIds: string[]): string[] {
-  const keepDedicated = clusterPrivacy === CLUSTER_DEDICATED && projectIds
-    ? projectIds
-    : []
-  return dbProjectIds.filter(dbProjectId => !keepDedicated.includes(dbProjectId))
-}
-
-async function syncClusterProjectLinks(
-  tx: Prisma.TransactionClient,
-  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
-  clusterId: string,
-  projectIds: string[] | undefined,
-) {
-  if (projectIds && clusterUpdated.privacy === CLUSTER_DEDICATED) {
-    await linkClusterToProjects(tx, clusterId, projectIds)
-  }
-
-  if (clusterUpdated.privacy === CLUSTER_PUBLIC) {
-    const dbProjects = await getProjectsByClusterId(tx, clusterId)
-    for (const projectId of dbProjects?.map(project => project.id) ?? []) {
-      await removeClusterFromProject(tx, clusterUpdated.id, projectId)
-    }
-    return
-  }
-
-  const dbProjects = await getProjectsByClusterId(tx, clusterId)
-  for (const projectId of projectsToRemoveFrom(clusterUpdated.privacy, projectIds, dbProjects?.map(project => project.id) ?? [])) {
-    await removeClusterFromProject(tx, clusterUpdated.id, projectId)
   }
 }
