@@ -11,7 +11,7 @@ Ce document décrit comment est géré le versionnement de `console`, c'est-à-d
 
 Afin d'éviter une confusion entre les correctifs d'urgence ("hotfixes") — historiquement des versions `PATCH` rétroportées sur `main` — et les versions régulières produites par des commits `fix:`, les versions stables adoptent le protocole suivant :
 
-- Les versions régulières sur `main` sont par défaut des `MINOR` (et très rarement des `MAJOR`).
+- Les versions régulières sur `releases` sont par défaut des `MINOR` (et très rarement des `MAJOR`).
 - Une préversion utilise la **prochaine** version stable visée, suffixée par `-rc`, puis `-rc.N` pour les candidates suivantes. Par exemple:
   - Si la dernière version publiée est la `9.24.5`, la préversion (RC) suivante sera la `9.25.0-rc`
   - Si la dernière version publiée est la `9.32.0-rc2`, la préversion suivante sera la `9.32.0-rc3`
@@ -27,92 +27,50 @@ La structure de versionnement stable de `console` est donc :
 Les sections suivantes vont expliciter ce schéma:
 
 ```mermaid
-gitGraph
-    branch release-please-main
-    commit id:" "
-
-    %% Initial state: latest tag on main = v1.2.5
-    checkout main
-    commit id: "Bump v1.2.5" tag: "v1.2.5"
-
-    %% Some commits are added to main
-    commit id: "feat: something"
-
-    %% Job create-or-update-release triggers release-please
-    %% which will upsert the next release MR, which will be a prerelease
-    checkout release-please-main
-    merge main
-    commit id: "Bump v1.3.0-rc"
-
-    %% Upon merging the release-please MR
-    %% The new tag is created
-    checkout main
-    merge release-please-main tag: "v1.3.0-rc"
-    %% and the release-please MR for the next stable release is created
-    checkout release-please-main
-    merge main
-    commit id: "Bump v1.3.0"
-
-    %% IF new commits are added BEFORE merging the release-please MR,
-    %% a new prerelease MR will replace the stable release MR
-    checkout main
-    commit id: "fix: something"
-    checkout release-please-main
-    merge main
-    commit id: "Bump v1.3.0-rc1"
-
-    %% Upon merging the release-please MR
-    %% The new tag is created
-    checkout main
-    merge release-please-main tag: "v1.3.0-rc1"
-    %% and the release-please MR for the next stable release is created
-    checkout release-please-main
-    merge main
-    commit id: "Bump v1.3.0 (updated)"
-
-    %% IF the stable release MR is merged into main
-    checkout main
-    merge release-please-main tag: "v1.3.0"
-
-    %% New commits are then pushed to main
-    %% and the cycle starts anew
-    commit id: "chore: something"
-
-    %% Job create-or-update-release triggers release-please
-    %% which will upsert the next release MR, which will be a prerelease
-    checkout release-please-main
-    merge main
-    commit id: "Bump v1.3.1-rc"
+flowchart LR
+    M0["main: version stable N"] --> M1["main: nouvelles MRs fusionnées; build et déploiement latest"]
+    M0 --> R0["releases créée depuis le périmètre retenu sur main"]
+    M1 -. "correctif retenu : cherry-pick" .-> R1["releases: commits de qualification"]
+    R0 --> RP["Release Please cible releases"]
+    R1 --> RP
+    RP --> RC["Fusion de la PR RC sur releases; tag et build"]
+    RC --> ST["PR stable sur releases; fusion, tag et build"]
+    ST --> BACK["Après la stable : reporter les commits de version nécessaires sur main"]
+    BACK --> NEXT["Recréer releases depuis main pour le cycle suivant"]
 ```
 
 ## Versionnement de Console
 
-Le flux de travail [`Handle next prerelease or release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-handle-main.yml) est déclenché à chaque nouveau commit sur `main`. Il utilise le job réutilisable [`Next Prerelease and Release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/job-release-please.yml) et notamment la GitHub Action [release-please-action](https://github.com/googleapis/release-please-action).
+Le flux [`Build and deploy latest from main`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-handle-main.yml) est déclenché à chaque push sur `main`. Il construit la version d'intégration et déploie `latest`; il ne déclenche pas Release Please.
 
-Le flux de travail [`Handle next hotfix`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-handle-hotfix.yml) est déclenché à chaque nouveau commit sur une branche `hotfix/*`. Il utilise le job réutilisable [`Next Hotfix`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/job-release-please-hotfixes.yml).
+Le flux [`Handle next prerelease or release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-handle-releases.yml) est déclenché à chaque push sur `releases`. Il appelle le job réutilisable [`Next Prerelease and Release`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/job-release-please.yml), avec `releases` comme branche cible pour les PR RC et stable. Les tags RC et stables déclenchent les builds d'artefacts et la mise à jour du chart. Le job de déploiement `latest` reste réservé aux événements de `main`.
+
+Le flux [`Handle next hotfix`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/workflow-handle-hotfix.yml) est déclenché à chaque nouveau commit sur une branche `hotfix/*`. Il utilise le job réutilisable [`Next Hotfix`](https://github.com/cloud-pi-native/console/blob/main/.github/workflows/job-release-please-hotfixes.yml).
 
 Trois configurations isolent les états de version :
 
-- [`.github/prerelease-please-config.json`](./.github/prerelease-please-config.json) et son [manifeste](./.github/prerelease-please-manifest.json) gèrent les préversions (ou "Release Candidates", usuellement dénotées "RC") ;
-- [`.github/release-please-config.json`](./.github/release-please-config.json) et son [manifeste](./.github/release-please-manifest.json) gèrent les versions "stables". La version stable met aussi à jour le manifeste de préversion afin de réinitialiser le cycle suivant depuis cette version (si on était à la `-rc14`, on réinitialise à `-rc` pour la prochaine version) ;
+- [`.github/prerelease-please-config.json`](./.github/prerelease-please-config.json) et son [manifeste](./.github/prerelease-please-manifest.json) gèrent les préversions (ou "Release Candidates", usuellement dénotées "RC") sur `releases` ;
+- [`.github/release-please-config.json`](./.github/release-please-config.json) et son [manifeste](./.github/release-please-manifest.json) gèrent les versions stables sur `releases`. La version stable met aussi à jour le manifeste de préversion afin de réinitialiser le cycle suivant depuis cette version (si on était à la `-rc14`, on réinitialise à `-rc` pour la prochaine version) ;
 - [`.github/hotfix-release-please-config.json`](./.github/hotfix-release-please-config.json) et le manifeste de version stable gèrent les correctifs d'urgence. Cette configuration n'écrit jamais dans le manifeste de préversion.
 
-À chaque exécution, le job `prepare` finalise d'abord toute requête de fusion de version déjà fusionnée, puis crée ou met à jour la prochaine requête de fusion.
-Plus concrètement, le cycle est le suivant :
+À chaque push sur `releases`, le job `prepare` finalise d'abord toute PR de version déjà fusionnée, puis crée ou met à jour la prochaine PR Release Please. Le cycle manuel est le suivant :
 
-1. Les commits classiques (`feat`, `chore`, etc.) sur `main` déclenchent les workflows GitHub qui vont créer/mettre à jour une MR de préversion.
-2. La fusion de cette MR dans `main` crée effectivement la préversion:
-  a. Création du tag git `vX.Y.Z-rc`. Les RC suivantes de la même version sont taguées `vX.Y.Z-rc.N`, où `N` vaut `1`, puis `2`, etc.
-  b. Création des images OCI/docker poussées en tant que "packages" dans l'organisation GitHub `cloud-pi-native`
-  c. Création de la Release GitHub, avec cependant une étiquette `Pre-release` pour indiquer que ce n'est pas une version "stable". Ce n'est, par exemple, pas la version qui est affichée sur la page de garde du dépôt
-  d. Création de la MR côté `helm-chart` qui va faire un bump mineur du chart `dso-console` avec comme `appVersion` la version RC nouvellement créée (il faudra alors fusionner cette MR pour avoir un chart à jour)
-3. Après la création de la préversion, vu que son commit de "bump" de version a été poussé sur `main`, les workflows sont à nouveaux déclenchés et une MR de version stable `vX.Y.Z` est créée.
-4. La fusion de cette MR crée la Release GitHub stable `vX.Y.Z`
-5. Tout nouveau commit classique poussé sur `main` déclenchera la création de la prochaine MR de préversion (retour à l'étape 1)
+1. Au début d'une qualification, créer `releases` depuis le commit de `main` qui définit le périmètre de la version et pousser cette branche. Pour la bascule du cycle existant, fermer sans la fusionner l'ancienne PR Release Please qui cible `main`, puis créer `releases` depuis l'état de `main` contenant la dernière RC publiée. Release Please crée alors la PR de version sur `releases`.
+2. Fusionner les MRs fonctionnelles sur `main` comme d'habitude. Elles continuent à alimenter le build et le déploiement `latest`, sans créer de RC.
+3. Pour inclure une correction dans la version en qualification, cherry-picker son commit de `main` sur `releases`. Release Please crée ou met à jour la PR RC ciblant `releases`.
+4. Fusionner la PR RC sur `releases` pour créer le tag `vX.Y.Z-rc` ou `vX.Y.Z-rc.N`, la Release GitHub « Pre-release » et les builds d'artefacts correspondants. Le flux existant déclenche également la mise à jour du chart Helm.
+5. Après une RC, Release Please crée ou met à jour la PR de version stable `vX.Y.Z`, toujours ciblant `releases`. La fusion de cette PR crée le tag et la Release GitHub stables, les builds d'artefacts et les tags partiels `vX` et `vX.Y`.
+6. Après la stable, reporter sur `main` uniquement les commits de version/release nécessaires qui ne s'y trouvent pas déjà. Ne pas fusionner l'ensemble de `releases`, qui contient des cherry-picks de commits déjà présents sur `main`. Supprimer ensuite `releases` et la recréer depuis `main` au début de la qualification suivante.
 
-**⚠️NOTE⚠️**: Si jamais, après l'étape `3` (création de la MR pour la version stable) des commits "classiques" sont poussés sur `main` alors **la MR de la version stable sera automatiquement "convertie" en MR de préversion**. Dit autrement: **On ne peut créer une version "stable" qu'à partir d'une préversion**. Tout commit en plus empêche d'avoir une version stable, il faut forcément qu'il y ait ZERO commit après une préversion pour avoir une MR de version stable.
+Les commits qui ne sont pas cherry-pickés sur `releases` restent hors du périmètre de la version en qualification. Le cycle de Release Please régulier ne démarre pas depuis `main`.
 
-Les différents types de commits (`chore:`, `feat:`, `fix:`, etc.) alimentent les sections du `CHANGELOG.md` selon les deux configurations release-please ci-dessus.
+## Notes de version
+
+`release-please` gère les incréments de version, les requêtes de fusion de release, les tags immuables et les GitHub Releases. Il ne génère pas de fichier `CHANGELOG.md`.
+
+L’historique généré avant cette bascule est conservé, sans modification, dans [`CHANGELOGS/CHANGELOG_ARCHIVE.md`](./CHANGELOGS/CHANGELOG_ARCHIVE.md). Les notes destinées aux utilisateurs sont préparées manuellement avec le skill [`cpn-release-notes`](./.agents/skills/cpn-release-notes/SKILL.md) : il produit `CHANGELOGS/<version>.md` et son audit non publiable `CHANGELOGS/<version>.anomalies.md`.
+
+La procédure collecte la version stable cible, le tag candidat, le milestone exact et la MR Helm. Elle réconcilie ces preuves, présente une prévisualisation et n’écrit les fichiers qu’après validation humaine. L’absence de tag, de milestone ou de MR Helm bloque la préparation. Cette bascule n’ajoute ni contrôle CI ni automatisation par agent.
 
 Lorsqu'une préversion ou une version stable est créée, les images de conteneur des applications (`client`, `server`, etc.) sont publiées dans la [registry GitHub du dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec le tag complet correspondant. Une version stable met aussi à jour les tags partiels `vX` et `vX.Y` ; ⚠️ Les RC ne touchent **jamais** à ces tags "mouvants". Ils sont là explicitement pour traquer la dernière version stable, majeure ou mineure.
 
