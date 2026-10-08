@@ -1,6 +1,7 @@
 import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
+import { specificallyEnabled } from '@cpn-console/hooks'
 import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -9,6 +10,7 @@ import { hasEntries } from '../../utils/record.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
+import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT } from './registry.constants'
 import { createProjectSlugCacheKey } from './registry.utils'
 
 @Injectable()
@@ -147,12 +149,23 @@ export class RegistryPluginService {
   async secrets(projectId: string): Promise<Record<string, string>> {
     const project = await this.datastore.getProject(projectId)
     if (!project) return {}
-    const group = await this.vault.readRegistrySecrets(project.slug)
-    if (!hasEntries(group)) return group
     const harborUrl = new URL(`${project.slug}/`, this.harborConfig.url)
+    const registryBasePath = `${harborUrl.host}${harborUrl.pathname}`
+    const publishConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT) ?? undefined
+    const projectPublishConfig = project.plugins?.find(p => p.key === REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)?.value
+    // Current writer's resolution (syncProject): project explicit > admin, only when the project sets nothing.
+    const projectRobotEnabled = specificallyEnabled(projectPublishConfig)
+      ?? (projectPublishConfig === undefined && specificallyEnabled(publishConfig))
+    if (!projectRobotEnabled) {
+      return { 'Registry base path': registryBasePath }
+    }
+    const robot = await this.vault.readRegistrySecrets(project.slug)
+    if (!hasEntries(robot)) {
+      return { 'Registry base path': registryBasePath, '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' }
+    }
     return {
-      ...group,
-      'Registry base path': `${harborUrl.host}${harborUrl.pathname}`,
+      'Registry base path': registryBasePath,
+      ...robot,
     }
   }
 }

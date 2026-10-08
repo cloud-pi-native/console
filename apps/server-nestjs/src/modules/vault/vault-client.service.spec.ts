@@ -103,6 +103,32 @@ describe('vault', () => {
     })
   })
 
+  describe('readRegistrySecrets', () => {
+    it('reads the project-robot leaf and returns raw vault data', async () => {
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({ data: { data: { HOST: 'harbor.example', USERNAME: 'robot$my-project+project-robot' }, metadata: { created_time: '2023-01-01T00:00:00.000Z', version: 1 } } })
+        }),
+      )
+
+      const result = await service.readRegistrySecrets('my-project')
+
+      expect(result).toEqual({ HOST: 'harbor.example', USERNAME: 'robot$my-project+project-robot' })
+    })
+
+    it('returns {} when the robot secret is missing', async () => {
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
+        }),
+      )
+
+      const result = await service.readRegistrySecrets('my-project')
+
+      expect(result).toEqual({})
+    })
+  })
+
   describe('write', () => {
     it('should write secret', async () => {
       await expect(service.write({ secret: 'value' }, 'path')).resolves.toBeUndefined()

@@ -4,6 +4,7 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { ROBOT_NAME_PROJECT } from '../registry/registry.constants'
 import { VaultError, VaultHttpClientService } from './vault-http-client.service'
 import { generateAppRoleSecretIdPath, generateGitlabMirrorCredPath, generateSecretGroupPath, generateSonarqubeCredPath, generateTechReadOnlyCredPath, isVaultNotFound } from './vault.utils'
 
@@ -207,7 +208,9 @@ export class VaultClientService {
 
   @StartActiveSpan()
   async readRegistrySecrets(projectSlug: string): Promise<Record<string, any>> {
-    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, 'REGISTRY')
+    // KV v2 cannot read a folder prefix: the REGISTRY group only exists as
+    // per-robot leaves, and the UI surface is the project robot.
+    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, `REGISTRY/${ROBOT_NAME_PROJECT}`)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('vault.kv.path', fullPath)
