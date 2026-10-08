@@ -6,6 +6,7 @@ import { createParamDecorator } from '@nestjs/common'
 export interface UserContext {
   userId: string
   adminPermissions?: bigint
+  adminRoleIds?: string[]
   userType?: User['type']
 }
 
@@ -15,6 +16,7 @@ export const AuthUser = createParamDecorator(
     return {
       userId: request.userId,
       adminPermissions: request.adminPermissions,
+      adminRoleIds: request.adminRoleIds,
       userType: request.userType,
     }
   },

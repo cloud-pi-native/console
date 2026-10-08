@@ -90,6 +90,7 @@ describe('keycloakJwtService', () => {
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: 60n,
+        adminRoleIds: ['stale-oidc-role', 'manual-role', 'current-oidc-role'],
         userType: 'human',
       })
     })
@@ -131,6 +132,7 @@ describe('keycloakJwtService', () => {
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: 0n,
+        adminRoleIds: [],
         userType: 'human',
       })
     })
@@ -165,6 +167,7 @@ describe('keycloakJwtService', () => {
       expect(result).toEqual({
         userId: payload.sub,
         adminPermissions: undefined,
+        adminRoleIds: undefined,
         userType: 'human',
       })
     })

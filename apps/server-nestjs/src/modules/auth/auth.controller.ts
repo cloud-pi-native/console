@@ -13,6 +13,9 @@ export class AuthController {
   @Get()
   @UseGuards(UserGuard)
   async auth(@AuthUser() user: UserContext): Promise<User> {
-    return toContractUser(await this.authUserService.getUser(user.userId))
+    const contractUser = toContractUser(await this.authUserService.getUser(user.userId))
+    return user.adminRoleIds === undefined
+      ? contractUser
+      : { ...contractUser, adminRoleIds: user.adminRoleIds }
   }
 }

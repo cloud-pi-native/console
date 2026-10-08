@@ -38,4 +38,13 @@ describe('authController', () => {
     expect(await controller.auth({ userId: user.id })).toEqual(toContractUser(user))
     expect(service.getUser).toHaveBeenCalledWith(user.id)
   })
+
+  it('merges the oidc-resolved admin role ids into the session payload', async () => {
+    const user: User = makeUser({ adminRoleIds: ['persisted-role'] })
+    service.getUser.mockResolvedValue(user)
+
+    const payload = await controller.auth({ userId: user.id, adminRoleIds: ['persisted-role', 'oidc-role'] })
+
+    expect(payload).toEqual({ ...toContractUser(user), adminRoleIds: ['persisted-role', 'oidc-role'] })
+  })
 })
