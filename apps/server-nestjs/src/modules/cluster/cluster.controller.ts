@@ -7,7 +7,7 @@ import {
   DeleteClusterQuerySchema,
   UpdateClusterBodySchema,
 } from '@cpn-console/shared'
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseUUIDPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthUser } from '../infrastructure/auth/auth-user.decorator'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
@@ -27,19 +27,19 @@ export class ClusterController {
 
   @Get(':clusterId')
   @RequireAdminPermission('ListClusters')
-  async getDetails(@Param('clusterId') clusterId: string): Promise<ClusterDetails> {
+  async getDetails(@Param('clusterId', ParseUUIDPipe) clusterId: string): Promise<ClusterDetails> {
     return toClusterDetails(await this.clusterService.getClusterDetailsRecord(clusterId))
   }
 
   @Get('usage/:clusterId')
   @RequireAdminPermission('ListClusters')
-  getUsage(@Param('clusterId') clusterId: string): Promise<ClusterUsage> {
+  getUsage(@Param('clusterId', ParseUUIDPipe) clusterId: string): Promise<ClusterUsage> {
     return this.clusterService.getClusterUsage(clusterId)
   }
 
   @Get(':clusterId/environments')
   @RequireAdminPermission('ListClusters')
-  async getEnvironments(@Param('clusterId') clusterId: string): Promise<ClusterAssociatedEnvironments> {
+  async getEnvironments(@Param('clusterId', ParseUUIDPipe) clusterId: string): Promise<ClusterAssociatedEnvironments> {
     return toClusterAssociatedEnvironments(await this.clusterService.getClusterAssociatedEnvironments(clusterId))
   }
 
@@ -71,7 +71,7 @@ export class ClusterController {
   @Delete(':clusterId')
   @RequireAdminPermission('ManageClusters')
   async delete(
-    @Param('clusterId') clusterId: string,
+    @Param('clusterId', ParseUUIDPipe) clusterId: string,
     @Query(new ZodValidationPipe(DeleteClusterQuerySchema)) { force }: DeleteClusterQuery,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,

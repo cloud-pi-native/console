@@ -1,28 +1,12 @@
 import type { CleanedCluster, CreateClusterBody } from '@cpn-console/shared'
-import type { Cluster, Kubeconfig, Stage } from '@prisma/client'
+import type { Kubeconfig, Stage } from '@prisma/client'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { faker } from '@faker-js/faker'
+import { makeCluster } from '../environment/environment-testing.utils'
 import { makeProjectMembers } from '../project-members/project-members-testing.utils'
 import { makeUser } from '../project/project-testing.utils'
 
-export function makeCluster(overrides: Partial<Cluster> = {}): Cluster {
-  return {
-    id: faker.string.uuid(),
-    label: faker.helpers.slugify(faker.word.sample(5)).toLowerCase(),
-    privacy: faker.helpers.arrayElement(['public', 'dedicated'] as const),
-    secretName: faker.string.uuid(),
-    clusterResources: faker.datatype.boolean(),
-    kubeConfigId: faker.string.uuid(),
-    infos: faker.lorem.sentence(),
-    cpu: faker.number.int({ min: 0, max: 64 }),
-    gpu: faker.number.int({ min: 0, max: 8 }),
-    memory: faker.number.int({ min: 0, max: 512 }),
-    zoneId: faker.string.uuid(),
-    createdAt: faker.date.past(),
-    updatedAt: faker.date.past(),
-    ...overrides,
-  } satisfies Cluster
-}
+export { makeCluster }
 
 export function makeStage(overrides: Partial<Stage> = {}): Stage {
   return {
