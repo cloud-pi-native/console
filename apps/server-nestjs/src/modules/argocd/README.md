@@ -1,0 +1,48 @@
+# ArgoCD
+
+[← Index transversal de la cartographie](../../../../../docs/architecture/plugins.md)
+
+## Périmètre et état de migration
+
+Le module NestJS `argocd` réconcilie et supprime les fichiers de valeurs de déploiement dans les dépôts d’infrastructure GitLab par zone. Plugin historique : `plugins/argocd/src/`.
+
+## Relations observées
+
+### Sorties
+
+| Fournisseur       | Finalité métier                                                                               | Nature                     | Mécanisme observé                                                                                                                   | Entrées → sorties                                                                          |
+| ----------------- | --------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| GitLab            | Gérer les fichiers ArgoCD détenus dans le dépôt d’infrastructure d’une zone.                  | fonctionnelle et technique | Injection de `GitlabClientService` (`argocd.module.ts`, `argocd.service.ts`) ; lecture de fichiers, génération d’actions et commit. | projet + zone → actions de création, mise à jour ou suppression et commit GitLab.          |
+| Vault             | Préparer la configuration d’accès Vault consommée par le déploiement ArgoCD.                  | fonctionnelle et technique | Injection de `VaultClientService` ; lecture/création role-id et secret-id AppRole.                                                  | slug projet → identifiants AppRole et configuration de connexion rendus dans le manifeste. |
+| Événements projet | Réconcilier ou nettoyer les fichiers du projet.                                               | fonctionnelle et technique | Écoute de `project.upsert` et `project.delete`, enveloppée par `capturePluginResult('argocd', ...)`.                                | `ProjectWithDetails` → résultat plugin OK/KO.                                              |
+| Keycloak (legacy) | Obtenir les chemins des groupes RO/RW d’un environnement à inscrire dans le manifeste ArgoCD. | fonctionnelle et technique | `KeycloakProjectApi.getEnvGroup(environment.name)` dans le hook historique ; absent du module NestJS actuel.                        | projet + environnement → chemins de groupes RO/RW.                                         |
+
+### Entrées
+
+- `project.upsert` et `project.delete` sont émis par `AppEventsService` à la suite des opérations projet ; la charge est un instantané `ProjectWithDetails`.
+- ArgoCD parcourt les zones stockées et écrit/supprime dans les dépôts d’infrastructure associés. Le dépôt cible est une ressource GitLab ; ce n’est pas une API GitLab possédée par ArgoCD.
+- En legacy, l’API Keycloak construisait les chemins des groupes RO/RW par environnement ; le module NestJS ArgoCD ne dépend pas de Keycloak. Vérifier si les chemins sont désormais dérivés localement et compatibles avec le provisioning Keycloak.
+- La fiche [GitLab](../gitlab/README.md) détaille le propriétaire de cette ressource et l’appel consommateur.
+
+## Séquences métier
+
+- **Réconciliation projet** : `project.upsert` → lecture des zones et du projet → lecture/génération des valeurs ArgoCD → lecture ou création du dépôt GitLab → commit des actions. Vault peut être interrogé pour configurer l’accès Vault dans les manifests.
+- **Déprovisionnement** : `project.delete` reçoit le snapshot antérieur à l’archivage → toutes les zones sont parcourues → fichiers `values.yaml` du projet supprimés dans GitLab.
+- Les écouteurs projet s’exécutent en parallèle avec les autres plugins ; chaque résultat est agrégé par `AppEventsService`.
+
+## Contrats cibles recommandés et delta
+
+| Couture observée                                                                                                                                              | Propriétaire cible                                                                   | Contrat recommandé (proposition)                                                                                                                                                           | Garanties                                                                                                                             | Delta                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Appels directs ArgoCD → client GitLab pour chercher le dépôt, lister les fichiers, générer les actions et committer.                                          | GitLab, propriétaire des dépôts et fichiers qu’il héberge.                           | Commandes de domaine comme `upsertDeploymentManifest(zone, project, manifest)` et `deleteDeploymentManifests(project)` ; ArgoCD fournit son intention et ne construit pas d’action GitLab. | Idempotence par projet/zone/chemin ; résultat métier ; erreurs typées GitLab masquées derrière le contrat.                            | Remplacer la dépendance `GitlabClientService` et les formes GitLab exposées par un port de gestion des manifests ; qualifier si la suppression doit être une opération atomique par projet ou zone. Statut : `à arbitrer`. |
+| ArgoCD appelle `VaultClientService` pour fabriquer une donnée de déploiement fondée sur AppRole.                                                              | Vault, propriétaire de la politique et du cycle de vie des identifiants.             | Requête Vault orientée `getDeploymentAccess(project)` qui renvoie uniquement la configuration destinée au consommateur autorisé.                                                           | Ne pas exposer chemins KV, clients, erreurs HTTP ni secrets inutiles ; rotation/reprise définies.                                     | Extraire l’intention métier de l’API générique Vault ; décider quels champs peuvent être rendus dans Git et leur durée de vie. Statut : `à arbitrer`.                                                                      |
+| Le hook ArgoCD historique appelle `KeycloakProjectApi.getEnvGroup(environment)` et caste l’API injectée ; le service NestJS ArgoCD ne dépend pas de Keycloak. | Keycloak possède les groupes de rôle ; ArgoCD possède le manifest qui les référence. | Requête typée `getEnvironmentGroupPaths(project, environment)` ou valeurs d’identité explicitement présentes dans le contrat de provisioning.                                              | Chemins et groupes concordants avec les ressources réellement provisionnées ; aucune assertion `any`/API plugin dans l’orchestrateur. | Comparer chemins legacy et NestJS ; porter un contrat seulement si la divergence est réelle. Statut : `à investiguer`.                                                                                                     |
+| `ProjectWithDetails` est directement la charge commune de synchronisation plugin.                                                                             | Module métier / contrat événementiel partagé.                                        | Événement ou commande typée de réconciliation projet avec snapshot versionné.                                                                                                              | Payload stable, idempotence/rejeu, erreurs agrégées et traçables.                                                                     | Faire évoluer l’événement seulement si les consommateurs cessent d’avoir besoin du snapshot agrégé actuel ; aucun changement de payload recommandé sans besoin démontré.                                                   |
+
+## Preuves et limites
+
+- `argocd.module.ts` importe `GitlabModule` et `VaultModule`.
+- `argocd.service.ts` : constructeur, `handleUpsert`, `handleDelete`, `purgeZone`, `generateDeleteProjectActions`, génération de manifests et configuration d’AppRole.
+- `apps/server-nestjs/src/modules/events/app-events.service.ts` : émission, agrégation, journal et mise à jour du statut.
+- `plugins/argocd/src/functions.ts` consomme `GitlabProjectApi` et `VaultProjectApi` pour gérer manifests/URLs et valeurs Vault, et appelle `(keycloakApi as any).getEnvGroup(environment.name)` pour les chemins RO/RW. `plugins/argocd/src/utils.ts` caste aussi l’API injectée GitLab et `apis.vault` vers `any`.
+- `plugins/argocd/src/env.d.ts` référence les trois plugins ; l’appel `getEnvGroup` prouve un usage runtime Keycloak malgré l’absence d’un import de type dans ce fichier. Le module NestJS ArgoCD n’importe pas Keycloak.
