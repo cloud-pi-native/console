@@ -5,8 +5,9 @@ description:
   naming consensus, client-service verb vocabulary, layer discipline,
   fixture shape, and migration parity rules for apps/server-nestjs and
   nginx routing (references/migration-parity.md)."
-version: 1.2.0
 license: Apache-2.0
+metadata:
+  version: 1.2.0
 ---
 
 # Console code authoring
