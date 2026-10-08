@@ -6,6 +6,7 @@ import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import { faker } from '@faker-js/faker'
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   InternalServerErrorException,
   NotFoundException,
@@ -486,6 +487,10 @@ describe('projectService', () => {
         userId: requestorId,
         requestId,
       })
+      // invariant: emit happens before any database write
+      expect(appEvents.emitProjectEvent.mock.invocationCallOrder[0]).toBeLessThan(
+        tx.project.update.mock.invocationCallOrder[0],
+      )
       expect(tx.repository.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(tx.environment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
       expect(tx.deployment.deleteMany).toHaveBeenCalledWith({ where: { projectId } })
@@ -506,13 +511,28 @@ describe('projectService', () => {
       const pwd = makeProjectWithDetails({ id: projectId })
       prisma.project.findUnique.mockResolvedValue(pwd)
       appEvents.emitProjectEvent.mockResolvedValue({
-        gitlab: { status: 'KO', message: 'boom', executionTime: 1 },
+        gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: null },
       })
 
       await expect(service.archive(projectId))
         .rejects.toThrow(new UnprocessableEntityException('Echec des services à la suppression du projet'))
 
       expect(prisma.$transaction).not.toHaveBeenCalled()
+    })
+
+    it('refuses to archive a stale snapshot when the row moved during cleanup (concurrent update)', async () => {
+      const projectId = faker.string.uuid()
+      const pwd = makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-01T00:00:00.000Z') })
+      prisma.project.findUnique.mockResolvedValue(pwd)
+      appEvents.emitProjectEvent.mockResolvedValue({})
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-02T00:00:00.000Z') }))
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.archive(projectId))
+        .rejects.toThrow(new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête'))
+
+      expect(tx.project.update).not.toHaveBeenCalled()
     })
 
     it('throws NotFoundException when project does not exist', async () => {
