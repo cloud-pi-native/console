@@ -4,7 +4,7 @@ description:
   "Use when writing or reviewing domain code in cloud-pi-native/console:
   naming consensus, client-service verb vocabulary, layer discipline,
   fixture shape, and migration parity rules for apps/server-nestjs and
-  nginx routing."
+  nginx routing (references/migration-parity.md)."
 version: 1.2.0
 license: Apache-2.0
 ---
@@ -137,19 +137,8 @@ would rotate it every sync (`ensureAuthApproleRoleSecretId`).
 
 ## Migration parity (strangler-fig)
 
-- `apps/server` is frozen: read-only reference, never edited.
-- Every `eventEmitter.emitAsync('<entity>.<verb>')` needs a matching
-  `@OnEvent` consumer bridging to `capturePluginResult`; the Fastify->Nest
-  break is silent — group syncs stop at cutover without it.
-- `@ts-rest` contracts in `packages/shared` must stay in sync: changing one
-  side without the other compiles fine and breaks at runtime.
-- nginx `routing.conf` order matters: specific locations (e.g.
-  `/api/v1/stages`) above the `/api/` catch-all; upstreams `server-legacy` /
-  `server-nestjs`.
-- BigInt permission bitmasks (`ProjectAuthorized`/`AdminAuthorized`) are
-  never downcast to number.
-- `crypto.ts` unsalted sha256 token hash is intentional (cross-server
-  compatibility): do not "fix" it, including for CodeQL.
+Rules for porting behaviour between `apps/server` and `apps/server-nestjs`
+live in [references/migration-parity.md](references/migration-parity.md).
 
 ## Realigning an open branch
 
