@@ -156,3 +156,8 @@ Playwright E2E needs Docker and is judged in CI, not locally.
   shape `{ id, adminRoleIds, type }` is not `AdminTokenRecord['owner']`.
 - `ZodValidationPipe` collapses to a bare string message when all issues
   share one, matching legacy `parseZodError` 400 bodies.
+
+## See also
+
+`cpn-create-skill` (authoring this skill's format) · `cpn-commit` · `cpn-pr` ·
+`cpn-review` (applying these rules in review).
