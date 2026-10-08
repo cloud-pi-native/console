@@ -179,7 +179,13 @@ export class AppEventsService {
 
     if (failed.length) {
       this.logger.warn(`${event} marked project as failed (projectId=${projectId}, failed=${failed.join(',')})`)
-      await this.prisma.project.update({ where: { id: projectId }, data: { status: 'failed' } })
+      // Never overwrite `archived`: a replayed `project.delete` on an already
+      // archived project is a retry of a cleanup that finished since, and its
+      // stale KO must not resurrect the row.
+      await this.prisma.project.updateMany({
+        where: { id: projectId, status: { not: 'archived' } },
+        data: { status: 'failed' },
+      })
       return
     }
 

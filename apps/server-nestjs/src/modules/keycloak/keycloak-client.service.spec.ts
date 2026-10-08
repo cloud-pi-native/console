@@ -309,6 +309,18 @@ describe('deleteGroup', () => {
 
     await expect(service.deleteGroup('gone-id')).resolves.toBeUndefined()
   })
+
+  it('should swallow a 500 on delete when the group is gone on re-fetch (concurrent deletion)', async () => {
+    // Keycloak 26.7.0 answers 500 unknown_error instead of 404 when the deletion
+    // races another deletion of the same group
+    server.use(
+      http.get(childrenUrl, () => HttpResponse.json([])),
+      http.delete(groupUrl, () => HttpResponse.json({ error: 'unknown_error' }, { status: 500 })),
+      http.get(groupUrl, () => HttpResponse.json({ error: 'Not found' }, { status: 404 })),
+    )
+
+    await expect(service.deleteGroup('raced-id')).resolves.toBeUndefined()
+  })
 })
 
 describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
