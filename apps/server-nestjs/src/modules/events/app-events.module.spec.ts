@@ -1,6 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { AdminRoleEventPayload } from './app-events.service'
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -14,8 +13,9 @@ import { KeycloakDatastoreService } from '../keycloak/keycloak-datastore.service
 import { makeGroupRepresentation } from '../keycloak/keycloak-testing.utils'
 import { KeycloakService } from '../keycloak/keycloak.service'
 import { VaultClientService } from '../vault/vault-client.service'
+import { makeAdminRoleEventMember, makeAdminRoleEventPayload } from './app-events-testing.utils'
 
-describe('adminRole event chain', () => {
+describe('appEventsModule', () => {
   let eventEmitter: EventEmitter2
   let keycloak: DeepMockProxy<KeycloakClientService>
   let gitlab: DeepMockProxy<GitlabClientService>
@@ -55,11 +55,18 @@ describe('adminRole event chain', () => {
   })
 
   it('delivers the canonical AdminRoleEventPayload to both consumers on adminRole.upsert', async () => {
-    const payload: AdminRoleEventPayload = {
+    const payload = makeAdminRoleEventPayload({
       id: 'role-1',
       oidcGroup: '/console/admin',
-      members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }],
-    }
+      members: [
+        makeAdminRoleEventMember({
+          id: 'u1',
+          email: 'a@b.c',
+          firstName: 'A',
+          lastName: 'B',
+        }),
+      ],
+    })
 
     const results = await eventEmitter.emitAsync('adminRole.upsert', payload)
 
