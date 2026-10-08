@@ -4,7 +4,7 @@ import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
-import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsService } from '../events/app-events.service'
@@ -212,7 +212,16 @@ export class ProjectService {
       await this.prisma.$transaction(async (tx) => {
         const loaded = await getProject(tx, projectId)
         if (!loaded) throw new NotFoundException('Projet introuvable')
-        if (loaded.status === 'archived') return
+        if (loaded.status === 'archived') {
+          this.logger.warn(`project already archived (projectId=${projectId}), answering 204 without writing`)
+          return
+        }
+        // The cleanup ran against a snapshot taken before the emit. If the row moved
+        // since (concurrent update), resources were reconciled behind the cleanup:
+        // refuse to archive a stale snapshot, the DELETE is replayable.
+        if (loaded.updatedAt.getTime() !== project.updatedAt.getTime()) {
+          throw new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête')
+        }
 
         await deleteProjectDependencies(tx, projectId)
 
