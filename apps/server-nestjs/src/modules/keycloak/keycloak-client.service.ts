@@ -101,9 +101,18 @@ export class KeycloakClientService implements OnModuleInit {
       await this.client.groups.del({ id })
     } catch (err) {
       // The group may already be gone (deleted concurrently or pruned in a
-      // prior pass); a 404 is not a failure worth surfacing to the caller.
-      if (getErrorResponseStatus(err) !== 404) throw err
-      this.logger.warn(`Keycloak group ${id} was already deleted; skipping`)
+      // prior pass). Keycloak answers 404 in the simple case but can also
+      // answer 500 unknown_error when the deletion races another one, so a
+      // 500 is only fatal if the group still resolves on re-fetch.
+      if (getErrorResponseStatus(err) === 404) {
+        this.logger.warn(`Keycloak group ${id} was already deleted; skipping`)
+        return
+      }
+      if (getErrorResponseStatus(err) === 500 && !(await this.client.groups.findOne({ id }))) {
+        this.logger.warn(`Keycloak group ${id} was deleted concurrently (500 on delete, gone on re-fetch); skipping`)
+        return
+      }
+      throw err
     }
   }
 
