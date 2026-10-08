@@ -774,8 +774,6 @@ describe('gitlabService', () => {
 
   describe('handleAdminRoleDelete', () => {
     it('should clear the admin flag on revoke', async () => {
-      gitlab.getUserByEmail.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
-
       await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
         oidcGroup: '/console/admin',
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
@@ -784,15 +782,13 @@ describe('gitlabService', () => {
       expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })
 
-    it('should skip absent GitLab accounts instead of provisioning them', async () => {
-      gitlab.getUserByEmail.mockResolvedValue(null)
-
+    it('should provision absent GitLab members on revoke', async () => {
       await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
         oidcGroup: '/console/admin',
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'ghost@b.c' })],
       }))
 
-      expect(gitlab.upsertUser).not.toHaveBeenCalled()
+      expect(gitlab.upsertUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })
   })
 })
