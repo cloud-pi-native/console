@@ -1,5 +1,25 @@
 # Changelog
 
+## [9.27.0-rc.2](https://github.com/cloud-pi-native/console/compare/v9.27.0-rc.1...v9.27.0-rc.2) (2026-10-08)
+
+
+### Features
+
+* **nginx-strangler:** route /api/v1/admin/roles to server-nestjs ([ae914db](https://github.com/cloud-pi-native/console/commit/ae914dbba2db57dfeec0483178ae2de25ca13fb9)), closes [#2781](https://github.com/cloud-pi-native/console/issues/2781)
+* **server-nestjs:** consume adminRole events in keycloak and gitlab modules ([c8323dc](https://github.com/cloud-pi-native/console/commit/c8323dc0f12acb71ac62f27eb04905f685f9d0e6)), closes [#2723](https://github.com/cloud-pi-native/console/issues/2723)
+
+
+### Bug Fixes
+
+* **auth:** return oidc-resolved admin role ids in the session payload ([efa5d2a](https://github.com/cloud-pi-native/console/commit/efa5d2a44a17316995c0237a17f66c34b90f4b1e))
+* **server-nestjs:** honor multi-path admin config and skip absent GitLab accounts on revoke ([5b42e89](https://github.com/cloud-pi-native/console/commit/5b42e89d19b691da351b269c14ad9d52739ecbe3))
+* **server-nestjs:** return the refreshed admin role list on create ([3c44126](https://github.com/cloud-pi-native/console/commit/3c44126cec20a664dabd2056a81c9fb4f35bebad))
+
+
+### Refactoring
+
+* **server-nestjs:** sync admin flags on revoke ([2ea9860](https://github.com/cloud-pi-native/console/commit/2ea98607f9f95279ba381af0de99bc3ebe1e2036))
+
 ## [9.27.0-rc.1](https://github.com/cloud-pi-native/console/compare/v9.27.0-rc...v9.27.0-rc.1) (2026-10-06)
 
 
