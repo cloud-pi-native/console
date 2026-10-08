@@ -475,6 +475,7 @@ describe('projectService', () => {
       tx.deployment.deleteMany.mockResolvedValue({ count: 1 })
       tx.project.update.mockResolvedValue(makeProject({ id: projectId }))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
+      prisma.project.update.mockResolvedValue(pwd)
       appEvents.emitProjectEvent.mockResolvedValue({})
 
       const requestId = faker.string.uuid()
@@ -487,7 +488,12 @@ describe('projectService', () => {
         userId: requestorId,
         requestId,
       })
-      // invariant: emit happens before any database write
+      // invariant: the row is locked before listeners run, and emit happens before
+      // any database write in the archiving transaction
+      expect(prisma.project.update).toHaveBeenCalledWith({ where: { id: projectId }, data: { locked: true } })
+      expect(prisma.project.update.mock.invocationCallOrder[0]).toBeLessThan(
+        appEvents.emitProjectEvent.mock.invocationCallOrder[0],
+      )
       expect(appEvents.emitProjectEvent.mock.invocationCallOrder[0]).toBeLessThan(
         tx.project.update.mock.invocationCallOrder[0],
       )
@@ -506,10 +512,11 @@ describe('projectService', () => {
       )
     })
 
-    it('leaves the project untouched when a listener reports a KO result, so a retry can re-drive cleanup', async () => {
+    it('leaves the project untouched but locked when a listener reports a KO result, so a retry can re-drive cleanup', async () => {
       const projectId = faker.string.uuid()
       const pwd = makeProjectWithDetails({ id: projectId })
       prisma.project.findUnique.mockResolvedValue(pwd)
+      prisma.project.update.mockResolvedValue(pwd)
       appEvents.emitProjectEvent.mockResolvedValue({
         gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: null },
       })
@@ -517,10 +524,11 @@ describe('projectService', () => {
       await expect(service.archive(projectId))
         .rejects.toThrow(new UnprocessableEntityException('Echec des services à la suppression du projet'))
 
+      expect(prisma.project.update).toHaveBeenCalledWith({ where: { id: projectId }, data: { locked: true } })
       expect(prisma.$transaction).not.toHaveBeenCalled()
     })
 
-    it('refuses to archive a stale snapshot when the row moved during cleanup (concurrent update)', async () => {
+    it('keeps the lock set before cleanup when a mutation raced the snapshot (409, no unlock)', async () => {
       const projectId = faker.string.uuid()
       const pwd = makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-01T00:00:00.000Z') })
       prisma.project.findUnique.mockResolvedValue(pwd)
@@ -532,6 +540,7 @@ describe('projectService', () => {
       await expect(service.archive(projectId))
         .rejects.toThrow(new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête'))
 
+      expect(prisma.project.update).toHaveBeenCalledWith({ where: { id: projectId }, data: { locked: true } })
       expect(tx.project.update).not.toHaveBeenCalled()
     })
 
