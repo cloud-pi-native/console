@@ -194,10 +194,19 @@ export class ProjectService {
       if (!project) throw new NotFoundException('Projet introuvable')
       if (project.status === 'archived') throw new BadRequestException('Le projet est archivé')
 
-      // emit before touching the database: listeners clean up resources named after the
-      // intact slug and still see repos and environments; a failed cleanup marks the
-      // project `failed` (AppEventsService) and a new DELETE can retry, listeners are
-      // idempotent (ensure-not-exists), the row was never renamed nor locked
+      // Serialize external cleanup against project mutations: setting `locked` before
+      // the emit fences every mutating route (`@RequireProjectLocked(false)` and the
+      // in-transaction `locked` re-check in `update`), so no upsert can reconcile
+      // resources behind the cleanup's back. The lock persists on a failed cleanup
+      // (`failed` status): the DELETE is replayable, and so is the unlock by an admin.
+      await this.prisma.project.update({ where: { id: projectId }, data: { locked: true } })
+      // emit before touching the rest of the database: listeners clean up resources
+      // named after the intact slug and still see repos and environments; a failed
+      // cleanup marks the project `failed` (AppEventsService) and a new DELETE can
+      // retry, listeners are idempotent (ensure-not-exists), the row was never
+      // renamed. The lock is deliberately never released here: it must also hold on
+      // failure (KO -> 422, conflict -> 409) so no mutation can reconcile resources
+      // between a failed cleanup and its replay.
       const results = await this.appEvents.emitProjectEvent('project.delete', project, {
         action: 'Delete all project resources',
         userId: requestorUserId,
@@ -217,8 +226,9 @@ export class ProjectService {
           return
         }
         // The cleanup ran against a snapshot taken before the emit. If the row moved
-        // since (concurrent update), resources were reconciled behind the cleanup:
-        // refuse to archive a stale snapshot, the DELETE is replayable.
+        // since (concurrent update or a mutation that raced the lock), resources were
+        // reconciled behind the cleanup: refuse to archive a stale snapshot, the
+        // DELETE is replayable.
         if (loaded.updatedAt.getTime() !== project.updatedAt.getTime()) {
           throw new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête')
         }
@@ -234,6 +244,7 @@ export class ProjectService {
           clusters: { set: [] },
         })
       })
+
       span?.setAttribute('project.slug', project.slug)
       this.logger.log(`project.archive completed (projectId=${projectId}, slug=${project.slug})`)
     } catch (error) {
