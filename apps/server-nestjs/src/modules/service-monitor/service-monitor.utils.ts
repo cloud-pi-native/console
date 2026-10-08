@@ -1,4 +1,5 @@
 import { MonitorStatus } from '@cpn-console/shared'
+import { isRecord } from '../../utils/record.utils'
 import { ERROR_MESSAGE } from './service-monitor.constants'
 
 export interface ProbeOutcome {
@@ -10,10 +11,6 @@ export interface ProbeOutcome {
 interface ProbeDetail {
   status: string
   message?: string
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 function isProbeDetail(detail: unknown): detail is ProbeDetail {

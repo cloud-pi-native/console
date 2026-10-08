@@ -3,16 +3,13 @@ import { MonitorStatus } from '@cpn-console/shared'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { isRecord } from '../../utils/record.utils'
 import { REQUEST_ERROR_MESSAGE, SONARQUBE_HEALTH_STATUS } from './sonarqube.constants'
 
 export interface SonarqubeProbeOutcome {
   status: MonitorStatus
   message: string
   cause?: unknown
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 @Injectable()
