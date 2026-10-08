@@ -61,21 +61,29 @@ export class KeycloakJwtService implements AuthProvider {
   ): Promise<UserContext> {
     return this.prisma.$transaction(async (tx) => {
       const user = await upsertUser(tx, payload, makeUserSelect(requirements))
+      const adminContext = await this.maybeAdminContext(tx, payload, user.adminRoleIds ?? [], requirements)
 
       return {
         userId: payload.sub,
-        adminPermissions: await this.maybeAdminPermissions(tx, payload, user.adminRoleIds ?? [], requirements),
+        adminPermissions: adminContext?.adminPermissions,
+        adminRoleIds: adminContext?.adminRoleIds,
         userType: this.maybeUserType(user, requirements),
       }
     })
   }
 
-  private async maybeAdminPermissions(tx: Prisma.TransactionClient, payload: KeycloakPayload, adminRoleIds: string[], requirements?: AuthRequirements) {
+  private async maybeAdminContext(tx: Prisma.TransactionClient, payload: KeycloakPayload, adminRoleIds: string[], requirements?: AuthRequirements) {
     if (!(requirements?.includeAdminRoleIds ?? true)) {
       return undefined
     }
     const matchingAdminRoles = await listMatchingAdminRoles(tx, payload.groups, adminRoleIds)
-    return matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n)
+    const oidcRoleIds = matchingAdminRoles
+      .filter(({ oidcGroup }) => oidcGroup && payload.groups.includes(oidcGroup))
+      .map(({ id }) => id)
+    return {
+      adminPermissions: matchingAdminRoles.reduce((acc, curr) => acc | curr.permissions, 0n),
+      adminRoleIds: [...new Set([...adminRoleIds, ...oidcRoleIds])],
+    }
   }
 
   private maybeUserType(user: UserRecord, requirements?: AuthRequirements) {
