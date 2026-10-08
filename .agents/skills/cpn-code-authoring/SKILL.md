@@ -136,7 +136,7 @@ would rotate it every sync (`ensureAuthApproleRoleSecretId`).
   `appEvents.emitClusterEvent.mockResolvedValue({ keycloak: { status: 'KO',
   message: 'ko' } })`.
 
-## Migration parity (strangler-fig)
+## Migration parity
 
 Rules for porting behaviour between `apps/server` and `apps/server-nestjs`
 live in [references/migration-parity.md](references/migration-parity.md).
