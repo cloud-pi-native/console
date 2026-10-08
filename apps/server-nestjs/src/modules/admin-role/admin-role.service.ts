@@ -12,7 +12,7 @@ import {
   getAdminRoleMemberCounts,
   getRoles,
 } from './admin-role-queries.utils'
-import { toAdminRole, toAdminRoles } from './admin-role.utils'
+import { toAdminRoles } from './admin-role.utils'
 
 @Injectable()
 export class AdminRoleService {
@@ -34,7 +34,7 @@ export class AdminRoleService {
   }
 
   @StartActiveSpan()
-  async create(body: CreateAdminRoleBody): Promise<AdminRole> {
+  async create(body: CreateAdminRoleBody): Promise<AdminRole[]> {
     const span = trace.getActiveSpan()
     this.logger.log(`adminRole.create started (name=${body.name})`)
 
@@ -54,7 +54,9 @@ export class AdminRoleService {
 
     span?.setAttribute('admin_role.id', createdRole.id)
     this.logger.log(`adminRole.create completed (id=${createdRole.id})`)
-    return toAdminRole(createdRole)
+    const roles = await getRoles(this.prisma)
+    span?.setAttribute('admin_role.count', roles.length)
+    return toAdminRoles(roles)
   }
 
   @StartActiveSpan()
