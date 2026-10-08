@@ -14,15 +14,15 @@ import { getFailedPlugins } from '../plugin/plugin.utils'
 import {
   createCluster,
   deleteCluster,
-  generateClusterWhereInput,
+  generateClusterWhere,
   getClusterById,
   getClusterByLabel,
   getClusterDetails,
-  getClusterEnvironments,
   getClusterUsage,
   linkClusterToProjects,
   linkClusterToStages,
   linkZoneToClusters,
+  listClusterEnvironments,
   listClusters,
   syncClusterProjectLinks,
   syncClusterStageLinks,
@@ -43,7 +43,7 @@ export class ClusterService {
   }
 
   private async listClusters(userId?: string): Promise<ClusterListRecord[]> {
-    const where = generateClusterWhereInput(userId)
+    const where = generateClusterWhere(userId)
     return listClusters(this.prisma, where)
   }
 
@@ -56,7 +56,7 @@ export class ClusterService {
   }
 
   async getClusterAssociatedEnvironments(clusterId: string): Promise<ClusterEnvironmentsRecord[]> {
-    return getClusterEnvironments(this.prisma, clusterId)
+    return listClusterEnvironments(this.prisma, clusterId)
   }
 
   async createCluster(
