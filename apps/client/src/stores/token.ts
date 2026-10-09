@@ -1,6 +1,6 @@
 import type {
+  CreatePersonalAccessTokenRequest,
   PersonalAccessToken,
-  personalAccessTokenContract,
 } from '@cpn-console/shared'
 import { defineStore } from 'pinia'
 import { apiClient, extractData } from '../api/xhr-client.js'
@@ -13,7 +13,7 @@ export const useTokenStore = defineStore('token', () => {
   }
 
   const createPersonalAccessToken = async (
-    body: typeof personalAccessTokenContract.createPersonalAccessToken.body._type,
+    body: CreatePersonalAccessTokenRequest,
   ) => {
     return apiClient.PersonalAccessTokens.createPersonalAccessToken({
       body,

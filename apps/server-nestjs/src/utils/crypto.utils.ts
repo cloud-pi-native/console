@@ -26,12 +26,18 @@ export interface TokenPair {
   hash: string
 }
 
+// Unsalting SHA-256 hex digest used to store and look up access tokens.
+// Single source of truth for the token hash format: creation, auth lookup and
+// tests must all go through it. Must stay byte-for-byte identical to the
+// legacy @cpn-console/server implementation (unsalted `sha256(token)`).
+export function hashToken(password: string): string {
+  return createHash('sha256').update(password).digest('hex')
+}
+
 // Generate a secure random access token and its SHA-256 storage hash.
 // The plaintext token is shown to the caller exactly once; only the hash is
-// persisted. This keeps the storage format compatible with the Fastify server
-// (unsalted `sha256(token)` hex digest).
+// persisted.
 export function generateTokenPair(length: number = TOKEN_LENGTH): TokenPair {
   const password = generateRandomPassword(length, TOKEN_ALPHABET)
-  const hash = createHash('sha256').update(password).digest('hex')
-  return { password, hash }
+  return { password, hash: hashToken(password) }
 }
