@@ -26,8 +26,15 @@ An unmet requirement is a reported blocker, never a silent scope change.
 ## Review
 
 1. **Context** — `gh pr view <N> --repo cloud-pi-native/console`: title, body,
-   linked issue; confirm the branch is rebased on `main` and the diff matches
-   the stated scope: `gh pr diff <N> --name-only`.
+   linked issue; review the current PR head and confirm the diff matches the
+   stated scope: `gh pr diff <N> --name-only`. Never report, request or
+   otherwise mention a rebase onto `main` or branch drift in the review
+   verdict or comments, including to state that no action is needed. Never
+   reformulate it as a negative instruction either. Under delivery pressure or
+   an explicit request, report only the verified diff, CI, concrete conflict,
+   behavior issue and Merge Queue status: regular pushes make drift expected
+   and the Merge Queue performs the rebase. Only report a concrete conflict or
+   behavior issue demonstrated by integration.
 2. **High-level** — architecture fit: `apps/server-nestjs` is the only
    modifiable backend target, `apps/server` frozen; API contracts in
    `packages/shared`; hook lifecycle `pre → main → post` with `revert` on
