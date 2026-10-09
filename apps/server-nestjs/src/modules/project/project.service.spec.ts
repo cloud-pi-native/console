@@ -469,13 +469,15 @@ describe('projectService', () => {
       const pwd = makeProjectWithDetails({ id: projectId, name: 'myproject', slug: 'myproject' })
       prisma.project.findUnique.mockResolvedValue(pwd)
       const tx = mockDeep<Prisma.TransactionClient>()
-      tx.project.findUnique.mockResolvedValue(pwd)
       tx.repository.deleteMany.mockResolvedValue({ count: 2 })
       tx.environment.deleteMany.mockResolvedValue({ count: 3 })
       tx.deployment.deleteMany.mockResolvedValue({ count: 1 })
       tx.project.update.mockResolvedValue(makeProject({ id: projectId }))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
-      prisma.project.update.mockResolvedValue(pwd)
+      // the lock write bumps `updatedAt` (@updatedAt); the post-lock row is the
+      // conflict baseline, so the archived row must match it, not the pre-lock snapshot
+      prisma.project.update.mockResolvedValue({ ...pwd, updatedAt: new Date('2026-01-02T00:00:00.000Z') })
+      tx.project.findUnique.mockResolvedValue(makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-02T00:00:00.000Z') }))
       appEvents.emitProjectEvent.mockResolvedValue({})
 
       const requestId = faker.string.uuid()
@@ -532,6 +534,7 @@ describe('projectService', () => {
       const projectId = faker.string.uuid()
       const pwd = makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-01T00:00:00.000Z') })
       prisma.project.findUnique.mockResolvedValue(pwd)
+      prisma.project.update.mockResolvedValue(pwd)
       appEvents.emitProjectEvent.mockResolvedValue({})
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findUnique.mockResolvedValue(makeProjectWithDetails({ id: projectId, updatedAt: new Date('2026-01-02T00:00:00.000Z') }))
