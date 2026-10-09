@@ -14,6 +14,14 @@ La description commence par `Use when`, couvre la capacité et ses déclencheurs
 
 Le corps utilise l’impératif, définit entrées, sorties, décisions, erreurs et vérifications. Garder les instructions courantes dans `SKILL.md`; placer les scripts déterministes dans `scripts/`, les références lourdes dans `references/` et les modèles dans `assets/`. Référencer ces fichiers depuis `SKILL.md` par un chemin relatif direct, sans chaîne de références profonde.
 
+## Pratiques de rédaction
+
+- Ancrer chaque skill dans une exécution réelle : les étapes qui ont fonctionné, les corrections faites, les formats d’entrée et de sortie — jamais un template générique.
+- Divulgation progressive : garder `SKILL.md` sous ~500 lignes ; pousser le détail dans `references/` avec une condition de chargement explicite.
+- Défauts, pas menus : un outil ou une approche par décision ; ne mentionner une alternative que comme échappatoire.
+- Procédures plutôt que déclarations : enseigner comment aborder une classe de problèmes.
+- La section `## Pitfalls` recueille les corrections qui contredisent une intuition ; chaque erreur corrigée par l’agent y est ajoutée.
+
 ## Contrôle
 
 Utiliser `skills-ref validate .agents/skills/<nom>` lorsque la commande existe. Sinon, documenter le contrôle manuel : répertoire égal à `name`, nom conforme, frontmatter YAML lisible, `name` et `description` non vides, ressources référencées présentes et chemins relatifs directs.
