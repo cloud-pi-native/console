@@ -3,7 +3,7 @@ name: cpn-pr
 description:
   "Use when opening or triaging a PR in this repo: French body from the
   template, draft-first, origin-only, review-gated."
-version: 1.0.0
+version: 1.1.0
 license: Apache-2.0
 ---
 
@@ -58,6 +58,8 @@ gh pr create --repo cloud-pi-native/console --draft --base main \
   formatter over it.
 - A literal `@` in prose triggers a user/team mention — wrap it in a code
   span.
+- Reference issues as `#N` when the reference stands alone — it renders as
+  a rich link. Cross-repo references carry `owner/repo#N` or a full URL.
 
 ## Triage after creation
 
