@@ -3,7 +3,7 @@ name: cpn-review
 description:
   "Use when reviewing a PR or reconciling its review threads in this repo:
   severity-tagged French inline findings, DoD ledger, never merge."
-version: 1.0.0
+version: 1.1.0
 license: Apache-2.0
 ---
 
@@ -31,7 +31,10 @@ An unmet requirement is a reported blocker, never a silent scope change.
 2. **High-level** — architecture fit: `apps/server-nestjs` is the only
    modifiable backend target, `apps/server` frozen; API contracts in
    `packages/shared`; hook lifecycle `pre → main → post` with `revert` on
-   failure; permission checks at the router via BigInt bitmasks.
+   failure; permission checks at the router via BigInt bitmasks. Cross-check
+   the diff against related issues/PRs (changed paths, symbols, subject
+   keyphrase) before the verdict: do not re-flag a tradeoff a closed issue
+   already accepted; cite an open issue covering the same change.
 3. **Line-by-line** — YAGNI first: anything deletable or replaceable by the
    stdlib is a finding. A deliberate corner-cut carries a `ponytail:` comment
    naming the ceiling and the upgrade path.
@@ -44,6 +47,15 @@ gh pr review <N> --repo cloud-pi-native/console \
   --request-changes --body "…" # only on blocking/important findings
 gh pr review <N> --repo cloud-pi-native/console --approve --body "…" # otherwise
 ```
+
+A `blocking`/`important` finding qualifies only when it is discrete,
+actionable, introduced by this change, and has a demonstrable call path —
+never pre-existing code or an intentional behavior change. Nothing
+qualifies → state `No findings.`; never invent one. Scan added lines for
+hard-coded secrets, injection, `eval`/`exec`, unsafe deserialization, path
+traversal, XSS — any match is `blocking` regardless of call path. Cite
+evidence as the exact `- old` → `+ new` diff lines or command output in a
+fenced block, never a prose summary of what the output "shows".
 
 Commitlint violations → suggest the corrected conventional message; the
 author amends.
