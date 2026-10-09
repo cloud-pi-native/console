@@ -199,7 +199,7 @@ export class ProjectService {
       // in-transaction `locked` re-check in `update`), so no upsert can reconcile
       // resources behind the cleanup's back. The lock persists on a failed cleanup
       // (`failed` status): the DELETE is replayable, and so is the unlock by an admin.
-      await this.prisma.project.update({ where: { id: projectId }, data: { locked: true } })
+      const locked = await this.prisma.project.update({ where: { id: projectId }, data: { locked: true } })
       // emit before touching the rest of the database: listeners clean up resources
       // named after the intact slug and still see repos and environments; a failed
       // cleanup marks the project `failed` (AppEventsService) and a new DELETE can
@@ -225,11 +225,12 @@ export class ProjectService {
           this.logger.warn(`project already archived (projectId=${projectId}), answering 204 without writing`)
           return
         }
-        // The cleanup ran against a snapshot taken before the emit. If the row moved
-        // since (concurrent update or a mutation that raced the lock), resources were
-        // reconciled behind the cleanup: refuse to archive a stale snapshot, the
-        // DELETE is replayable.
-        if (loaded.updatedAt.getTime() !== project.updatedAt.getTime()) {
+        // The cleanup ran against the row as returned by the lock write. If it
+        // moved since (a mutation that raced the lock), resources were reconciled
+        // behind the cleanup: refuse to archive a stale snapshot, the DELETE is
+        // replayable. The lock write itself bumps `updatedAt` (`@updatedAt`), so
+        // the baseline must be the post-lock row, never the pre-lock snapshot.
+        if (loaded.updatedAt.getTime() !== locked.updatedAt.getTime()) {
           throw new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête')
         }
 
