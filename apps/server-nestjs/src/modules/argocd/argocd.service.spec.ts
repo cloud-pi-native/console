@@ -87,9 +87,9 @@ describe('argoCDService', () => {
       })
 
       const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
-      gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-      gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-      gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+      gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+      gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+      gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
       gitlab.listFiles.mockResolvedValue([])
       gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
       gitlab.maybeCreateCommit.mockResolvedValue(undefined)
@@ -117,7 +117,7 @@ describe('argoCDService', () => {
       })
 
       const error = new Error('GitLab unreachable')
-      gitlab.getOrCreateInfraGroupRepo.mockRejectedValue(error)
+      gitlab.ensureInfraGroupRepo.mockRejectedValue(error)
 
       const result = await service.handleUpsert(mockProject)
 
@@ -148,7 +148,7 @@ describe('argoCDService', () => {
       const zone2InfraProject = makeProjectSchema({ id: 200, http_url_to_repo: 'https://gitlab.internal/infra-2' })
       // The project has no environment left in zone-2, its leftovers must still be purged.
       datastore.getAllZoneSlugs.mockResolvedValue(['zone-1', 'zone-2'])
-      gitlab.getOrCreateInfraGroupRepo.mockImplementation(async zoneSlug =>
+      gitlab.ensureInfraGroupRepo.mockImplementation(async zoneSlug =>
         zoneSlug === 'zone-1' ? zone1InfraProject : zone2InfraProject,
       )
       gitlab.listFiles.mockImplementation(async repo => repo.id === 100
@@ -193,7 +193,7 @@ describe('argoCDService', () => {
         deployments: [],
       })
 
-      gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
+      gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
       gitlab.listFiles.mockResolvedValue([])
 
       const result = await service.handleDelete(mockProject)
@@ -214,7 +214,7 @@ describe('argoCDService', () => {
       })
 
       const error = new Error('GitLab unreachable')
-      gitlab.getOrCreateInfraGroupRepo.mockRejectedValue(error)
+      gitlab.ensureInfraGroupRepo.mockRejectedValue(error)
 
       const result = await service.handleDelete(mockProject)
 
@@ -244,9 +244,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
@@ -438,9 +438,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([
       makeRepositoryTreeSchema(
         { name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' },
@@ -490,9 +490,9 @@ describe('argoCDService', () => {
     // The project no longer has any environment, so the zone must be discovered
     // from the platform zone list rather than from the project's environments.
     datastore.getAllZoneSlugs.mockResolvedValue(['zone-1'])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([
       makeRepositoryTreeSchema(
         { name: 'values.yaml', path: 'Project 1/cluster-1/dev/values.yaml' },
@@ -536,9 +536,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
@@ -581,9 +581,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
@@ -737,9 +737,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
@@ -800,9 +800,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
@@ -837,9 +837,9 @@ describe('argoCDService', () => {
 
     const infraProject = makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' })
     datastore.getAllProjects.mockResolvedValue([mockProject])
-    gitlab.getOrCreateInfraGroupRepo.mockResolvedValue(infraProject)
-    gitlab.getOrCreateProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
-    gitlab.getOrCreateInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(infraProject)
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/infra-repo')
     gitlab.listFiles.mockResolvedValue([])
     vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
     vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')

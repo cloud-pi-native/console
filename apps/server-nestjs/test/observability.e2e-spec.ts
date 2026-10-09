@@ -78,13 +78,13 @@ describeWithObservability('ObservabilityService (e2e)', () => {
     // service, and the dual-bucket regression under test lives entirely in the
     // Keycloak group sync. Keycloak and Postgres stay real.
     const gitlabStub = {
-      upsertProjectGroupSystemRepo: vi.fn(async (slug: string) => ({ id: 42, path: slug })),
+      ensureProjectGroupSystemRepo: vi.fn(async (slug: string) => ({ id: 42, path: slug })),
       generateCreateOrUpdateAction: vi.fn(async () => null),
       maybeCreateCommit: vi.fn(async () => undefined),
-      getOrCreateProjectGroupPublicUrl: vi.fn(async () => 'https://gitlab.example.com'),
-      getOrCreateProjectSubGroup: vi.fn(async (path: string) => ({ id: 43, path })),
+      ensureProjectGroupPublicUrl: vi.fn(async () => 'https://gitlab.example.com'),
+      ensureProjectSubGroup: vi.fn(async (path: string) => ({ id: 43, path })),
       getGroupByPath: vi.fn(async (path: string) => ({ id: 44, path })),
-      getOrCreateInfraGroupRepo: vi.fn(async (slug: string) => ({ id: 45, path: slug })),
+      ensureInfraGroupRepo: vi.fn(async (slug: string) => ({ id: 45, path: slug })),
     }
 
     moduleRef = await Test.createTestingModule({
@@ -94,8 +94,8 @@ describeWithObservability('ObservabilityService (e2e)', () => {
       .useValue(gitlabStub)
       .overrideProvider(ObservabilityClientService)
       .useValue({
-        getOrCreateValuesRepo: vi.fn(async () => ({ id: 1 })),
-        updateProjectConfig: vi.fn(async () => 'updated'),
+        ensureValuesRepo: vi.fn(async () => ({ id: 1 })),
+        ensureProjectConfig: vi.fn(async () => 'updated'),
         deleteProjectConfig: vi.fn(async () => undefined),
       })
       .compile()

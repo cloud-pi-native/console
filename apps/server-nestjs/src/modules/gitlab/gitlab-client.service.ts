@@ -66,64 +66,64 @@ export class GitlabClientService {
   ) {
   }
 
-  async upsertGroupCustomAttribute(groupId: number, key: string, value: string): Promise<void> {
-    this.logger.verbose(`Upserting a GitLab group custom attribute (groupId=${groupId}, key=${key})`)
+  async ensureGroupCustomAttribute(groupId: number, key: string, value: string): Promise<void> {
+    this.logger.verbose(`Ensuring a GitLab group custom attribute (groupId=${groupId}, key=${key})`)
     try {
       await this.client.GroupCustomAttributes.set(groupId, key, value)
     } catch (error) {
-      this.logger.debug(`Failed to upsert a GitLab group custom attribute (groupId=${groupId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(`Failed to ensure a GitLab group custom attribute (groupId=${groupId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
-  async upsertProjectCustomAttribute(projectId: number, key: string, value: string): Promise<void> {
-    this.logger.verbose(`Upserting a GitLab project custom attribute (projectId=${projectId}, key=${key})`)
+  async ensureProjectCustomAttribute(projectId: number, key: string, value: string): Promise<void> {
+    this.logger.verbose(`Ensuring a GitLab project custom attribute (projectId=${projectId}, key=${key})`)
     try {
       await this.client.ProjectCustomAttributes.set(projectId, key, value)
     } catch (error) {
-      this.logger.debug(`Failed to upsert a GitLab project custom attribute (projectId=${projectId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(`Failed to ensure a GitLab project custom attribute (projectId=${projectId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
-  async upsertUserCustomAttribute(userId: number, key: string, value: string): Promise<void> {
-    this.logger.verbose(`Upserting a GitLab user custom attribute (userId=${userId}, key=${key})`)
+  async ensureUserCustomAttribute(userId: number, key: string, value: string): Promise<void> {
+    this.logger.verbose(`Ensuring a GitLab user custom attribute (userId=${userId}, key=${key})`)
     try {
       await this.client.UserCustomAttributes.set(userId, key, value)
     } catch (error) {
-      this.logger.debug(`Failed to upsert a GitLab user custom attribute (userId=${userId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.debug(`Failed to ensure a GitLab user custom attribute (userId=${userId}, key=${key}): ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   private async setManagedUserAttributes(userId: number, cpnUserId: string) {
-    await this.upsertUserCustomAttribute(userId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-    await this.upsertUserCustomAttribute(userId, USER_ID_CUSTOM_ATTRIBUTE_KEY, cpnUserId)
+    await this.ensureUserCustomAttribute(userId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureUserCustomAttribute(userId, USER_ID_CUSTOM_ATTRIBUTE_KEY, cpnUserId)
   }
 
   private async setManagedInfraProjectAttributes(projectId: number) {
-    await this.upsertProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
   }
 
   private async setManagedProjectAttributes(projectId: number, projectSlug: string) {
-    await this.upsertProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
-    await this.upsertProjectCustomAttribute(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
+    await this.ensureProjectCustomAttribute(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureProjectCustomAttribute(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
   }
 
   private async setManagedGroupAttributes(groupId: number) {
-    await this.upsertGroupCustomAttribute(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureGroupCustomAttribute(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
   }
 
   private async setManagedRootGroupAttributes(groupId: number) {
     await this.setManagedGroupAttributes(groupId)
-    await this.upsertGroupCustomAttribute(groupId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureGroupCustomAttribute(groupId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
   }
 
   private async setManagedInfraGroupAttributes(groupId: number) {
     await this.setManagedGroupAttributes(groupId)
-    await this.upsertGroupCustomAttribute(groupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
+    await this.ensureGroupCustomAttribute(groupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
   }
 
   private async setManagedProjectGroupAttributes(groupId: number, projectSlug: string) {
     await this.setManagedGroupAttributes(groupId)
-    await this.upsertGroupCustomAttribute(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
+    await this.ensureGroupCustomAttribute(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
   }
 
   async getGroupByPath(path: string) {
@@ -134,50 +134,43 @@ export class GitlabClientService {
     )
   }
 
+  private async setManagedGroupAttributesByPath(fullPath: string, groupId: number) {
+    if (fullPath === this.config.projectRootDir) {
+      await this.setManagedRootGroupAttributes(groupId)
+    } else if (fullPath === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
+      await this.setManagedInfraGroupAttributes(groupId)
+    } else if (fullPath.startsWith(`${this.config.projectRootDir}/`) && !fullPath.slice(this.config.projectRootDir.length + 1).includes('/')) {
+      await this.setManagedProjectGroupAttributes(groupId, fullPath.slice(this.config.projectRootDir.length + 1))
+    }
+  }
+
   async createGroup(path: string) {
     this.logger.log(`Creating a GitLab group at path ${path}`)
-    try {
-      const created = await this.client.Groups.create(path, path)
-      if (created.full_path === this.config.projectRootDir) {
-        await this.setManagedRootGroupAttributes(created.id)
-      }
-      if (created.full_path === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-        await this.setManagedInfraGroupAttributes(created.id)
-      }
-      return created
-    } catch (error) {
-      if (hasGitbeakerCause(error, 'has already been taken')) {
-        this.logger.warn(`GitLab group already exists (race); reloading ${path}`)
-        const existing = await this.getGroupByPath(path)
-        if (existing) return existing
-      }
-      throw error
-    }
+    return ensure({
+      create: async () => {
+        const created = await this.client.Groups.create(path, path)
+        await this.setManagedGroupAttributesByPath(created.full_path, created.id)
+        return created
+      },
+      reload: () => this.getGroupByPath(path),
+      onCollision: () => this.logger.warn(`GitLab group already exists (race); reloading ${path}`),
+    })
   }
 
   async createSubGroup(parentGroup: GroupSchemaWith<'id' | 'full_path'>, name: string, fullPath: string) {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
-    try {
-      const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
-      if (fullPath === this.config.projectRootDir) {
-        await this.setManagedRootGroupAttributes(created.id)
-      } else if (fullPath === `${this.config.projectRootDir}/${INFRA_GROUP_PATH}`) {
-        await this.setManagedInfraGroupAttributes(created.id)
-      } else if (fullPath.startsWith(`${this.config.projectRootDir}/`) && !fullPath.slice(this.config.projectRootDir.length + 1).includes('/')) {
-        await this.setManagedProjectGroupAttributes(created.id, fullPath.slice(this.config.projectRootDir.length + 1))
-      }
-      return created
-    } catch (error) {
-      if (hasGitbeakerCause(error, 'has already been taken')) {
-        this.logger.warn(`GitLab subgroup already exists (race); reloading ${fullPath}`)
-        const existing = await this.getGroupByPath(fullPath)
-        if (existing) return existing
-      }
-      throw error
-    }
+    return ensure({
+      create: async () => {
+        const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
+        await this.setManagedGroupAttributesByPath(fullPath, created.id)
+        return created
+      },
+      reload: () => this.getGroupByPath(fullPath),
+      onCollision: () => this.logger.warn(`GitLab subgroup already exists (race); reloading ${fullPath}`),
+    })
   }
 
-  async getOrCreateGroupByPath(path: string) {
+  async ensureGroupByPath(path: string) {
     const parts = path.split('/')
     const rootGroupPath = parts.shift()
     if (!rootGroupPath) throw new Error('Invalid projects root dir')
@@ -198,36 +191,36 @@ export class GitlabClientService {
     return parentGroup as GroupSchemaWith<'id'>
   }
 
-  async getOrCreateProjectGroup() {
+  async ensureProjectGroup() {
     if (!this.config.projectRootDir) throw new Error('projectRootDir not configured')
-    return this.getOrCreateGroupByPath(this.config.projectRootDir)
+    return this.ensureGroupByPath(this.config.projectRootDir)
   }
 
-  async getOrCreateProjectSubGroup(subGroupPath: string) {
+  async ensureProjectSubGroup(subGroupPath: string) {
     const fullPath = this.config.projectRootDir
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
-    return this.getOrCreateGroupByPath(fullPath)
+    return this.ensureGroupByPath(fullPath)
   }
 
-  async getOrCreateProjectGroupPublicUrl(): Promise<string> {
-    const projectGroup = await this.getOrCreateProjectGroup()
+  async ensureProjectGroupPublicUrl(): Promise<string> {
+    const projectGroup = await this.ensureProjectGroup()
     return new URL(projectGroup.full_path, this.config.url).toString()
   }
 
-  async getOrCreateInfraGroupRepoPublicUrl(repoName: string): Promise<string> {
-    const projectGroup = await this.getOrCreateProjectGroup()
+  async ensureInfraGroupRepoPublicUrl(repoName: string): Promise<string> {
+    const projectGroup = await this.ensureProjectGroup()
     return new URL(`${projectGroup.full_path}/${INFRA_GROUP_PATH}/${repoName}.git`, this.config.url).toString()
   }
 
-  async getOrCreateProjectGroupInternalRepoUrl(subGroupPath: string, repoName: string): Promise<string> {
-    const projectGroup = await this.getOrCreateProjectSubGroup(subGroupPath)
+  async ensureProjectGroupInternalRepoUrl(subGroupPath: string, repoName: string): Promise<string> {
+    const projectGroup = await this.ensureProjectSubGroup(subGroupPath)
     const urlBase = this.config.internalUrl ?? this.config.url
     if (!urlBase) throw new Error('GITLAB_URL is required')
     return `${urlBase}/${projectGroup.full_path}/${repoName}.git`
   }
 
-  private async getOrCreateRepo(subGroupPath: string, ciConfigPath?: string) {
+  private async ensureRepo(subGroupPath: string, ciConfigPath?: string) {
     const fullPath = this.config.projectRootDir
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
@@ -258,36 +251,33 @@ export class GitlabClientService {
     const parts = subGroupPath.split('/')
     const repoName = parts.pop()
     if (!repoName) throw new Error('Invalid repo path')
-    const parentGroup = await this.getOrCreateProjectSubGroup(parts.join('/'))
-    try {
-      const created = await this.client.Projects.create({
-        name: repoName,
-        path: repoName,
-        namespaceId: parentGroup.id,
-        defaultBranch: defaultBranchName,
-        ciConfigPath,
-      })
-      this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
-      return created
-    } catch (error) {
-      if (hasGitbeakerCause(error, 'has already been taken')) {
-        this.logger.warn(`GitLab project repository already exists (race); reloading ${fullPath}`)
-        const reloaded = await this.client.Projects.show(fullPath)
-        return reloaded
-      }
-      throw error
-    }
+    const parentGroup = await this.ensureProjectSubGroup(parts.join('/'))
+    return ensure({
+      create: async () => {
+        const created = await this.client.Projects.create({
+          name: repoName,
+          path: repoName,
+          namespaceId: parentGroup.id,
+          defaultBranch: defaultBranchName,
+          ciConfigPath,
+        })
+        this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
+        return created
+      },
+      reload: () => this.client.Projects.show(fullPath),
+      onCollision: () => this.logger.warn(`GitLab project repository already exists (race); reloading ${fullPath}`),
+    })
   }
 
-  async getOrCreateProjectGroupRepo(projectSlug: string, subGroupPath: string, ciConfigPath?: string) {
-    const repo = await this.getOrCreateRepo(subGroupPath, ciConfigPath)
+  async ensureProjectGroupRepo(projectSlug: string, subGroupPath: string, ciConfigPath?: string) {
+    const repo = await this.ensureRepo(subGroupPath, ciConfigPath)
     await this.setManagedProjectAttributes(repo.id, projectSlug)
     return repo
   }
 
-  async getOrCreateInfraGroupRepo(path: string) {
+  async ensureInfraGroupRepo(path: string) {
     const fullPath = join(INFRA_GROUP_PATH, path)
-    const repo = await this.getOrCreateRepo(fullPath)
+    const repo = await this.ensureRepo(fullPath)
     await this.setManagedInfraProjectAttributes(repo.id)
     return repo
   }
@@ -391,7 +381,7 @@ export class GitlabClientService {
   }
 
   async getProjectGroup(projectSlug: string): Promise<GroupSchema | undefined> {
-    const parentGroup = await this.getOrCreateProjectGroup()
+    const parentGroup = await this.ensureProjectGroup()
     return await find(
       this.offsetPaginate(opts => this.client.Groups.allSubgroups(parentGroup.id, opts)),
       g => g.name === projectSlug,
@@ -429,33 +419,22 @@ export class GitlabClientService {
 
   async getUserByEmail(email: string) {
     const users = await this.client.Users.all({ search: email, orderBy: 'username' })
-    if (users.length === 0) return null
+    if (users.length === 0) return undefined
     return users[0] as UserSchema
   }
 
   async createUser(user: EditUserOptions) {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
-    try {
-      return await this.client.Users.create({
-        ...user,
-        canCreateGroup: false,
-        forceRandomPassword: true,
-        projectsLimit: 0,
-        skipConfirmation: true,
-      }) as UserSchema
-    } catch (error) {
-      // GitLab auto-provisions users via OIDC, so a 409 means the user already
-      // exists (email index race in getUserByEmail). Return it instead of failing.
-      if (hasGitbeakerCause(error, 'has already been taken')) {
-        const existing = user.email ? await this.getUserByEmail(user.email) : null
-        if (existing) return existing as UserSchema
-        throw error
-      }
-      throw error
-    }
+    return await this.client.Users.create({
+      ...user,
+      canCreateGroup: false,
+      forceRandomPassword: true,
+      projectsLimit: 0,
+      skipConfirmation: true,
+    }) as UserSchema
   }
 
-  async upsertUser(
+  async ensureUser(
     user: Omit<EditUserOptionsWith<'email' | 'username' | 'name'>, 'externUid' | 'provider'>,
     options: { cpnUserId: string },
   ) {
@@ -466,7 +445,13 @@ export class GitlabClientService {
       externUid: user.email,
       provider: 'openid_connect',
     }
-    const gitlabUser = existing ?? await this.createUser(editOptions)
+    // GitLab auto-provisions users via OIDC, so a create 409 means the user already
+    // exists (email index race in getUserByEmail); converge on the existing user.
+    const gitlabUser = existing ?? await ensure({
+      create: () => this.createUser(editOptions),
+      reload: () => this.getUserByEmail(user.email),
+      onCollision: () => this.logger.warn(`GitLab user already exists (race); reloading ${user.email}`),
+    })
 
     if (existing) {
       const hasDiff = Object.entries(editOptions).some(([key, value]) => {
@@ -482,7 +467,7 @@ export class GitlabClientService {
   }
 
   async* getRepos(projectSlug: string) {
-    const group = await this.getOrCreateProjectSubGroup(projectSlug)
+    const group = await this.ensureProjectSubGroup(projectSlug)
     yield* this.getGroupRepos(group.id)
   }
 
@@ -493,10 +478,10 @@ export class GitlabClientService {
     }
   }
 
-  async upsertProjectGroupRepo(projectSlug: string, repoName: string, options: UpsertProjectGroupRepoOptions = {}) {
+  async ensureProjectGroupRepoSettings(projectSlug: string, repoName: string, options: UpsertProjectGroupRepoOptions = {}) {
     const { description, ciConfigPath, extraTopics = [] } = options
     const fullPath = `${projectSlug}/${repoName}`
-    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
+    const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
@@ -511,13 +496,13 @@ export class GitlabClientService {
   // created in the project subgroup but never listed in project.repositories, so the orphan
   // purge must never delete them. They carry the dedicated system-managed topic; any plugin
   // can opt its system repo in by upserting it through this wrapper.
-  async upsertProjectGroupSystemRepo(projectSlug: string, repoName: string, options: Omit<UpsertProjectGroupRepoOptions, 'extraTopics'> = {}) {
-    return this.upsertProjectGroupRepo(projectSlug, repoName, { ...options, extraTopics: [TOPIC_SYSTEM_MANAGED] })
+  async ensureProjectGroupSystemRepo(projectSlug: string, repoName: string, options: Omit<UpsertProjectGroupRepoOptions, 'extraTopics'> = {}) {
+    return this.ensureProjectGroupRepoSettings(projectSlug, repoName, { ...options, extraTopics: [TOPIC_SYSTEM_MANAGED] })
   }
 
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
     const fullPath = `${projectSlug}/${repoName}`
-    const repo = await this.getOrCreateProjectGroupRepo(projectSlug, fullPath)
+    const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath)
     await this.client.Projects.remove(repo.id)
     // GitLab requires the full path (including the projects root group), not the group-relative one.
     return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${fullPath}-deletion_scheduled-${repo.id}` })
@@ -642,8 +627,8 @@ export class GitlabClientService {
     this.logger.verbose(`GitLab mirror bootstrap commit created (repoId=${repoId}, actions=${actions.length})`)
   }
 
-  async upsertProjectMirrorRepo(projectSlug: string) {
-    return this.upsertProjectGroupSystemRepo(projectSlug, MIRROR_REPO_NAME)
+  async ensureProjectMirrorRepo(projectSlug: string) {
+    return this.ensureProjectGroupSystemRepo(projectSlug, MIRROR_REPO_NAME)
   }
 
   async getProjectToken(group: GroupSchemaWith<'id'>, projectSlug: string) {
@@ -689,8 +674,8 @@ export class GitlabClientService {
    * The `mirror` repo id travels with the token: it is what callers persist as
    * `GIT_MIRROR_PROJECT_ID`, and `PipelineTriggerTokenSchema` does not carry it.
    */
-  async getOrCreateMirrorPipelineTriggerToken(projectSlug: string): Promise<PipelineTriggerTokenSchema & { repoId: number }> {
-    const mirrorRepo = await this.upsertProjectMirrorRepo(projectSlug)
+  async ensureMirrorPipelineTriggerToken(projectSlug: string): Promise<PipelineTriggerTokenSchema & { repoId: number }> {
+    const mirrorRepo = await this.ensureProjectMirrorRepo(projectSlug)
     this.logger.verbose(`Resolving a GitLab pipeline trigger token (projectSlug=${projectSlug}, repoId=${mirrorRepo.id})`)
     const currentTriggerToken = await find(
       this.offsetPaginate<PipelineTriggerTokenSchema>(opts => this.client.PipelineTriggerTokens.all(mirrorRepo.id, opts)),

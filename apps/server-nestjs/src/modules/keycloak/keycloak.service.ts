@@ -143,7 +143,7 @@ export class KeycloakService {
     })
     this.logger.verbose(`Reconciling Keycloak project group (${project.slug}): members=${project.members.length} roles=${project.roles.length}`)
 
-    const projectGroup = await this.keycloak.getOrCreateGroupByPath(`/${project.slug}`)
+    const projectGroup = await this.keycloak.ensureGroupByPath(`/${project.slug}`)
 
     span?.setAttribute('keycloak.project_group.id', projectGroup.id)
 
@@ -158,7 +158,7 @@ export class KeycloakService {
   private async ensureConsoleGroup(project: ProjectWithDetails, group: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.console_group.id', group.id)
-    const consoleGroup = await this.keycloak.getOrCreateConsoleGroup(group)
+    const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await Promise.all([
       this.ensureRoleGroups(project, consoleGroup),
@@ -194,7 +194,7 @@ export class KeycloakService {
     if (!roleGroupPath || isExternalRoleType(role.type)) return
 
     span?.setAttribute('keycloak.group.path', roleGroupPath)
-    const roleGroup = await this.keycloak.getOrCreateGroupByPath(roleGroupPath)
+    const roleGroup = await this.keycloak.ensureGroupByPath(roleGroupPath)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
 
     const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
@@ -357,7 +357,7 @@ export class KeycloakService {
     span?.setAttribute('role.oidc_group.depth', splitGroupPath(role.oidcGroup).length)
 
     const relativeOidcGroup = toRoleRelativeGroupPath(role, group)
-    const roleGroup = await this.keycloak.getOrCreateRoleGroup(group, relativeOidcGroup)
+    const roleGroup = await this.keycloak.ensureRoleGroup(group, relativeOidcGroup)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
     span?.setAttribute('keycloak.group.path', roleGroup.path)
 
@@ -472,7 +472,7 @@ export class KeycloakService {
       'project.roles.count': project.roles.length,
     })
 
-    const { roGroup, rwGroup } = await this.keycloak.getOrCreateEnvironmentGroups(group, environment)
+    const { roGroup, rwGroup } = await this.keycloak.ensureEnvironmentGroups(group, environment)
 
     span?.setAttribute('keycloak.env_group.ro.id', roGroup.id)
     span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)

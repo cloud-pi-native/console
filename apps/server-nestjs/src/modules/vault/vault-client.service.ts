@@ -181,7 +181,7 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async upsertKvData<T = any>(kvName: string, path: string, body: { data: T }): Promise<void> {
+  async ensureKvData<T = any>(kvName: string, path: string, body: { data: T }): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.kv.name', kvName)
     span?.setAttribute('vault.kv.path', path)
@@ -218,7 +218,7 @@ export class VaultClientService {
   @StartActiveSpan()
   async write<T = any>(data: T, path: string): Promise<void> {
     this.logger.debug(`Writing Vault KV secret at ${path}`)
-    await this.upsertKvData(this.vaultConfig.kvName, path, { data })
+    await this.ensureKvData(this.vaultConfig.kvName, path, { data })
   }
 
   @StartActiveSpan()
@@ -367,8 +367,8 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async upsertSysPoliciesAcl(policyName: string, body: VaultSysPoliciesAclUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault ACL policy ${policyName}`)
+  async ensureSysPoliciesAcl(policyName: string, body: VaultSysPoliciesAclUpsertRequest): Promise<void> {
+    this.logger.verbose(`Ensuring Vault ACL policy ${policyName}`)
     await this.http.fetch(`sys/policies/acl/${policyName}`, { method: 'POST', body })
   }
 
@@ -404,8 +404,8 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async upsertAuthApproleRole(roleName: string, body: VaultAuthApproleRoleUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault AppRole ${roleName} (policies=${body.token_policies.length})`)
+  async ensureAuthApproleRole(roleName: string, body: VaultAuthApproleRoleUpsertRequest): Promise<void> {
+    this.logger.verbose(`Ensuring Vault AppRole ${roleName} (policies=${body.token_policies.length})`)
     await this.http.fetch(`auth/approle/role/${roleName}`, {
       method: 'POST',
       body,
@@ -455,8 +455,8 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async upsertIdentityGroupName(groupName: string, body: VaultIdentityGroupUpsertRequest): Promise<void> {
-    this.logger.verbose(`Upserting Vault identity group ${groupName} (policies=${body.policies.length})`)
+  async ensureIdentityGroupName(groupName: string, body: VaultIdentityGroupUpsertRequest): Promise<void> {
+    this.logger.verbose(`Ensuring Vault identity group ${groupName} (policies=${body.policies.length})`)
     await this.http.fetch(`identity/group/name/${groupName}`, {
       method: 'POST',
       body,

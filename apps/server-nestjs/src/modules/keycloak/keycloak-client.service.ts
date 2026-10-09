@@ -173,7 +173,7 @@ export class KeycloakClientService implements OnModuleInit {
     }
   }
 
-  async getOrCreateGroupByPath(path: string) {
+  async ensureGroupByPath(path: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.path.depth', splitGroupPath(path).length)
     this.logger.verbose(`Ensuring Keycloak group path exists: ${path}`)
@@ -191,7 +191,7 @@ export class KeycloakClientService implements OnModuleInit {
     const [rootName, ...rest] = parts
     let current = await this.ensureGroup(rootName)
     for (const name of rest) {
-      current = await this.getOrCreateSubGroupByName(current.id, name)
+      current = await this.ensureSubGroupByName(current.id, name)
     }
 
     this.logger.log(`Created Keycloak group path ${path} (groupId=${current.id})`)
@@ -199,7 +199,7 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   @StartActiveSpan()
-  async getOrCreateSubGroupByName(parentId: string, name: string) {
+  async ensureSubGroupByName(parentId: string, name: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
     span?.setAttribute('parent.id', parentId)
@@ -218,14 +218,14 @@ export class KeycloakClientService implements OnModuleInit {
     return group
   }
 
-  async getOrCreateConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
+  async ensureConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', projectGroup.id)
     this.logger.verbose(`Ensuring Keycloak console group exists (projectGroupId=${projectGroup.id})`)
-    return this.getOrCreateSubGroupByName(projectGroup.id, CONSOLE_GROUP_NAME)
+    return this.ensureSubGroupByName(projectGroup.id, CONSOLE_GROUP_NAME)
   }
 
-  async getOrCreateRoleGroup(
+  async ensureRoleGroup(
     consoleGroup: GroupRepresentationWithIdNamePath,
     oidcGroup: string,
   ) {
@@ -240,26 +240,26 @@ export class KeycloakClientService implements OnModuleInit {
       throw new Error(`Invalid oidcGroup for project role: "${oidcGroup}"`)
     }
 
-    let current = await this.getOrCreateSubGroupByName(consoleGroup.id, parts[0])
+    let current = await this.ensureSubGroupByName(consoleGroup.id, parts[0])
 
     for (const name of parts.slice(1)) {
-      current = await this.getOrCreateSubGroupByName(current.id, name)
+      current = await this.ensureSubGroupByName(current.id, name)
     }
 
     return current
   }
 
-  async getOrCreateEnvironmentGroups(consoleGroup: GroupRepresentationWith<'id'>, environment: ProjectWithDetails['environments'][number]) {
+  async ensureEnvironmentGroups(consoleGroup: GroupRepresentationWith<'id'>, environment: ProjectWithDetails['environments'][number]) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'keycloak.group.id': consoleGroup.id,
       'environment.id': environment.id,
       'environment.name': environment.name,
     })
-    const envGroup = await this.getOrCreateSubGroupByName(consoleGroup.id, environment.name)
+    const envGroup = await this.ensureSubGroupByName(consoleGroup.id, environment.name)
     const [roGroup, rwGroup] = await Promise.all([
-      this.getOrCreateSubGroupByName(envGroup.id, 'RO'),
-      this.getOrCreateSubGroupByName(envGroup.id, 'RW'),
+      this.ensureSubGroupByName(envGroup.id, 'RO'),
+      this.ensureSubGroupByName(envGroup.id, 'RW'),
     ])
     this.logger.verbose(`Resolved Keycloak environment groups (consoleGroupId=${consoleGroup.id}, env=${environment.name}, envGroupId=${envGroup.id})`)
     return { roGroup, rwGroup }

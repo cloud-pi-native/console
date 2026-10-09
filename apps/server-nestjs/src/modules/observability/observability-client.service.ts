@@ -23,9 +23,9 @@ export class ObservabilityClientService {
   }
 
   @StartActiveSpan()
-  async getOrCreateValuesRepo(): Promise<ProjectSchema> {
+  async ensureValuesRepo(): Promise<ProjectSchema> {
     this.logger.verbose(`Ensuring observability GitLab group ${OBSERVABILITY_GROUP_NAME}`)
-    const group = await this.gitlab.getOrCreateGroupByPath(OBSERVABILITY_GROUP_NAME)
+    const group = await this.gitlab.ensureGroupByPath(OBSERVABILITY_GROUP_NAME)
 
     for await (const repo of this.gitlab.getGroupRepos(group.id)) {
       if (repo.name === OBSERVABILITY_REPO_NAME) {
@@ -74,7 +74,7 @@ export class ObservabilityClientService {
   }
 
   @StartActiveSpan()
-  async updateProjectConfig(
+  async ensureProjectConfig(
     repo: CondensedProjectSchemaWith<'id'>,
     project: { id: string, slug: string },
     projectValue: ObservabilityProject,

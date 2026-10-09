@@ -93,7 +93,7 @@ export class ArgoCDService {
   private async purgeZone(project: ProjectWithDetails, zoneSlug: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
     span?.setAttributes({
       'argocd.repo.id': infraProject.id,
       'argocd.repo.path': infraProject.path_with_namespace,
@@ -182,7 +182,7 @@ export class ArgoCDService {
   ): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
     span?.setAttributes({
       'argocd.repo.id': infraProject.id,
       'argocd.repo.path': infraProject.path_with_namespace,
@@ -299,7 +299,7 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
       project,
@@ -372,7 +372,7 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
       project,

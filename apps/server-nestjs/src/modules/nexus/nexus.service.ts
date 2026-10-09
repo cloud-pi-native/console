@@ -167,7 +167,7 @@ export class NexusService {
     await this.ensureProjectGroupRoles(project, { readOnlyPrivileges, writePrivileges: privileges })
   }
 
-  private async upsertPrivilege(body: NexusPrivilege) {
+  private async ensurePrivilege(body: NexusPrivilege) {
     const existing = await this.client.getSecurityPrivileges(body.name)
     if (!existing) {
       await this.client.ensureSecurityPrivilegesRepositoryView(body)
@@ -236,7 +236,7 @@ export class NexusService {
       await this.client.ensureRepositoriesNpmGroup(body)
       return
     }
-    await this.client.putRepositoriesNpmGroup(repoName, body)
+    await this.client.updateRepositoriesNpmGroup(repoName, body)
   }
 
   private async ensureMavenHostedRepos(args: {
@@ -331,7 +331,7 @@ export class NexusService {
     actions: string[]
   }) {
     for (const entry of args.entries) {
-      await this.upsertPrivilege({
+      await this.ensurePrivilege({
         type: args.type,
         name: entry.privilege,
         description: `Privilege for organization ${args.project.slug} for repo ${entry.repo}`,

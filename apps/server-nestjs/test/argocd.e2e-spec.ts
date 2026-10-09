@@ -201,7 +201,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
         throw error
       }
 
-      const infraGroup = await gitlab.getOrCreateProjectSubGroup('infra')
+      const infraGroup = await gitlab.ensureProjectSubGroup('infra')
       const created = await gitlabClient.Projects.create({
         name: zoneSlug,
         path: zoneSlug,
@@ -246,7 +246,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
       select: projectSelect,
     })
 
-    const infraProject = await gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await gitlab.ensureInfraGroupRepo(zoneSlug)
     infraRepoId = infraProject.id
 
     const staleFilePath = `${project.name}/${clusterLabel}/stale/values.yaml`
@@ -277,7 +277,7 @@ describeWithArgoCD('ArgoCDService (e2e)', () => {
       select: projectSelect,
     })
 
-    const infraProject = await gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await gitlab.ensureInfraGroupRepo(zoneSlug)
     infraRepoId = infraProject.id
 
     const devFilePath = `${before.name}/${clusterLabel}/${envDevName}/values.yaml`

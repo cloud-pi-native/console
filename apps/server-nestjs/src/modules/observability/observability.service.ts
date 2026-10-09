@@ -100,7 +100,7 @@ export class ObservabilityService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Ensuring observability project repository for ${project.slug}`)
-    await this.gitlab.upsertProjectGroupSystemRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    await this.gitlab.ensureProjectGroupSystemRepo(project.slug, OBSERVABILITY_REPOSITORY)
   }
 
   @StartActiveSpan()
@@ -114,7 +114,7 @@ export class ObservabilityService {
   }
 
   private async syncChartFiles(project: ProjectWithDetails) {
-    const projectRepo = await this.gitlab.upsertProjectGroupSystemRepo(project.slug, OBSERVABILITY_REPOSITORY)
+    const projectRepo = await this.gitlab.ensureProjectGroupSystemRepo(project.slug, OBSERVABILITY_REPOSITORY)
     const actions = await this.buildChartActions(projectRepo)
     await this.gitlab.maybeCreateCommit(projectRepo, 'ci: :robot_face: Sync observability chart', actions)
   }
@@ -126,8 +126,8 @@ export class ObservabilityService {
   }
 
   private async syncValuesFile(project: ProjectWithDetails) {
-    const valuesRepo = await this.client.getOrCreateValuesRepo()
-    const repositoryUrl = await this.gitlab.getOrCreateProjectGroupPublicUrl()
+    const valuesRepo = await this.client.ensureValuesRepo()
+    const repositoryUrl = await this.gitlab.ensureProjectGroupPublicUrl()
     const projectGroupPath = generateKeycloakRootGroupPath(project)
 
     const projectValue = generateObservabilityProject(project, {
@@ -136,7 +136,7 @@ export class ObservabilityService {
       tenantRbacHProd: generateGrafanaHprodRbacGroupPaths(projectGroupPath),
     })
 
-    await this.client.updateProjectConfig(valuesRepo, project, projectValue)
+    await this.client.ensureProjectConfig(valuesRepo, project, projectValue)
   }
 
   @StartActiveSpan()
@@ -144,7 +144,7 @@ export class ObservabilityService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Deleting observability Helm config for ${project.slug}`)
-    const valuesRepo = await this.client.getOrCreateValuesRepo()
+    const valuesRepo = await this.client.ensureValuesRepo()
     await this.client.deleteProjectConfig(valuesRepo, project)
   }
 
@@ -186,7 +186,7 @@ export class ObservabilityService {
 
     const result = {} as Record<GrafanaSubGroupName, { id: string, members: { id: string }[] }>
     for (const name of grafanaRbacSubGroupNames()) {
-      const group = await this.keycloak.getOrCreateSubGroupByName(grafanaGroup.id!, name)
+      const group = await this.keycloak.ensureSubGroupByName(grafanaGroup.id!, name)
       const members = await this.keycloak.getGroupMembers(group.id!)
       result[name] = {
         id: group.id!,
@@ -202,7 +202,7 @@ export class ObservabilityService {
         return { id: subgroup.id }
       }
     }
-    return this.keycloak.getOrCreateSubGroupByName(parentId, name)
+    return this.keycloak.ensureSubGroupByName(parentId, name)
   }
 
   private async* findGrafanaSubGroups(projectGroupId: string): AsyncGenerator<{ id: string }> {

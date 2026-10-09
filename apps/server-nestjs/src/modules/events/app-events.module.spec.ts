@@ -22,11 +22,11 @@ describe('appEventsModule', () => {
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
-      getOrCreateGroupByPath: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'kc-group-id', name: 'admin' })),
+      ensureGroupByPath: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'kc-group-id', name: 'admin' })),
       getGroupMembers: vi.fn().mockResolvedValue([]),
     })
     gitlab = mockDeep<GitlabClientService>({
-      upsertUser: vi.fn().mockResolvedValue({ id: 1 }),
+      ensureUser: vi.fn().mockResolvedValue({ id: 1 }),
     })
 
     const moduleRef = await Test.createTestingModule({
@@ -70,10 +70,10 @@ describe('appEventsModule', () => {
 
     const results = await eventEmitter.emitAsync('adminRole.upsert', payload)
 
-    expect(keycloak.getOrCreateGroupByPath).toHaveBeenCalledWith('/console/admin')
+    expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/console/admin')
     expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
 
-    expect(gitlab.upsertUser).toHaveBeenCalledWith(
+    expect(gitlab.ensureUser).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'a@b.c', admin: true }),
       { cpnUserId: 'u1' },
     )

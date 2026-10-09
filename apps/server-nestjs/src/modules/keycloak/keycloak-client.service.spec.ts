@@ -162,7 +162,7 @@ describe('keycloakClientService authentication lifecycle', () => {
   })
 })
 
-describe('getOrCreateSubGroupByName', () => {
+describe('ensureSubGroupByName', () => {
   let module: TestingModule
   let service: KeycloakClientService
 
@@ -188,7 +188,7 @@ describe('getOrCreateSubGroupByName', () => {
       }),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toMatchObject({ id: 'sub-id', name: 'sub', path: '/parent/sub' })
   })
@@ -207,7 +207,7 @@ describe('getOrCreateSubGroupByName', () => {
       }),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toEqual({ id: 'created-id', name: 'sub', path: '/parent/sub' })
   })
@@ -220,7 +220,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toMatchObject({ id: 'concurrent-id', name: 'sub' })
   })
@@ -232,7 +232,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('Sibling group named')
+    await expect(service.ensureSubGroupByName('parent-id', 'sub')).rejects.toThrow('Sibling group named')
   })
 
   it('should rethrow non-409 errors without re-fetching', async () => {
@@ -246,7 +246,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ error: 'unauthorized' }, { status: 401 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('unauthorized')
+    await expect(service.ensureSubGroupByName('parent-id', 'sub')).rejects.toThrow('unauthorized')
     expect(listCalls).toBe(1)
   })
 })
@@ -311,7 +311,7 @@ describe('deleteGroup', () => {
   })
 })
 
-describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
+describe('ensureGroupByPath root resolution (issue #2518)', () => {
   let module: TestingModule
   let service: KeycloakClientService
 
@@ -342,7 +342,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'root-id', path: '/myproject' })
   })
@@ -366,7 +366,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'created-id', path: '/myproject' })
   })
@@ -383,7 +383,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'concurrent-root-id', path: '/myproject' })
   })
