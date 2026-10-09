@@ -14,7 +14,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { NEXUS_CONFIG_KEY_ACTIVATE_NPM_REPO, PLUGIN_NAME } from '../src/modules/nexus/nexus.constants'
 import { ProjectServicesModule } from '../src/modules/project-services/project-services.module'
 import { ProjectServicesService } from '../src/modules/project-services/project-services.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunServicesE2E = Boolean(process.env.E2E)
 const describeWithServices = describe.runIf(canRunServicesE2E)
@@ -29,7 +28,7 @@ describeWithServices('ProjectServicesService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectServicesModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectServicesModule],
     }).compile()
 
     await moduleRef.init()

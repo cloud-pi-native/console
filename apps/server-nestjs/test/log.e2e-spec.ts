@@ -12,7 +12,6 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { LogModule } from '../src/modules/log/log.module'
 import { LogService } from '../src/modules/log/log.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunLogE2E
   = Boolean(process.env.E2E)
@@ -32,7 +31,7 @@ describeWithLog('LogService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), LogModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), LogModule, AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

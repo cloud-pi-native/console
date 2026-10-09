@@ -53,11 +53,25 @@ Le mécanisme de surcharge des différentes configurations fonctionne de cette m
 var d'env settée explicitement -> fichier .env.docker (si contexte docker) -> fichier .env.integ (si INTEGRATION=true) -> fichier .env
 ```
 
-## Prégénération des fichiers .env, .env.docker, et .env.integ
+## Transition du legacy Fastify
 
-Un script permet de copier facilement les fichiers `.env*-example` en leur équivalent `.env*`: [`./ci/scripts/init-env.sh`](./ci/scripts/init-env.sh).
+`ci/scripts/init-env.sh` ne sert qu'à `apps/server`, le backend Fastify gelé. Il conserve temporairement ses `.env*` jusqu'à la suppression de ce service.
 
-> Il faut ensuite remplir ces fichiers, car ils ne sont là que simplement copiés avec les valeurs par défaut
+Le client et `server-nestjs` migrent vers `mise` pour la configuration publique et `fnox` pour les secrets : leurs commandes ne génèrent pas de fichier `.env`.
+
+La décision et le registre de variables sont documentés dans [`docs/adr/0001-mise-fnox-environment-management.md`](docs/adr/0001-mise-fnox-environment-management.md) et [`docs/environment-variables.md`](docs/environment-variables.md).
+
+| Cas | Commande |
+| --- | --- |
+| Initialisation locale | `mise run setup` |
+| Infrastructure locale | `mise run dev` |
+| NestJS local | `mise run server-nestjs:dev` |
+| Client local | `mise run client:dev` |
+| Stack Docker locale | `mise run docker:dev` |
+| Intégration hybride | `mise run integ` |
+| CI | `mise -E ci run <tâche>` |
+
+`apps/server` reste la seule exception transitoire à ces commandes, jusqu'à sa suppression.
 
 ## Configuration pour le développement entièrement en local
 

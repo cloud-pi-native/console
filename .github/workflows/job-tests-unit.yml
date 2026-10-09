@@ -31,16 +31,12 @@ jobs:
       - name: Checks-out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-        id: pnpm-install
+      - name: Set up mise tools
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "${{ inputs.NODE_VERSION }}"
+          version: 2026.5.15
+          install: true
+          cache: true
 
       - name: Get pnpm store directory
         id: pnpm-store
@@ -68,7 +64,7 @@ jobs:
       - name: Run unit tests
         run: |
           ./ci/scripts/init-env.sh
-          ./ci/scripts/run-tests.sh -u
+          mise -E ci run test:unit
 
       - name: Upload vitest coverage artifacts
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
@@ -115,16 +111,12 @@ jobs:
           name: unit-tests-coverage
           path: ./coverage
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-        id: pnpm-install
+      - name: Set up mise tools
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
         with:
-          run_install: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version: "${{ inputs.NODE_VERSION }}"
+          version: 2026.5.15
+          install: true
+          cache: true
 
       - name: Get pnpm store directory
         id: pnpm-store
