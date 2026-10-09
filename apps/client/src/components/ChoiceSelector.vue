@@ -1,6 +1,6 @@
 <script lang="ts" setup generic="T extends Record<string, any>, VALUE extends (Extract<keyof T, string>), LABEL extends (Extract<keyof T, string>)">
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = withDefaults(defineProps<{
   options: T[]
@@ -35,6 +35,10 @@ const displayed = {
   selected: computed(() => options.selected.value.filter(option => option[props.labelKey].includes(search.value))),
 }
 
+function emitSelection() {
+  emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
+}
+
 function switchSelection(event: string) {
   const eventValue = event
   if (!eventValue) return
@@ -44,7 +48,7 @@ function switchSelection(event: string) {
   } else {
     selectedValues.value.push(eventValue)
   }
-  emit('update', options.selected.value, options.selected.value.map(option => option[props.valueKey]))
+  emitSelection()
 }
 
 type SwitchMultipleParam = 'notSelected' | 'notSelectedDisplayed' | 'selected' | 'selectedDisplayed'
@@ -58,11 +62,12 @@ function switchMultiple(choice: SwitchMultipleParam) {
   } else if (choice === 'notSelectedDisplayed') {
     displayed.notSelected.value.forEach(option => selectedValues.value.push(option[props.valueKey]))
   }
+  emitSelection()
 }
 
-onBeforeMount(() => {
-  selectedValues.value = props.optionsSelected.map(option => option[props.valueKey])
-})
+watch(() => props.optionsSelected, (selected) => {
+  selectedValues.value = selected.map(option => option[props.valueKey])
+}, { immediate: true })
 
 interface Group {
   tagClass: string
