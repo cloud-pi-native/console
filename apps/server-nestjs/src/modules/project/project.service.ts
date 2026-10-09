@@ -4,13 +4,14 @@ import type { Prisma } from '@prisma/client'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ProjectDataExport, ProjectUpdateContext, ProjectWithDetails } from './project-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
-import { BadRequestException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { LogService } from '../log/log.service'
+import { getFailedPlugins } from '../plugin/plugin.utils'
 import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
@@ -189,10 +190,49 @@ export class ProjectService {
     span?.setAttribute('project.id', projectId)
     this.logger.log(`project.archive started (projectId=${projectId})`)
     try {
-      const project = await this.prisma.$transaction(async (tx) => {
+      const project = await getProject(this.prisma, projectId)
+      if (!project) throw new NotFoundException('Projet introuvable')
+      if (project.status === 'archived') throw new BadRequestException('Le projet est archivé')
+
+      // Serialize external cleanup against project mutations: setting `locked` before
+      // the emit fences every mutating route (`@RequireProjectLocked(false)` and the
+      // in-transaction `locked` re-check in `update`), so no upsert can reconcile
+      // resources behind the cleanup's back. The lock persists on a failed cleanup
+      // (`failed` status): the DELETE is replayable, and so is the unlock by an admin.
+      const locked = await this.prisma.project.update({ where: { id: projectId }, data: { locked: true } })
+      // emit before touching the rest of the database: listeners clean up resources
+      // named after the intact slug and still see repos and environments; a failed
+      // cleanup marks the project `failed` (AppEventsService) and a new DELETE can
+      // retry, listeners are idempotent (ensure-not-exists), the row was never
+      // renamed. The lock is deliberately never released here: it must also hold on
+      // failure (KO -> 422, conflict -> 409) so no mutation can reconcile resources
+      // between a failed cleanup and its replay.
+      const results = await this.appEvents.emitProjectEvent('project.delete', project, {
+        action: 'Delete all project resources',
+        userId: requestorUserId,
+        requestId,
+      })
+      const failed = getFailedPlugins(results)
+      if (failed.length) {
+        this.logger.warn(`project.archive external cleanup failed (projectId=${projectId}, failed=${failed.join(',')})`)
+        throw new UnprocessableEntityException('Echec des services à la suppression du projet')
+      }
+
+      await this.prisma.$transaction(async (tx) => {
         const loaded = await getProject(tx, projectId)
         if (!loaded) throw new NotFoundException('Projet introuvable')
-        if (loaded.status === 'archived') throw new BadRequestException('Le projet est archivé')
+        if (loaded.status === 'archived') {
+          this.logger.warn(`project already archived (projectId=${projectId}), answering 204 without writing`)
+          return
+        }
+        // The cleanup ran against the row as returned by the lock write. If it
+        // moved since (a mutation that raced the lock), resources were reconciled
+        // behind the cleanup: refuse to archive a stale snapshot, the DELETE is
+        // replayable. The lock write itself bumps `updatedAt` (`@updatedAt`), so
+        // the baseline must be the post-lock row, never the pre-lock snapshot.
+        if (loaded.updatedAt.getTime() !== locked.updatedAt.getTime()) {
+          throw new ConflictException('Le projet a été modifié pendant la suppression, rejouez la requête')
+        }
 
         await deleteProjectDependencies(tx, projectId)
 
@@ -204,16 +244,8 @@ export class ProjectService {
           locked: true,
           clusters: { set: [] },
         })
+      })
 
-        return loaded
-      })
-      // pass the pre-archive snapshot: the row was renamed (slug suffixed) in the
-      // transaction above, listeners must clean up resources named after the old slug
-      await this.appEvents.emitProjectEvent('project.delete', project, {
-        action: 'Delete all project resources',
-        userId: requestorUserId,
-        requestId,
-      })
       span?.setAttribute('project.slug', project.slug)
       this.logger.log(`project.archive completed (projectId=${projectId}, slug=${project.slug})`)
     } catch (error) {

@@ -102,8 +102,8 @@ describe('appEventsService', () => {
 
     await service.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
 
-    expect(prisma.project.update).toHaveBeenCalledWith({
-      where: { id: project.id },
+    expect(prisma.project.updateMany).toHaveBeenCalledWith({
+      where: { id: project.id, status: { not: 'archived' } },
       data: { status: 'failed' },
     })
   })
@@ -119,6 +119,20 @@ describe('appEventsService', () => {
     expect(prisma.project.update).toHaveBeenCalledWith({
       where: { id: project.id },
       data: { status: 'created', lastSuccessProvisionningVersion: 'test-version' },
+    })
+  })
+
+  it('does not overwrite an archived project when a replayed delete reports a stale KO', async () => {
+    const project = makeProject({ status: 'archived' })
+    eventEmitter.emitAsync.mockResolvedValue([
+      { keycloak: { status: 'KO', message: 'unknown_error', executionTime: 20, error: new Error('unknown_error') } },
+    ])
+
+    await service.emitProjectEvent('project.delete', project, { action: 'Delete all project resources' })
+
+    expect(prisma.project.updateMany).toHaveBeenCalledWith({
+      where: { id: project.id, status: { not: 'archived' } },
+      data: { status: 'failed' },
     })
   })
 

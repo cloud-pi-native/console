@@ -87,7 +87,7 @@ export class AppEventsService {
    * Pass a project id in the general case: the project is loaded here, after the
    * emitting transaction commits, so every listener sees the same committed state.
    * Pass an already-loaded snapshot when the row no longer reflects what listeners
-   * must act on (e.g. archiving renames the slug before emitting `project.delete`).
+   * must act on (e.g. archiving emits `project.delete` before renaming the slug).
    */
   async emitProjectEvent(
     event: ProjectEventName,
@@ -167,8 +167,9 @@ export class AppEventsService {
   /**
    * Reflects the listeners' outcome on the project row (legacy hooks behavior):
    * any KO result marks the project `failed`; a fully successful upsert marks it
-   * `created` and records the provisioning version. A successful `project.delete`
-   * leaves the `archived` status set when the project was archived.
+   * `created` and records the provisioning version. `project.delete` results are
+   * not written here: at emit time the row is not yet archived, and a success must
+   * leave the status untouched (the archiving transaction owns it).
    */
   private async updateProjectStatus(
     event: ProjectEventName,
@@ -179,7 +180,13 @@ export class AppEventsService {
 
     if (failed.length) {
       this.logger.warn(`${event} marked project as failed (projectId=${projectId}, failed=${failed.join(',')})`)
-      await this.prisma.project.update({ where: { id: projectId }, data: { status: 'failed' } })
+      // Never overwrite `archived`: a replayed `project.delete` on an already
+      // archived project is a retry of a cleanup that finished since, and its
+      // stale KO must not resurrect the row.
+      await this.prisma.project.updateMany({
+        where: { id: projectId, status: { not: 'archived' } },
+        data: { status: 'failed' },
+      })
       return
     }
 
