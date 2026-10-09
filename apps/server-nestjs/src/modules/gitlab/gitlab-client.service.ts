@@ -34,7 +34,7 @@ import {
   TOPIC_SYSTEM_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { ensure, generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isCommitAlreadyApplied, isGitbeakerNotFound, isGitbeakerUnauthorized } from './gitlab.utils'
+import { ensure, generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isCommitAlreadyApplied, isGitbeakerUnauthorized, unlessNotFound } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
@@ -232,16 +232,10 @@ export class GitlabClientService {
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
     this.logger.verbose(`Resolving a GitLab project repository by path ${fullPath}`)
-    try {
-      const existingRepo = await this.client.Projects.show(fullPath)
-      if (existingRepo) {
-        this.logger.verbose(`Found a GitLab project repository (path=${fullPath}, repoId=${existingRepo.id})`)
-        return existingRepo
-      }
-    } catch (error) {
-      if (!isGitbeakerNotFound(error)) {
-        throw error
-      }
+    const existingRepo = await unlessNotFound(() => this.client.Projects.show(fullPath))
+    if (existingRepo) {
+      this.logger.verbose(`Found a GitLab project repository (path=${fullPath}, repoId=${existingRepo.id})`)
+      return existingRepo
     }
     const repo = await find(
       this.offsetPaginate(opts => this.client.Projects.all({
@@ -297,12 +291,7 @@ export class GitlabClientService {
     const fullPath = this.config.projectRootDir
       ? `${this.config.projectRootDir}/${subGroupPath}`
       : subGroupPath
-    try {
-      return await this.client.Projects.show(fullPath)
-    } catch (error) {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    }
+    return unlessNotFound(() => this.client.Projects.show(fullPath))
   }
 
   // Zone infra repo cleanup, ported from plugins/gitlab deleteZone
@@ -314,15 +303,10 @@ export class GitlabClientService {
       return
     }
     await this.client.Projects.remove(repo.id)
-    try {
-      // GitLab requires the full path (including the projects root group), not the group-relative one.
-      return await this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${repo.path_with_namespace}-deletion_scheduled-${repo.id}` })
-    } catch (error) {
-      // The first remove already marked the project for deletion; treat an
-      // already-scheduled/already-deleted project as a completed cleanup.
-      if (isGitbeakerNotFound(error)) return
-      throw error
-    }
+    // GitLab requires the full path (including the projects root group), not the group-relative one.
+    // The first remove already marked the project for deletion; treat an
+    // already-scheduled/already-deleted project as a completed cleanup.
+    return unlessNotFound(() => this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${repo.path_with_namespace}-deletion_scheduled-${repo.id}` }))
   }
 
   async createGroupRepo(groupId: number, repoName: string, description?: string) {
@@ -578,10 +562,7 @@ export class GitlabClientService {
       if (!hasGitbeakerCause(error, 'has already been taken')) throw error
       this.logger.warn(`GitLab group variable already exists (race); reloading (groupId=${groupId}, key=${key})`)
     }
-    const current = await this.client.GroupVariables.show(groupId, key).catch((error) => {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    })
+    const current = await unlessNotFound(() => this.client.GroupVariables.show(groupId, key))
     if (current?.masked === options.masked
       && current.value === value
       && current.protected === options.protected
@@ -618,10 +599,7 @@ export class GitlabClientService {
       if (!hasGitbeakerCause(error, 'has already been taken')) throw error
       this.logger.warn(`GitLab repo variable already exists (race); reloading (repoId=${repoId}, key=${key})`)
     }
-    const current = await this.client.ProjectVariables.show(repoId, key, { filter: { environment_scope: options.environmentScope } }).catch((error) => {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    })
+    const current = await unlessNotFound(() => this.client.ProjectVariables.show(repoId, key, { filter: { environment_scope: options.environmentScope } }))
     if (current?.masked === options.masked
       && current.value === value
       && current.protected === options.protected
@@ -638,10 +616,7 @@ export class GitlabClientService {
   }
 
   async readGroupVariable(groupId: number, key: string) {
-    return this.client.GroupVariables.show(groupId, key).catch((error) => {
-      if (isGitbeakerNotFound(error)) return undefined
-      throw error
-    })
+    return unlessNotFound(() => this.client.GroupVariables.show(groupId, key))
   }
 
   async readProjectVariables(repoId: number, environmentScope: string) {

@@ -68,7 +68,7 @@ describe('zoneService', () => {
         where: { id: zone.id },
         data: { clusters: { connect: [{ id: 'cluster-1' }] } },
       }))
-      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, expect.objectContaining({ action: 'Create zone' }))
+      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug }, expect.objectContaining({ action: 'Create zone' }))
     })
 
     it('creates a zone without clusters', async () => {
@@ -85,7 +85,7 @@ describe('zoneService', () => {
 
       expect(result).toEqual(zone)
       expect(tx.zone.update).not.toHaveBeenCalled()
-      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, expect.anything())
+      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug }, expect.anything())
     })
 
     it('throws when zone slug already exists', async () => {
@@ -135,7 +135,7 @@ describe('zoneService', () => {
 
       expect(result).toEqual(zone)
       expect(prisma.zone.update).toHaveBeenCalledTimes(1)
-      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, expect.objectContaining({ action: 'Update zone' }))
+      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.upsert', { id: zone.id, slug: zone.slug }, expect.objectContaining({ action: 'Update zone' }))
     })
 
     it('throws when zone not found', async () => {
@@ -161,7 +161,7 @@ describe('zoneService', () => {
 
       await service.delete(zone.id, faker.string.uuid(), faker.string.uuid())
 
-      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.delete', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, expect.objectContaining({ action: 'Delete zone' }))
+      expect(appEvents.emitZoneEvent).toHaveBeenCalledWith('zone.delete', { id: zone.id, slug: zone.slug }, expect.objectContaining({ action: 'Delete zone' }))
       expect(prisma.zone.delete).toHaveBeenCalledWith({ where: { id: zone.id } })
     })
 

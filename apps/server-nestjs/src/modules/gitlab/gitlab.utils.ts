@@ -255,6 +255,15 @@ export function isGitbeakerNotFound(error: unknown): error is GitbeakerRequestEr
   return error instanceof GitbeakerRequestError && error.cause?.response?.status === 404
 }
 
+export async function unlessNotFound<T>(fn: () => Promise<T>): Promise<T | undefined> {
+  try {
+    return await fn()
+  } catch (error) {
+    if (isGitbeakerNotFound(error)) return undefined
+    throw error
+  }
+}
+
 export function hasGitbeakerCause(error: unknown, pattern: string | RegExp): error is GitbeakerRequestError {
   if (!(error instanceof GitbeakerRequestError)) return false
   // gitbeaker types `cause.description` as a string but copies the raw GitLab `message` field,

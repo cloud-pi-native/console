@@ -16,7 +16,6 @@ export type RepositoryEventName = 'repository.sync'
 export type ZoneEventName = 'zone.upsert' | 'zone.delete'
 
 export interface ZoneEventPayload {
-  argocdUrl: string
   id: string
   slug: string
 }

@@ -4,14 +4,16 @@ import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
 import { getBaseRoleType, getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import z from 'zod'
 import { getErrorResponseStatus } from '../../utils/http.utils'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
+import { getZoneById } from '../zone/zone-queries.utils'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import { isAdminRole, isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
@@ -24,6 +26,7 @@ export class KeycloakService {
     @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
     @Inject(KeycloakDatastoreService) private readonly datastore: KeycloakDatastoreService,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {
     this.logger.log('KeycloakService initialized')
   }
@@ -69,9 +72,10 @@ export class KeycloakService {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.slug', payload.slug)
     this.logger.log(`Handling a zone upsert event for ${payload.slug}`)
-    const { outcome, clientSecret } = await this.keycloak.upsertZoneClient(payload.slug, payload.argocdUrl)
-    // Persist the effective secret on every run: on 'updated' the client was
-    // just rotated server-side, so the zone KV is always authoritative.
+    const zone = await getZoneById(this.prisma, payload.id)
+    if (!zone) throw new NotFoundException(`Zone ${payload.slug} non trouvée`)
+    const { outcome, clientSecret } = await this.keycloak.upsertZoneClient(payload.slug, zone.argocdUrl)
+    // On 'updated' the secret was just rotated server-side, so always persist.
     await this.vault.upsertKvData(`zone-${payload.slug}`, 'keycloak', { data: { clientSecret } })
     this.logger.log(`Keycloak zone sync completed for ${payload.slug} (${outcome})`)
   }

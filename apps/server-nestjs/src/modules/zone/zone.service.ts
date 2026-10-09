@@ -31,7 +31,7 @@ export class ZoneService {
 
     await this.emitZoneEventAndThrowOnFailure(
       'zone.upsert',
-      { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl },
+      { id: zone.id, slug: zone.slug },
       'Create zone',
       userId,
       requestId,
@@ -50,7 +50,7 @@ export class ZoneService {
       description: data.description ?? null,
     })
 
-    await this.emitZoneEventAndThrowOnFailure('zone.upsert', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, 'Update zone', userId, requestId, 'Echec des services lors de la mise à jour de la zone')
+    await this.emitZoneEventAndThrowOnFailure('zone.upsert', { id: zone.id, slug: zone.slug }, 'Update zone', userId, requestId, 'Echec des services lors de la mise à jour de la zone')
     return zone
   }
 
@@ -63,7 +63,7 @@ export class ZoneService {
     const zone = await getZoneById(this.prisma, zoneId)
     if (!zone) throw new NotFoundException('Zone non trouvée')
 
-    await this.emitZoneEventAndThrowOnFailure('zone.delete', { id: zone.id, slug: zone.slug, argocdUrl: zone.argocdUrl }, 'Delete zone', userId, requestId, 'Echec des services lors de la suppression de la zone')
+    await this.emitZoneEventAndThrowOnFailure('zone.delete', { id: zone.id, slug: zone.slug }, 'Delete zone', userId, requestId, 'Echec des services lors de la suppression de la zone')
     await this.prisma.zone.delete({ where: { id: zoneId } })
   }
 

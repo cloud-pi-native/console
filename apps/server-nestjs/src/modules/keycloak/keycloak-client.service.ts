@@ -125,10 +125,8 @@ export class KeycloakClientService implements OnModuleInit {
     return users[0]
   }
 
-  // Zone ArgoCD OIDC client bridge, ported from plugins/keycloak upsertZone/deleteZone
-  // Resolves the effective client secret so the caller can always persist it:
-  // create seeds ours, update rotates server-side and returns the new value
-  // (heals a run whose vault write failed after creation).
+  // Resolves the effective client secret: create seeds ours, update rotates
+  // server-side and returns the new value.
   async upsertZoneClient(zoneSlug: string, argocdUrl: string): Promise<{ outcome: 'created' | 'updated', clientSecret: string }> {
     const clientId = `argocd-${zoneSlug}-zone`
     const client = {

@@ -3,6 +3,7 @@ import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } fro
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { PrismaService } from '../infrastructure/database/prisma.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
@@ -22,8 +23,10 @@ describe('keycloakService', () => {
   let keycloak: DeepMockProxy<KeycloakClientService>
   let datastore: DeepMockProxy<KeycloakDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
+  let prisma: DeepMockProxy<PrismaService>
 
   beforeEach(async () => {
+    prisma = mockDeep<PrismaService>()
     keycloak = mockDeep<KeycloakClientService>({
       getOrCreateConsoleGroup: vi.fn().mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' })),
       getOrCreateEnvironmentGroups: vi.fn().mockResolvedValue({
@@ -45,6 +48,7 @@ describe('keycloakService', () => {
         { provide: KeycloakClientService, useValue: keycloak },
         { provide: KeycloakDatastoreService, useValue: datastore },
         { provide: VaultClientService, useValue: vault },
+        { provide: PrismaService, useValue: prisma },
       ],
     }).compile()
 
