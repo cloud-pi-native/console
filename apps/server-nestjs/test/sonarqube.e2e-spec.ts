@@ -97,14 +97,14 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   it('should create platform groups during initialization', async () => {
     // init() is triggered by moduleRef.init() via onModuleInit — groups must already exist
-    const [adminResult, readonlyResult, securityResult] = await Promise.all([
+    const [adminResult, readerResult, securityResult] = await Promise.all([
       sonarqubeClient.searchUserGroup({ q: '/console/admin' }),
-      sonarqubeClient.searchUserGroup({ q: '/console/readonly' }),
+      sonarqubeClient.searchUserGroup({ q: '/console/reader' }),
       sonarqubeClient.searchUserGroup({ q: '/console/security' }),
     ])
 
     expect(adminResult.groups.some(g => g.name === '/console/admin')).toBe(true)
-    expect(readonlyResult.groups.some(g => g.name === '/console/readonly')).toBe(true)
+    expect(readerResult.groups.some(g => g.name === '/console/reader')).toBe(true)
     expect(securityResult.groups.some(g => g.name === '/console/security')).toBe(true)
   })
 
@@ -146,7 +146,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
       `/${testProjectSlug}/console/devops`,
       `/${testProjectSlug}/console/developer`,
       `/${testProjectSlug}/console/security`,
-      `/${testProjectSlug}/console/readonly`,
+      `/${testProjectSlug}/console/reader`,
     ]
     for (const groupName of projectGroupNames) {
       const result = await sonarqubeClient.searchUserGroup({ q: groupName })

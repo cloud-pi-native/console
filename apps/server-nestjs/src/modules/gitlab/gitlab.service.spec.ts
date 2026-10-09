@@ -292,7 +292,7 @@ describe('gitlabService', () => {
       const project = makeProjectWithDetails({
         slug: 'project-1',
         roles: [
-          { id: 'r-reporter', oidcGroup: '/project-1/console/readonly' },
+          { id: 'r-reporter', oidcGroup: '/project-1/console/reader' },
           { id: 'r-developer', oidcGroup: '/project-1/console/developer' },
           { id: 'r-devops', oidcGroup: '/project-1/console/devops' },
           { id: 'r-maintainer', oidcGroup: '/project-1/console/admin' },
@@ -440,12 +440,12 @@ describe('gitlabService', () => {
 
       datastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
         if (key === 'adminGroupPath') return '/console/admin'
-        if (key === 'auditorGroupPath') return '/console/readonly'
+        if (key === 'auditorGroupPath') return '/console/reader'
         return null
       })
       datastore.getAdminRolesByOidcGroups.mockResolvedValue([
         { id: 'admin-role-id', oidcGroup: '/console/admin' },
-        { id: 'auditor-role-id', oidcGroup: '/console/readonly' },
+        { id: 'auditor-role-id', oidcGroup: '/console/reader' },
       ])
 
       gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
@@ -489,7 +489,7 @@ describe('gitlabService', () => {
 
       datastore.getAdminRolesByOidcGroups.mockResolvedValue([
         { id: 'admin-role-id', oidcGroup: '/console/admin' },
-        { id: 'readonly-role-id', oidcGroup: '/console/readonly' },
+        { id: 'readonly-role-id', oidcGroup: '/console/reader' },
         { id: 'security-role-id', oidcGroup: '/console/security' },
       ])
 
@@ -509,7 +509,7 @@ describe('gitlabService', () => {
 
       await service.handleUpsert(project)
 
-      expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/readonly', '/console/security'])
+      expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/reader', '/console/security'])
       expect(gitlab.upsertUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'security@example.com', auditor: true }),
         expect.objectContaining({ cpnUserId: 'u1' }),
