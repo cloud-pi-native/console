@@ -1,6 +1,8 @@
 import type Zod from 'zod'
 import { z } from 'zod'
 
+import { CoerceBooleanSchema } from './_utils.js'
+
 export const ClusterPrivacySchema = z.enum(['public', 'dedicated'])
 
 export const clusterLabelValidationMessage = 'Le nom du cluster doit contenir uniquement des lettres minuscules, des chiffres et des traits d’union, et commencer et terminer par un caractère alphanumérique.'
@@ -62,6 +64,14 @@ export const ClusterDetailsSchema = CleanedClusterSchema.merge(z.object({
   kubeconfig: KubeconfigSchema,
 }))
 
+export const CreateClusterBodySchema = ClusterDetailsSchema.omit({ id: true })
+
+export const UpdateClusterBodySchema = CreateClusterBodySchema.partial()
+
+export const DeleteClusterQuerySchema = z.object({
+  force: CoerceBooleanSchema.optional(),
+})
+
 export const ClusterUsageSchema = z.object({
   cpu: z.number(),
   gpu: z.number(),
@@ -71,5 +81,9 @@ export const ClusterUsageSchema = z.object({
 export type Cluster = Zod.infer<typeof CleanedClusterSchema>
 export type ClusterDetails = Zod.infer<typeof ClusterDetailsSchema>
 export type Kubeconfig = Zod.infer<typeof KubeconfigSchema>
+export type CreateClusterBody = Zod.infer<typeof CreateClusterBodySchema>
+export type UpdateClusterBody = Zod.infer<typeof UpdateClusterBodySchema>
+export type DeleteClusterQuery = Zod.infer<typeof DeleteClusterQuerySchema>
 
 export type CleanedCluster = Zod.infer<typeof CleanedClusterSchema>
+export type ClusterUsage = Zod.infer<typeof ClusterUsageSchema>

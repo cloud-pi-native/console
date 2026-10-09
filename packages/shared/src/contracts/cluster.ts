@@ -1,13 +1,14 @@
 import type { ClientInferResponseBody } from '@ts-rest/core'
-import type Zod from 'zod'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import { CoerceBooleanSchema } from '../schemas/_utils.js'
 import {
   CleanedClusterSchema,
   ClusterDetailsSchema,
   ClusterUsageSchema,
+  CreateClusterBodySchema,
+  DeleteClusterQuerySchema,
+  UpdateClusterBodySchema,
 } from '../schemas/cluster.js'
 import { EnvironmentSchema } from '../schemas/environment.js'
 import { UserSchema } from '../schemas/user.js'
@@ -36,7 +37,7 @@ export const clusterContract = contractInstance.router({
     contentType: 'application/json',
     summary: 'Create cluster',
     description: 'Create new cluster.',
-    body: ClusterDetailsSchema.omit({ id: true }),
+    body: CreateClusterBodySchema,
     responses: {
       201: ClusterDetailsSchema,
       400: ErrorSchema,
@@ -101,7 +102,7 @@ export const clusterContract = contractInstance.router({
     summary: 'Update cluster',
     description: 'Update a cluster by its ID.',
     pathParams: ClusterParams,
-    body: ClusterDetailsSchema.omit({ id: true }).partial(),
+    body: UpdateClusterBodySchema,
     responses: {
       200: ClusterDetailsSchema,
       400: ErrorSchema,
@@ -116,7 +117,7 @@ export const clusterContract = contractInstance.router({
     path: `/:clusterId`,
     summary: 'Delete cluster',
     description: 'Delete a cluster by its ID.',
-    query: z.object({ force: CoerceBooleanSchema.optional() }),
+    query: DeleteClusterQuerySchema,
     pathParams: ClusterParams,
     body: ContractNoBody,
     responses: {
@@ -134,5 +135,3 @@ export const clusterContract = contractInstance.router({
 })
 
 export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterContract.getClusterEnvironments, 200>
-export type CreateClusterBody = Zod.infer<typeof clusterContract.createCluster.body>
-export type UpdateClusterBody = Zod.infer<typeof clusterContract.updateCluster.body>

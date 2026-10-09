@@ -47,6 +47,15 @@ export interface AdminRoleEventPayload {
   members: AdminRoleEventMember[]
 }
 
+export type ClusterEventName = 'cluster.upsert' | 'cluster.delete'
+
+/** `zoneId` is the zone the cluster belonged to BEFORE the change. */
+export interface ClusterEventPayload {
+  clusterId: string
+  zoneId?: string
+}
+
+
 /** Admin-log action labels (legacy hooks wording). */
 export type EventLogAction
   = | 'Create Project' | 'Update Project' | 'Delete all project resources'
@@ -57,6 +66,7 @@ export type EventLogAction
     | 'Create Repository' | 'Update Repository' | 'Delete Repository' | 'Sync Repository'
     | 'Add Project Member' | 'Update Project Member' | 'Remove Project Member'
     | 'Create zone' | 'Update zone' | 'Delete zone'
+    | 'Create Cluster' | 'Update Cluster' | 'Delete Cluster'
 
 export interface EventContext {
   /** Action label persisted in the admin log. */
@@ -129,6 +139,20 @@ export class AppEventsService {
     return this.emitAndLog(event, payload, payload.projectId, context)
   }
 
+  /**
+   * Emits a cluster event. The caller awaits the merged results and answers 422 on
+   * failure, mirroring emitZoneEvent consumers (legacy hooks 422 on KO), and only
+   * emits the delete after every plugin cleaned up successfully (the caller must
+   * not have removed the row yet).
+   */
+  async emitClusterEvent(
+    event: ClusterEventName,
+    payload: ClusterEventPayload,
+    context: EventContext,
+  ): Promise<PluginResults> {
+    return this.emitAndLog(event, payload, null, context)
+  }
+
   // Emits a zone event. Zones have no project row: the log carries no project id
   // and the caller awaits the merged results to answer 422 on failure (legacy hooks
   // behavior on `POST`/`PUT`/`DELETE /zones`).
@@ -165,7 +189,7 @@ export class AppEventsService {
   }
 
   /**
-   * Reflects the listeners' outcome on the project row (legacy hooks behavior):
+   * Reflects the listeners' outcome on the project row:
    * any KO result marks the project `failed`; a fully successful upsert marks it
    * `created` and records the provisioning version. A successful `project.delete`
    * leaves the `archived` status set when the project was archived.
