@@ -9,6 +9,11 @@ function toServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
   return { ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }
 }
 
+// cause is reserved for admins (MonitorInfos.cause)
+function toPublicServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
+  return health
+}
+
 @Controller('api/v1')
 export class ServiceMonitorController {
   constructor(
@@ -17,8 +22,7 @@ export class ServiceMonitorController {
 
   @Get('health-services')
   getServiceHealth() {
-    // cause is reserved for admins (MonitorInfos.cause)
-    return this.service.getServiceHealth().then(health => health.map(({ cause, ...service }) => service))
+    return this.service.getServiceHealth().then(health => health.map(toPublicServiceHealth))
   }
 
   @Get('complete-services')
