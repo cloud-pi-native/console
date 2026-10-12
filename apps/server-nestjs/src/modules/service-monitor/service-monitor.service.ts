@@ -1,7 +1,9 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import type { Cache } from 'cache-manager'
 import type { ProbeOutcome } from './service-monitor.utils'
 import { MonitorStatus } from '@cpn-console/shared'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Optional } from '@nestjs/common'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
@@ -18,8 +20,9 @@ export type ServiceHealth = MonitorInfos & { name: string }
 interface MonitoredService {
   name: string
   probe: () => Promise<ProbeOutcome>
-  lastStatus: MonitorInfos
 }
+
+const CACHE_KEY = 'service-monitor:statuses'
 
 @Injectable()
 export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
@@ -28,6 +31,7 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
   private timer: NodeJS.Timeout | undefined
 
   constructor(
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     @Inject(KeycloakHealthService) private readonly keycloak: KeycloakHealthService,
     @Inject(ArgoCDHealthService) @Optional() private readonly argocd?: ArgoCDHealthService,
     @Inject(GitlabHealthService) @Optional() private readonly gitlab?: GitlabHealthService,
@@ -54,20 +58,20 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
       ['Vault', vaultHealth && (() => vaultHealth.check().then(result => fromHealthCheck(result, 'vault')))],
     ]
 
-    this.services = probes.flatMap(([name, probe]) => probe ? [this.track(name, probe)] : [])
+    this.services = probes.flatMap(([name, probe]) => probe ? [{ name, probe }] : [])
   }
 
-  getServiceHealth(): ServiceHealth[] {
-    return this.snapshot(false)
+  async getServiceHealth(): Promise<ServiceHealth[]> {
+    return this.read(false)
   }
 
-  getCompleteServiceHealth(): ServiceHealth[] {
-    return this.snapshot(true)
+  async getCompleteServiceHealth(): Promise<ServiceHealth[]> {
+    return this.read(true)
   }
 
   async refreshServiceHealth(): Promise<ServiceHealth[]> {
     await this.runAll()
-    return this.snapshot(false)
+    return this.read(false)
   }
 
   onModuleInit(): void {
@@ -89,37 +93,40 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
     await Promise.all(this.services.map(async (service) => {
       try {
         const outcome = await service.probe()
-        service.lastStatus = { ...outcome, interval: this.interval, lastUpdateTimestamp: Date.now() }
+        await this.writeStatus(service.name, { ...outcome, interval: this.interval, lastUpdateTimestamp: Date.now() })
       } catch (error) {
-        service.lastStatus = {
+        await this.writeStatus(service.name, {
           interval: this.interval,
           lastUpdateTimestamp: Date.now(),
           status: MonitorStatus.UNKNOW,
           message: REQUEST_ERROR_MESSAGE,
           cause: error,
-        }
+        })
       }
     }))
   }
 
-  private snapshot(withCause: boolean): ServiceHealth[] {
-    return this.services.map(({ name, lastStatus }) => {
-      const { cause, ...health } = lastStatus
-      return { name, ...health, ...(withCause && cause !== undefined ? { cause: toCause(cause) } : {}) }
-    })
+  private async read(withCause: boolean): Promise<ServiceHealth[]> {
+    const statuses = await Promise.all(this.services.map(async ({ name }) => {
+      const status = await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`)
+      return { name, ...this.pendingStatus(), ...status }
+    }))
+    return withCause
+      ? statuses.map(({ cause, ...health }) => ({ ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }))
+      : statuses.map(({ cause, ...health }) => health)
   }
 
-  private track(name: string, probe: () => Promise<ProbeOutcome>): MonitoredService {
+  private async writeStatus(name: string, status: MonitorInfos): Promise<void> {
+    await this.cache.set(`${CACHE_KEY}:${name}`, status)
+  }
+
+  private pendingStatus(): MonitorInfos {
     return {
-      name,
-      probe,
-      lastStatus: {
-        interval: this.interval,
-        lastUpdateTimestamp: Date.now(),
-        status: MonitorStatus.UNKNOW,
-        message: PENDING_MESSAGE,
-        cause: 'App just started',
-      },
+      interval: this.interval,
+      lastUpdateTimestamp: Date.now(),
+      status: MonitorStatus.UNKNOW,
+      message: PENDING_MESSAGE,
+      cause: 'App just started',
     }
   }
 }

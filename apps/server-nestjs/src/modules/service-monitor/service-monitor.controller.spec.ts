@@ -1,5 +1,7 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { MockProxy } from 'vitest-mock-extended'
+import type { ServiceHealth } from './service-monitor.service'
+import { MonitorStatus } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
@@ -33,7 +35,7 @@ describe('serviceMonitorController', () => {
   })
 
   it('delegates health-services to the service', async () => {
-    const health = [{ name: 'keycloak', status: 'up' }]
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
     service.getServiceHealth.mockResolvedValue(health)
 
     await expect(controller.getServiceHealth()).resolves.toBe(health)
@@ -41,7 +43,7 @@ describe('serviceMonitorController', () => {
   })
 
   it('delegates complete-services to the service', async () => {
-    const health = [{ name: 'keycloak', status: 'up' }]
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
     service.getCompleteServiceHealth.mockResolvedValue(health)
 
     await expect(controller.getCompleteServiceHealth()).resolves.toBe(health)
@@ -49,7 +51,7 @@ describe('serviceMonitorController', () => {
   })
 
   it('delegates refresh-services to the service', async () => {
-    const health = [{ name: 'keycloak', status: 'up' }]
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
     service.refreshServiceHealth.mockResolvedValue(health)
 
     expect(await controller.refreshServiceHealth()).toBe(health)
