@@ -1,5 +1,4 @@
 import type { ConfigType } from '@nestjs/config'
-import { MonitorStatus } from '@cpn-console/shared'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
@@ -30,7 +29,7 @@ describe('sonarqubeHealthService', () => {
       providers: [
         SonarqubeHealthService,
         { provide: sonarqubeConfigFactory.KEY, useValue: config },
-        { provide: HealthIndicatorService, useValue: mockDeep<HealthIndicatorService>() },
+        HealthIndicatorService,
       ],
     }).compile()
 
@@ -40,30 +39,32 @@ describe('sonarqubeHealthService', () => {
   afterAll(() => server.close())
 
   it.each([
-    ['GREEN', MonitorStatus.OK, MonitorStatus.OK],
-    ['YELLOW', MonitorStatus.WARNING, 'Service dégradé'],
-    ['RED', MonitorStatus.ERROR, 'Service en panne'],
-  ])('maps SonarQube health %s to %s', async (health, status, message) => {
+    ['GREEN', { status: 'up' }],
+    ['YELLOW', { status: 'up', message: 'Service dégradé' }],
+    ['RED', { status: 'down', message: 'Service en panne' }],
+  ])('maps SonarQube health %s', async (health, expected) => {
     server.use(http.get(healthUrl, () => HttpResponse.json({ health, causes: [] })))
 
-    await expect(service.monitor()).resolves.toEqual({ status, message })
+    await expect(service.check()).resolves.toEqual({ sonarqube: expected })
   })
 
-  it('reports UNKNOW when the API answers without a health field', async () => {
+  it('reports down when the API answers without a health field', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.json({})))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.UNKNOW, message: 'Erreur lors la requête' })
+    await expect(service.check()).resolves.toEqual({ sonarqube: { status: 'down', message: 'Erreur lors la requête' } })
   })
 
-  it('reports UNKNOW when the API answers with a non-200 status', async () => {
+  it('reports down when the API answers with a non-200 status', async () => {
     server.use(http.get(healthUrl, () => new HttpResponse(null, { status: 503 })))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.UNKNOW, message: 'Erreur lors la requête' })
+    await expect(service.check()).resolves.toEqual({ sonarqube: { status: 'down', message: 'Erreur lors la requête' } })
   })
 
-  it('reports UNKNOW with the cause when the request fails', async () => {
+  it('reports down with the cause when the request fails', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.error()))
 
-    await expect(service.monitor()).resolves.toMatchObject({ status: MonitorStatus.UNKNOW, cause: expect.any(Error) })
+    await expect(service.check()).resolves.toMatchObject({
+      sonarqube: { status: 'down', message: 'Erreur lors la requête', cause: expect.any(Error) },
+    })
   })
 })
