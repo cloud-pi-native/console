@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.27.0-rc.3](https://github.com/cloud-pi-native/console/compare/v9.27.0-rc.2...v9.27.0-rc.3) (2026-10-12)
+
+
+### Bug Fixes
+
+* **client:** preserve dedicated cluster project selection ([7aa3f0d](https://github.com/cloud-pi-native/console/commit/7aa3f0dd564e2144d08bec054084c8264a36881e)), closes [#2838](https://github.com/cloud-pi-native/console/issues/2838)
+
 ## [9.27.0-rc.2](https://github.com/cloud-pi-native/console/compare/v9.27.0-rc.1...v9.27.0-rc.2) (2026-10-08)
 
 
