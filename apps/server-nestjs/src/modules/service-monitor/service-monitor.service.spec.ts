@@ -1,8 +1,8 @@
 import type { Mock } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
 import { MonitorStatus } from '@cpn-console/shared'
 import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { DeepMockProxy } from 'vitest-mock-extended'
 import { mockDeep } from 'vitest-mock-extended'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
@@ -36,9 +36,9 @@ describe('serviceMonitorService', () => {
       keycloak.check.mockResolvedValue({ keycloak: { status: 'up', httpStatus: 200 } })
       argocd.check.mockResolvedValue({ argocd: { status: 'up', httpStatus: 200 } })
       gitlab.check.mockResolvedValue({ gitlab: { status: 'up', httpStatus: 200 } })
-      harbor.monitor.mockResolvedValue({ status: MonitorStatus.OK, message: MonitorStatus.OK })
+      harbor.check.mockResolvedValue({ harbor: { status: 'up' } })
       nexus.check.mockResolvedValue({ nexus: { status: 'up', httpStatus: 200 } })
-      sonarqube.monitor.mockResolvedValue({ status: MonitorStatus.OK, message: MonitorStatus.OK })
+      sonarqube.check.mockResolvedValue({ sonarqube: { status: 'up' } })
       vault.check.mockResolvedValue({ vault: { status: 'up', httpStatus: 200 } })
       const moduleRef = await Test.createTestingModule({
         providers: [
@@ -73,9 +73,9 @@ describe('serviceMonitorService', () => {
       ])
     })
 
-    it('passes the SonarQube and Harbor monitor verdicts through', async () => {
-      sonarqube.monitor.mockResolvedValue({ status: MonitorStatus.WARNING, message: 'Service dégradé' })
-      harbor.monitor.mockResolvedValue({ status: MonitorStatus.ERROR, message: 'Service en erreur' })
+    it('passes the SonarQube and Harbor degraded and failed verdicts through', async () => {
+      sonarqube.check.mockResolvedValue({ sonarqube: { status: 'up', message: 'Service dégradé' } })
+      harbor.check.mockResolvedValue({ harbor: { status: 'down', message: 'Service en erreur' } })
 
       const health = await service.refreshServiceHealth()
 
@@ -106,8 +106,8 @@ describe('serviceMonitorService', () => {
       await service.refreshServiceHealth()
 
       expect(keycloak.check).toHaveBeenCalledTimes(2)
-      expect(sonarqube.monitor).toHaveBeenCalledTimes(2)
-      expect(harbor.monitor).toHaveBeenCalledTimes(2)
+      expect(sonarqube.check).toHaveBeenCalledTimes(2)
+      expect(harbor.check).toHaveBeenCalledTimes(2)
     })
 
     it('probes once and schedules the periodic refresh on init', async () => {

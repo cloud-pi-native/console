@@ -47,10 +47,10 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
     const probes: Array<[string, (() => Promise<ProbeOutcome>) | undefined]> = [
       ['ArgoCD', argocdHealth && (() => argocdHealth.check().then(result => fromHealthCheck(result, 'argocd')))],
       ['Gitlab', gitlabHealth && (() => gitlabHealth.check().then(result => fromHealthCheck(result, 'gitlab')))],
-      ['Harbor', harborHealth && (() => harborHealth.monitor())],
+      ['Harbor', harborHealth && (() => harborHealth.check().then(result => fromHealthCheck(result, 'harbor')))],
       ['Keycloak', () => this.keycloak.check().then(result => fromHealthCheck(result, 'keycloak'))],
       ['Nexus', nexusHealth && (() => nexusHealth.check().then(result => fromHealthCheck(result, 'nexus')))],
-      ['SonarQube', sonarqubeHealth && (() => sonarqubeHealth.monitor())],
+      ['SonarQube', sonarqubeHealth && (() => sonarqubeHealth.check().then(result => fromHealthCheck(result, 'sonarqube')))],
       ['Vault', vaultHealth && (() => vaultHealth.check().then(result => fromHealthCheck(result, 'vault')))],
     ]
 

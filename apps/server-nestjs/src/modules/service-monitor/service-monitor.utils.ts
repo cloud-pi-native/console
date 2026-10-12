@@ -11,6 +11,7 @@ export interface ProbeOutcome {
 interface ProbeDetail {
   status: string
   message?: string
+  cause?: unknown
 }
 
 function isProbeDetail(detail: unknown): detail is ProbeDetail {
@@ -24,10 +25,15 @@ export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
   }
 
   const up = detail.status === 'up'
+  if (up) {
+    return detail.cause !== undefined || detail.message !== undefined
+      ? { status: detail.cause !== undefined ? MonitorStatus.UNKNOW : MonitorStatus.WARNING, message: detail.message ?? MonitorStatus.WARNING }
+      : { status: MonitorStatus.OK, message: MonitorStatus.OK }
+  }
   return {
-    status: up ? MonitorStatus.OK : MonitorStatus.ERROR,
-    message: up ? MonitorStatus.OK : detail.message ?? ERROR_MESSAGE,
-    ...(up ? {} : { cause: detail.message ?? ERROR_MESSAGE }),
+    status: MonitorStatus.ERROR,
+    message: detail.message ?? ERROR_MESSAGE,
+    cause: toCause(detail.cause ?? detail.message ?? ERROR_MESSAGE),
   }
 }
 
