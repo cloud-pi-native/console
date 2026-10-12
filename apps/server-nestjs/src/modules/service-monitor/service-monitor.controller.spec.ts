@@ -42,19 +42,19 @@ describe('serviceMonitorController', () => {
     expect(service.getServiceHealth).toHaveBeenCalledTimes(1)
   })
 
-  it('delegates complete-services to the service without stripping', async () => {
-    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
+  it('delegates complete-services to the service, formatting the cause', async () => {
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0, cause: new Error('boom') }]
     service.getServiceHealth.mockResolvedValue(health)
 
-    await expect(controller.getCompleteServiceHealth()).resolves.toBe(health)
+    await expect(controller.getCompleteServiceHealth()).resolves.toEqual([{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0, cause: 'boom' }])
     expect(service.getServiceHealth).toHaveBeenCalledTimes(1)
   })
 
-  it('delegates refresh-services to the service', async () => {
-    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
+  it('delegates refresh-services to the service, formatting the cause', async () => {
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.ERROR, message: 'down', interval: 1000, lastUpdateTimestamp: 0, cause: new Error('boom') }]
     service.refreshServiceHealth.mockResolvedValue(health)
 
-    expect(await controller.refreshServiceHealth()).toBe(health)
+    await expect(controller.refreshServiceHealth()).resolves.toEqual([{ name: 'keycloak', status: MonitorStatus.ERROR, message: 'down', interval: 1000, lastUpdateTimestamp: 0, cause: 'boom' }])
     expect(service.refreshServiceHealth).toHaveBeenCalledTimes(1)
   })
 })
