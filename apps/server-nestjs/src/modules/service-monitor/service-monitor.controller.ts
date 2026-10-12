@@ -1,7 +1,13 @@
+import type { ServiceHealth } from './service-monitor.service'
 import { Controller, Get, Inject, UseGuards } from '@nestjs/common'
 import { RequireAdminPermission } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ServiceMonitorService } from './service-monitor.service'
+import { toCause } from './service-monitor.utils'
+
+function toServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
+  return { ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }
+}
 
 @Controller('api/v1')
 export class ServiceMonitorController {
@@ -19,13 +25,13 @@ export class ServiceMonitorController {
   @UseGuards(UserGuard)
   @RequireAdminPermission('ListSystem')
   getCompleteServiceHealth() {
-    return this.service.getServiceHealth()
+    return this.service.getServiceHealth().then(health => health.map(toServiceHealth))
   }
 
   @Get('refresh-services')
   @UseGuards(UserGuard)
   @RequireAdminPermission('ManageSystem')
   refreshServiceHealth() {
-    return this.service.refreshServiceHealth()
+    return this.service.refreshServiceHealth().then(health => health.map(toServiceHealth))
   }
 }
