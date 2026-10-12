@@ -11,14 +11,15 @@ export class ServiceMonitorController {
 
   @Get('health-services')
   getServiceHealth() {
-    return this.service.getServiceHealth()
+    // cause is reserved for admins (MonitorInfos.cause)
+    return this.service.getServiceHealth().then(health => health.map(({ cause, ...service }) => service))
   }
 
   @Get('complete-services')
   @UseGuards(UserGuard)
   @RequireAdminPermission('ListSystem')
   getCompleteServiceHealth() {
-    return this.service.getCompleteServiceHealth()
+    return this.service.getServiceHealth()
   }
 
   @Get('refresh-services')
