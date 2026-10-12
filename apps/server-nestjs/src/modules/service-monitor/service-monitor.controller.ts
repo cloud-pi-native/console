@@ -9,7 +9,7 @@ function toServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
   return { ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }
 }
 
-// cause is reserved for admins (MonitorInfos.cause)
+// MonitorInfos.cause is admin-only
 function toPublicServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
   return health
 }
