@@ -1,3 +1,4 @@
+import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import { ConditionalModule } from '@nestjs/config'
 import { ArgoCDModule } from '../argocd/argocd.module'
@@ -14,6 +15,7 @@ import { ServiceMonitorService } from './service-monitor.service'
 
 @Module({
   imports: [
+    CacheModule.register(),
     AuthModule,
     UserPermissionModule,
     KeycloakModule,

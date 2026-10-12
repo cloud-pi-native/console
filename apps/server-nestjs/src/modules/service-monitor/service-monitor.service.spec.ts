@@ -1,7 +1,9 @@
 import type { Mock } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { MonitorStatus } from '@cpn-console/shared'
+import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Test } from '@nestjs/testing'
+import { createCache } from 'cache-manager'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
@@ -43,6 +45,7 @@ describe('serviceMonitorService', () => {
       const moduleRef = await Test.createTestingModule({
         providers: [
           ServiceMonitorService,
+          { provide: CACHE_MANAGER, useValue: createCache() },
           { provide: KeycloakHealthService, useValue: keycloak },
           { provide: ArgoCDHealthService, useValue: argocd },
           { provide: GitlabHealthService, useValue: gitlab },
@@ -87,8 +90,8 @@ describe('serviceMonitorService', () => {
       await service.refreshServiceHealth()
       keycloak.check.mockClear()
 
-      service.getServiceHealth()
-      service.getServiceHealth()
+      await service.getServiceHealth()
+      await service.getServiceHealth()
 
       expect(keycloak.check).not.toHaveBeenCalled()
     })
@@ -97,8 +100,8 @@ describe('serviceMonitorService', () => {
       keycloak.check.mockResolvedValue({ keycloak: { status: 'down', httpStatus: 503, message: 'connection refused' } })
       await service.refreshServiceHealth()
 
-      expect(service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'connection refused' }))
-      expect(service.getServiceHealth().every(entry => !('cause' in entry))).toBe(true)
+      expect(await service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'connection refused' }))
+      expect((await service.getServiceHealth()).every(entry => !('cause' in entry))).toBe(true)
     })
 
     it('refreshServiceHealth re-probes every enabled service', async () => {
@@ -127,6 +130,7 @@ describe('serviceMonitorService', () => {
       const moduleRef = await Test.createTestingModule({
         providers: [
           ServiceMonitorService,
+          { provide: CACHE_MANAGER, useValue: createCache() },
           { provide: KeycloakHealthService, useValue: keycloak },
         ],
       }).compile()
@@ -143,8 +147,8 @@ describe('serviceMonitorService', () => {
       expect(health.map(entry => entry.name)).toEqual(['Keycloak'])
     })
 
-    it('serves the pending state until the first probe', () => {
-      expect(service.getServiceHealth()).toEqual([
+    it('serves the pending state until the first probe', async () => {
+      expect(await service.getServiceHealth()).toEqual([
         { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'En attente d\'une première vérification' },
       ])
     })
@@ -157,7 +161,7 @@ describe('serviceMonitorService', () => {
       expect(health).toEqual([
         { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête' },
       ])
-      expect(service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
+      expect(await service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
     })
 
     it('reports UNKNOW when the probe payload has no status field', async () => {
