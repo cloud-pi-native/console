@@ -62,16 +62,16 @@ export class ServiceMonitorService implements OnModuleInit {
   }
 
   async getServiceHealth(): Promise<ServiceHealth[]> {
-    return this.read(false)
-  }
-
-  async getCompleteServiceHealth(): Promise<ServiceHealth[]> {
-    return this.read(true)
+    const statuses = await Promise.all(this.services.map(async ({ name }) => {
+      const cached = await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`)
+      return { name, ...(cached ?? this.pendingStatus()) }
+    }))
+    return statuses.map(({ cause, ...health }) => ({ ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }))
   }
 
   async refreshServiceHealth(): Promise<ServiceHealth[]> {
     await this.runAll()
-    return this.read(false)
+    return this.getServiceHealth()
   }
 
   onModuleInit(): void {
@@ -95,16 +95,6 @@ export class ServiceMonitorService implements OnModuleInit {
         })
       }
     }))
-  }
-
-  private async read(withCause: boolean): Promise<ServiceHealth[]> {
-    const statuses = await Promise.all(this.services.map(async ({ name }) => {
-      const status = await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`)
-      return { name, ...this.pendingStatus(), ...status }
-    }))
-    return withCause
-      ? statuses.map(({ cause, ...health }) => ({ ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }))
-      : statuses.map(({ cause, ...health }) => health)
   }
 
   private async writeStatus(name: string, status: MonitorInfos): Promise<void> {
