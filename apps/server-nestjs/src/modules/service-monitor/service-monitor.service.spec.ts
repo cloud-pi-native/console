@@ -67,7 +67,7 @@ describe('serviceMonitorService', () => {
         { name: 'ArgoCD', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
         { name: 'Gitlab', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
         { name: 'Harbor', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
-        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Service en erreur' },
+        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Service en erreur', cause: 'Service en erreur' },
         { name: 'Nexus', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
         { name: 'SonarQube', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
         { name: 'Vault', status: MonitorStatus.OK, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: MonitorStatus.OK },
@@ -94,12 +94,11 @@ describe('serviceMonitorService', () => {
       expect(keycloak.check).not.toHaveBeenCalled()
     })
 
-    it('exposes the cause on the admin route, never on the public one', async () => {
+    it('always returns the cause', async () => {
       keycloak.check.mockResolvedValue({ keycloak: { status: 'down', httpStatus: 503, message: 'connection refused' } })
       await service.refreshServiceHealth()
 
-      expect(await service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'connection refused' }))
-      expect((await service.getServiceHealth()).every(entry => !('cause' in entry))).toBe(true)
+      expect(await service.getServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'connection refused' }))
     })
 
     it('refreshServiceHealth re-probes every enabled service', async () => {
@@ -145,7 +144,7 @@ describe('serviceMonitorService', () => {
 
     it('serves the pending state until the first probe', async () => {
       expect(await service.getServiceHealth()).toEqual([
-        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'En attente d\'une première vérification' },
+        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'En attente d\'une première vérification', cause: 'App just started' },
       ])
     })
 
@@ -155,9 +154,9 @@ describe('serviceMonitorService', () => {
       const health = await service.refreshServiceHealth()
 
       expect(health).toEqual([
-        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête' },
+        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête', cause: 'boom' },
       ])
-      expect(await service.getCompleteServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
+      expect(await service.getServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
     })
 
     it('reports UNKNOW when the probe payload has no status field', async () => {
@@ -176,7 +175,7 @@ describe('serviceMonitorService', () => {
       const health = await service.refreshServiceHealth()
 
       expect(health).toEqual([
-        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'connection refused' },
+        { name: 'Keycloak', status: MonitorStatus.ERROR, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'connection refused', cause: 'connection refused' },
       ])
     })
   })

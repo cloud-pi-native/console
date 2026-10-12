@@ -34,20 +34,20 @@ describe('serviceMonitorController', () => {
     expect(controller).toBeDefined()
   })
 
-  it('delegates health-services to the service', async () => {
-    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
+  it('strips the cause from the public route', async () => {
+    const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.ERROR, message: 'down', interval: 1000, lastUpdateTimestamp: 0, cause: 'connection refused' }]
     service.getServiceHealth.mockResolvedValue(health)
 
-    await expect(controller.getServiceHealth()).resolves.toBe(health)
+    await expect(controller.getServiceHealth()).resolves.toEqual([{ name: 'keycloak', status: MonitorStatus.ERROR, message: 'down', interval: 1000, lastUpdateTimestamp: 0 }])
     expect(service.getServiceHealth).toHaveBeenCalledTimes(1)
   })
 
-  it('delegates complete-services to the service', async () => {
+  it('delegates complete-services to the service without stripping', async () => {
     const health: ServiceHealth[] = [{ name: 'keycloak', status: MonitorStatus.OK, message: MonitorStatus.OK, interval: 1000, lastUpdateTimestamp: 0 }]
-    service.getCompleteServiceHealth.mockResolvedValue(health)
+    service.getServiceHealth.mockResolvedValue(health)
 
     await expect(controller.getCompleteServiceHealth()).resolves.toBe(health)
-    expect(service.getCompleteServiceHealth).toHaveBeenCalledTimes(1)
+    expect(service.getServiceHealth).toHaveBeenCalledTimes(1)
   })
 
   it('delegates refresh-services to the service', async () => {
