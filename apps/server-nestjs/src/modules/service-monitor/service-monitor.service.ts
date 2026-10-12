@@ -14,7 +14,7 @@ import { RegistryHealthService } from '../registry/registry-health.service'
 import { SonarqubeHealthService } from '../sonarqube/sonarqube-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
 import { INTERVAL_MS, PENDING_MESSAGE, REQUEST_ERROR_MESSAGE } from './service-monitor.constants'
-import { fromHealthCheck, toCause } from './service-monitor.utils'
+import { fromHealthCheck } from './service-monitor.utils'
 
 export type ServiceHealth = MonitorInfos & { name: string }
 
@@ -66,7 +66,7 @@ export class ServiceMonitorService implements OnModuleInit {
       const cached = await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`)
       return { name, ...(cached ?? this.pendingStatus()) }
     }))
-    return statuses.map(({ cause, ...health }) => ({ ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }))
+    return statuses
   }
 
   async refreshServiceHealth(): Promise<ServiceHealth[]> {

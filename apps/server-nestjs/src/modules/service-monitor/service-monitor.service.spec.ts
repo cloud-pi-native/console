@@ -154,9 +154,9 @@ describe('serviceMonitorService', () => {
       const health = await service.refreshServiceHealth()
 
       expect(health).toEqual([
-        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête', cause: 'boom' },
+        { name: 'Keycloak', status: MonitorStatus.UNKNOW, interval: INTERVAL_MS, lastUpdateTimestamp: expect.any(Number), message: 'Erreur lors la requête', cause: new Error('boom') },
       ])
-      expect(await service.getServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: 'boom' }))
+      expect(await service.getServiceHealth()).toContainEqual(expect.objectContaining({ name: 'Keycloak', cause: new Error('boom') }))
     })
 
     it('reports UNKNOW when the probe payload has no status field', async () => {
