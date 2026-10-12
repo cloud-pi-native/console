@@ -1,5 +1,4 @@
 import type { HarborConfig } from '../../config/harbor.config'
-import { MonitorStatus } from '@cpn-console/shared'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
@@ -31,7 +30,7 @@ describe('registryHealthService', () => {
       providers: [
         RegistryHealthService,
         { provide: harborConfigFactory.KEY, useValue: config },
-        { provide: HealthIndicatorService, useValue: mockDeep<HealthIndicatorService>() },
+        HealthIndicatorService,
       ],
     }).compile()
 
@@ -40,39 +39,41 @@ describe('registryHealthService', () => {
   afterEach(() => server.resetHandlers())
   afterAll(() => server.close())
 
-  it('reports OK when every component is healthy', async () => {
+  it('reports up when every component is healthy', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.json({ status: 'healthy', components: [] })))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.OK, message: MonitorStatus.OK })
+    await expect(service.check()).resolves.toEqual({ harbor: { status: 'up' } })
   })
 
-  it('reports ERROR when a core component is unhealthy', async () => {
+  it('reports down when a core component is unhealthy', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.json({
       status: 'unhealthy',
       components: [{ name: 'registryctl', status: 'unhealthy' }],
     })))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.ERROR, message: 'Service en erreur' })
+    await expect(service.check()).resolves.toEqual({ harbor: { status: 'down', message: 'Service en erreur' } })
   })
 
-  it('reports WARNING when only a non-core component is unhealthy', async () => {
+  it('reports a degraded up when only a non-core component is unhealthy', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.json({
       status: 'unhealthy',
       components: [{ name: 'jobservice', status: 'unhealthy' }],
     })))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.WARNING, message: 'Service dégradé' })
+    await expect(service.check()).resolves.toEqual({ harbor: { status: 'up', message: 'Service dégradé' } })
   })
 
-  it('reports ERROR when the health endpoint does not answer with a 200', async () => {
+  it('reports down when the health endpoint does not answer with a 200', async () => {
     server.use(http.get(healthUrl, () => new HttpResponse(null, { status: 503 })))
 
-    await expect(service.monitor()).resolves.toEqual({ status: MonitorStatus.ERROR, message: 'Fatal Error' })
+    await expect(service.check()).resolves.toEqual({ harbor: { status: 'down', message: 'Fatal Error' } })
   })
 
-  it('reports UNKNOW with the cause when the request fails', async () => {
+  it('reports down with the cause when the request fails', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.error()))
 
-    await expect(service.monitor()).resolves.toMatchObject({ status: MonitorStatus.UNKNOW, cause: expect.any(Error) })
+    await expect(service.check()).resolves.toMatchObject({
+      harbor: { status: 'down', message: 'Erreur lors la requête', cause: expect.any(Error) },
+    })
   })
 })
