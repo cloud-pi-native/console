@@ -4,7 +4,7 @@ import { MonitorStatus } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Test } from '@nestjs/testing'
 import { createCache } from 'cache-manager'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
@@ -57,8 +57,6 @@ describe('serviceMonitorService', () => {
       }).compile()
       service = moduleRef.get(ServiceMonitorService)
     })
-
-    afterEach(() => service.onModuleDestroy())
 
     it('aggregates every injected probe', async () => {
       keycloak.check.mockResolvedValue({ keycloak: { status: 'down', httpStatus: 500 } })
@@ -113,7 +111,7 @@ describe('serviceMonitorService', () => {
       expect(harbor.check).toHaveBeenCalledTimes(2)
     })
 
-    it('probes once and schedules the periodic refresh on init', async () => {
+    it('probes once on init', async () => {
       service.onModuleInit()
       await new Promise(resolve => setImmediate(resolve))
 
@@ -136,8 +134,6 @@ describe('serviceMonitorService', () => {
       }).compile()
       service = moduleRef.get(ServiceMonitorService)
     })
-
-    afterEach(() => service.onModuleDestroy())
 
     it('skips unregistered probes', async () => {
       keycloak.check.mockResolvedValue({ keycloak: { status: 'up', httpStatus: 200 } })

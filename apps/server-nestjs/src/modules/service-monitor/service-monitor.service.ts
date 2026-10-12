@@ -1,10 +1,11 @@
 import type { MonitorInfos } from '@cpn-console/shared'
-import type { OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import type { OnModuleInit } from '@nestjs/common'
 import type { Cache } from 'cache-manager'
 import type { ProbeOutcome } from './service-monitor.utils'
 import { MonitorStatus } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Optional } from '@nestjs/common'
+import { Cron, CronExpression } from '@nestjs/schedule'
 import { ArgoCDHealthService } from '../argocd/argocd-health.service'
 import { GitlabHealthService } from '../gitlab/gitlab-health.service'
 import { KeycloakHealthService } from '../keycloak/keycloak-health.service'
@@ -25,10 +26,9 @@ interface MonitoredService {
 const CACHE_KEY = 'service-monitor:statuses'
 
 @Injectable()
-export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
+export class ServiceMonitorService implements OnModuleInit {
   private readonly interval: number = INTERVAL_MS
   private readonly services: MonitoredService[]
-  private timer: NodeJS.Timeout | undefined
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -75,20 +75,11 @@ export class ServiceMonitorService implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit(): void {
-    void this.refresh()
+    void this.runAll()
   }
 
-  onModuleDestroy(): void {
-    if (this.timer) clearInterval(this.timer)
-  }
-
-  // Legacy Monitor.refresh(): serve the last known state between periodic passes.
-  private async refresh(): Promise<void> {
-    if (this.timer) clearInterval(this.timer)
-    this.timer = setInterval(() => void this.runAll(), this.interval)
-    await this.runAll()
-  }
-
+  // Legacy Monitor.refresh(): the cron refreshes the cached statuses periodically.
+  @Cron(CronExpression.EVERY_5_MINUTES)
   private async runAll(): Promise<void> {
     await Promise.all(this.services.map(async (service) => {
       try {
