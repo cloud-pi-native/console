@@ -48,6 +48,17 @@ describe('sonarqubeHealthService', () => {
     await expect(service.check()).resolves.toEqual({ sonarqube: expected })
   })
 
+  it('sends the raw api token under Bearer', async () => {
+    let authorization: string | undefined
+    server.use(http.get(healthUrl, ({ request }) => {
+      authorization = request.headers.get('authorization') ?? undefined
+      return HttpResponse.json({ health: 'GREEN', causes: [] })
+    }))
+
+    await expect(service.check()).resolves.toEqual({ sonarqube: { status: 'up' } })
+    expect(authorization).toBe('Bearer my-token')
+  })
+
   it('reports down when the API answers without a health field', async () => {
     server.use(http.get(healthUrl, () => HttpResponse.json({})))
 
