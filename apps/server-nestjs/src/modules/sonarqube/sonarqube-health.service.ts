@@ -34,7 +34,6 @@ export class SonarqubeHealthService {
   }
 
   private authHeaders(): Record<string, string> {
-    const bearerToken = Buffer.from(`${this.sonarqubeConfig.apiToken}:`, 'utf-8').toString('base64')
-    return { Authorization: `Bearer ${bearerToken}` }
+    return { Authorization: `Bearer ${this.sonarqubeConfig.apiToken}` }
   }
 }
