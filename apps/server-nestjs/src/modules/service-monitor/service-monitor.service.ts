@@ -78,7 +78,6 @@ export class ServiceMonitorService implements OnModuleInit {
     void this.runAll()
   }
 
-  // Legacy Monitor.refresh(): the cron refreshes the cached statuses periodically.
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async runAll(): Promise<void> {
     await Promise.all(this.services.map(async (service) => {
