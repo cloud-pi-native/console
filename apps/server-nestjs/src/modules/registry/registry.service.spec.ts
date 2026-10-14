@@ -111,6 +111,7 @@ describe('registryService', () => {
         { groupName: `/${project.slug}/console/developer`, roleId: 3 },
         { groupName: `/${project.slug}/console/devops`, roleId: 3 },
         { groupName: `/${project.slug}/console/admin`, roleId: 2 },
+        { groupName: `/${project.slug}/console/owner`, roleId: 2 },
       ]
 
       expect(client.ensureGroupMember).toHaveBeenCalledTimes(expected.length)
