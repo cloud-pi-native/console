@@ -119,7 +119,10 @@ describe('vaultService', () => {
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
-    expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
+    // The owner group path is a second alias on the admin identity group
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+    }))
 
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
