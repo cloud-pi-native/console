@@ -3,6 +3,7 @@ import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import { PROJECT_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import {
   BadRequestException,
@@ -430,6 +431,16 @@ describe('projectService', () => {
       const ctx = makeProjectContext({ locked: false })
       const requestorId = ownerId
       const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
+      const adminRoleId = faker.string.uuid()
+      pwd.roles = [{
+        id: adminRoleId,
+        name: 'Administrateur',
+        permissions: PROJECT_PERMS.MANAGE,
+        position: 0,
+        oidcGroup: `/${pwd.slug}/console/admin`,
+        type: 'system:managed',
+        projectId: pwd.id,
+      }]
 
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findFirst.mockResolvedValue(
@@ -460,6 +471,47 @@ describe('projectService', () => {
         }),
       )
       expect(result).toBeDefined()
+    })
+
+    it('grants the previous owner the admin role on transfer', async () => {
+      const ownerId = faker.string.uuid()
+      const newOwnerId = faker.string.uuid()
+      const ctx = makeProjectContext({ locked: false })
+      const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
+      const adminRoleId = faker.string.uuid()
+      pwd.roles = [{
+        id: adminRoleId,
+        name: 'Administrateur',
+        permissions: PROJECT_PERMS.MANAGE,
+        position: 0,
+        oidcGroup: `/${pwd.slug}/console/admin`,
+        type: 'system:managed',
+        projectId: pwd.id,
+      }]
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findFirst.mockResolvedValue(
+        makeProjectWithMembersResult(pwd, [makeProjectMemberWithUser(
+          makeUser({ id: newOwnerId, type: 'human' }),
+          { roleIds: [faker.string.uuid()] },
+        )]),
+      )
+      tx.project.findUnique.mockResolvedValue(
+        makeProjectWithDetails({ id: ctx.id, ownerId: newOwnerId } as never),
+      )
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await service.update(
+        { ownerId: newOwnerId },
+        { userId: ownerId, adminPermissions: 0n },
+        ctx.id,
+      )
+
+      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
+        where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [adminRoleId] },
+        update: { roleIds: [adminRoleId] },
+      })
     })
   })
 
