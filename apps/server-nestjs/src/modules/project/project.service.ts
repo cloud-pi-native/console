@@ -10,9 +10,10 @@ import { baseConfigFactory } from '../../config/base.config'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { isAdminRole } from '../keycloak/keycloak.utils'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
-import { createProjectMember, deleteProjectMember } from '../project-members/project-members-queries.utils'
+import { deleteProjectMember, upsertProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
   deleteProjectDependencies,
@@ -355,7 +356,14 @@ export class ProjectService {
 
     const oldOwnerIsMember = project.members.some(member => member.userId === project.ownerId)
     if (!oldOwnerIsMember) {
-      await createProjectMember(tx, project.id, project.ownerId)
+      // The owner implicitly holds the admin role (isAdminRole in keycloak.utils.ts);
+      // on transfer that implicit grant must become explicit or the previous owner
+      // drops from MANAGE to guest with no OIDC role group at all.
+      const adminRole = project.roles.find(role => isAdminRole(project, role))
+      await upsertProjectMember(tx, project.id, {
+        userId: project.ownerId,
+        roles: adminRole ? [adminRole.id] : [],
+      })
     }
 
     await deleteProjectMember(tx, project.id, ownerIdCandidate)
