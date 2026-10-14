@@ -10,7 +10,7 @@ export const DEFAULT_PLATFORM_ADMIN_GROUP_PATHS = '/console/admin'
 export const DEFAULT_PLATFORM_GUEST_GROUP_PATHS = '/console/security,/console/readonly'
 
 // Default project-level group path suffixes
-export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES = '/console/admin'
+export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES = '/console/admin,/console/owner'
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES = '/console/developer'
 export const DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES = '/console/security,/console/readonly'
