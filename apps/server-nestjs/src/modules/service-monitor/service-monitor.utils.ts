@@ -1,3 +1,4 @@
+import type { ServiceHealth } from './service-monitor.service'
 import { MonitorStatus } from '@cpn-console/shared'
 import { isRecord } from '../../utils/record.utils'
 import { ERROR_MESSAGE } from './service-monitor.constants'
@@ -39,4 +40,13 @@ export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
 
 export function toCause(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause)
+}
+
+export function toServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
+  return { ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }
+}
+
+// MonitorInfos.cause is admin-only
+export function toPublicServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
+  return health
 }
