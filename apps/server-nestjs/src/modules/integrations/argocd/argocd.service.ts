@@ -1,0 +1,801 @@
+import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
+import type { ClusterEventPayload } from '../../core/events/app-events.service'
+import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
+import type { ProjectWithDetails } from './argocd-datastore.service'
+import { createHmac } from 'node:crypto'
+import { generateNamespaceName, inClusterLabel, KubeconfigSchema } from '@cpn-console/shared'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { OnEvent } from '@nestjs/event-emitter'
+import { trace } from '@opentelemetry/api'
+import { stringify } from 'yaml'
+import { argocdConfigFactory } from '../../../config/argocd.config'
+import { baseConfigFactory } from '../../../config/base.config'
+import { vaultConfigFactory } from '../../../config/vault.config'
+import { GitlabClientService } from '../gitlab/gitlab-client.service'
+import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
+import { capturePluginResult } from '../../core/plugin/plugin.utils'
+import { VaultClientService } from '../vault/vault-client.service'
+import { ArgoCDDatastoreService } from './argocd-datastore.service'
+import {
+  CONSOLE_ADMIN_GROUP_PATH,
+  PLATFORM_ADMIN_GROUP_PATH,
+  PLATFORM_READONLY_GROUP_PATH,
+  PLATFORM_SECURITY_GROUP_PATH,
+  PROJECT_ADMIN_GROUP_PATH_SUFFIX,
+  PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
+  PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  PROJECT_SECURITY_GROUP_PATH_SUFFIX,
+} from './argocd.constants'
+import { generateClusterSecretData, generateZoneVaultValues } from './argocd.utils'
+
+@Injectable()
+export class ArgoCDService {
+  private readonly logger = new Logger(ArgoCDService.name)
+
+  constructor(
+    @Inject(ArgoCDDatastoreService) private readonly datastore: ArgoCDDatastoreService,
+    @Inject(argocdConfigFactory.KEY) private readonly argocdConfig: ConfigType<typeof argocdConfigFactory>,
+    @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
+    @Inject(vaultConfigFactory.KEY) private readonly vaultConfig: ConfigType<typeof vaultConfigFactory>,
+    @Inject(GitlabClientService) private readonly gitlab: GitlabClientService,
+    @Inject(VaultClientService) private readonly vault: VaultClientService,
+  ) {
+    this.logger.log('ArgoCDService initialized')
+  }
+
+  private getExtraRepositories(project: ProjectWithDetails): string[] {
+    return splitExtraRepositories(
+      project.plugins?.find(p => p.key === 'extraRepositories')?.value,
+    )
+  }
+
+  @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.syncProject(project))
+  }
+
+  @StartActiveSpan()
+  private async syncProject(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.log(`Handling a project upsert event for ${project.slug}`)
+    await this.ensureProject(project)
+    this.logger.log(`ArgoCD sync completed for project ${project.slug}`)
+  }
+
+  @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.cleanupProject(project))
+  }
+
+  @OnEvent('cluster.upsert')
+  async handleClusterUpsert(payload: ClusterEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.syncCluster(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncCluster(payload: ClusterEventPayload) {
+    const cluster = await this.datastore.getCluster(payload.clusterId)
+    if (!cluster) throw new Error(`Cluster not found for event (clusterId=${payload.clusterId})`)
+    const span = trace.getActiveSpan()
+    span?.setAttribute('cluster.label', cluster.label)
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+    this.logger.log(`Handling a cluster upsert event for ${cluster.label}`)
+    const kubeconfig = KubeconfigSchema.parse(cluster.kubeconfig)
+    await this.vault.ensureKvData(
+      `zone-${cluster.zone.slug}`,
+      `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
+      { data: generateClusterSecretData(cluster, kubeconfig) },
+    )
+    await this.commitZoneValues(cluster.zone.slug)
+    if (payload.zoneId && payload.zoneId !== cluster.zone.id) {
+      const previousZoneSlug = await this.datastore.getZoneSlug(payload.zoneId)
+      if (previousZoneSlug) await this.commitZoneValues(previousZoneSlug)
+    }
+    this.logger.log(`ArgoCD cluster sync completed for ${cluster.label}`)
+  }
+
+  @OnEvent('cluster.delete')
+  async handleClusterDelete(payload: ClusterEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.cleanupCluster(payload))
+  }
+
+  @StartActiveSpan()
+  private async cleanupCluster(payload: ClusterEventPayload) {
+    const cluster = await this.datastore.getCluster(payload.clusterId)
+    if (!cluster) throw new Error(`Cluster not found for event (clusterId=${payload.clusterId})`)
+    const span = trace.getActiveSpan()
+    span?.setAttribute('cluster.label', cluster.label)
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+    this.logger.log(`Handling a cluster delete event for ${cluster.label}`)
+    await this.vault.deleteKvMetadata(
+      `zone-${cluster.zone.slug}`,
+      `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
+    )
+    await this.commitZoneValues(cluster.zone.slug, cluster.label)
+    this.logger.log(`ArgoCD cluster cleanup completed for ${cluster.label}`)
+  }
+
+  private async commitZoneValues(zoneSlug: string, excludedClusterLabel?: string) {
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
+    const clusters = await this.datastore.getZoneClusterNames(zoneSlug, excludedClusterLabel)
+    const vaultValues = await this.generateZoneVaultValues(zoneSlug)
+    const action = await this.gitlab.generateCreateOrUpdateAction(
+      infraProject,
+      'main',
+      'argocd-values.yaml',
+      stringify({ vault: vaultValues, clusters }),
+    )
+    if (!action) {
+      this.logger.verbose(`Zone argocd-values.yaml is up to date (zone=${zoneSlug})`)
+      return
+    }
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Update zone ${zoneSlug}`, [action])
+  }
+
+  private async generateZoneVaultValues(zoneSlug: string) {
+    // Propagate failures instead of falling back to `none`: AppRole is required
+    // to read cluster secrets (#1833), and committing placeholder credentials
+    // would overwrite the functional ones for the whole zone. Legacy parity:
+    // the error reaches the ArgoCD hook catch, which returns KO (→ API 422).
+    const roleId = await this.vault.getAuthApproleRoleRoleId(`zone-${zoneSlug}`)
+    const secretId = await this.vault.ensureAuthApproleRoleSecretId(`zone-${zoneSlug}`)
+    return generateZoneVaultValues(this.vaultConfig.url, zoneSlug, roleId, secretId)
+  }
+
+  @StartActiveSpan()
+  private async cleanupProject(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.log(`Handling a project delete event for ${project.slug}`)
+    await this.purgeZones(project)
+    this.logger.log(`ArgoCD cleanup completed for project ${project.slug}`)
+  }
+
+  @StartActiveSpan()
+  private async purgeZones(project: ProjectWithDetails): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    // Purge every zone, not only those with a current environment, so leftover
+    // values files are removed even from zones the project no longer deploys to.
+    const zones = await this.datastore.getAllZoneSlugs()
+    span?.setAttribute('argocd.zones.count', zones.length)
+    this.logger.verbose(`Purging ArgoCD zones for project ${project.slug} (count=${zones.length})`)
+    await Promise.all(zones.map(zoneSlug => this.purgeZone(project, zoneSlug)))
+  }
+
+  @StartActiveSpan()
+  private async purgeZone(project: ProjectWithDetails, zoneSlug: string): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
+    span?.setAttributes({
+      'argocd.repo.id': infraProject.id,
+      'argocd.repo.path': infraProject.path_with_namespace,
+      'zone.slug': zoneSlug,
+    })
+
+    const actions = await this.generateDeleteProjectActions(project, infraProject, zoneSlug)
+
+    span?.setAttribute('argocd.repo.actions.count', actions.length)
+    if (actions.length === 0) {
+      this.logger.verbose(`No ArgoCD files to delete for project ${project.slug} in zone ${zoneSlug}`)
+      return
+    }
+
+    this.logger.log(`Deleting ArgoCD files for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Delete ${project.slug}`, actions)
+  }
+
+  private async generateDeleteProjectActions(
+    project: ProjectWithDetails,
+    infraProject: CondensedProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    const projectPrefix = `${project.name}/`
+    const existingFiles = await this.gitlab.listFiles(infraProject, {
+      path: projectPrefix,
+      recursive: true,
+    })
+
+    const actions = existingFiles
+      .filter(existingFile => existingFile.name === 'values.yaml' && existingFile.path.startsWith(projectPrefix))
+      .map(existingFile => ({ action: 'delete', filePath: existingFile.path } satisfies CommitAction))
+
+    this.logger.verbose(`Computed ArgoCD delete actions for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+
+    return actions
+  }
+
+  // @Cron(CronExpression.EVERY_HOUR)
+  @StartActiveSpan()
+  async handleCron() {
+    this.logger.log('Starting ArgoCD reconciliation')
+    const projects = await this.datastore.getAllProjects()
+    const span = trace.getActiveSpan()
+    span?.setAttribute('argocd.projects.count', projects.length)
+    this.logger.log(`Loaded ${projects.length} projects for ArgoCD reconciliation`)
+    await this.ensureProjects(projects)
+    this.logger.log(`ArgoCD reconciliation completed (${projects.length})`)
+  }
+
+  @StartActiveSpan()
+  private async ensureProjects(projects: ProjectWithDetails[]) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('argocd.projects.count', projects.length)
+    this.logger.verbose(`Reconciling ArgoCD projects (count=${projects.length})`)
+    await Promise.all(projects.map(project => this.ensureProject(project)))
+  }
+
+  @StartActiveSpan()
+  private async ensureProject(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.verbose(`Reconciling ArgoCD project ${project.slug}`)
+    await this.ensureZones(project)
+    this.logger.verbose(`ArgoCD project reconciled (${project.slug})`)
+  }
+
+  @StartActiveSpan()
+  private async ensureZones(
+    project: ProjectWithDetails,
+  ): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    // Visit every zone, not only those with a current environment, so leftover
+    // values files are purged from zones the project no longer deploys to.
+    const zones = await this.datastore.getAllZoneSlugs()
+    span?.setAttribute('argocd.zones.count', zones.length)
+    this.logger.verbose(`Reconciling ArgoCD zones for project ${project.slug} (count=${zones.length})`)
+    await Promise.all(zones.map(zoneSlug => this.ensureZone(project, zoneSlug)))
+  }
+
+  @StartActiveSpan()
+  private async ensureZone(
+    project: ProjectWithDetails,
+    zoneSlug: string,
+  ): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
+    span?.setAttributes({
+      'argocd.repo.id': infraProject.id,
+      'argocd.repo.path': infraProject.path_with_namespace,
+      'zone.slug': zoneSlug,
+    })
+    this.logger.verbose(`Reconciling ArgoCD zone for project ${project.slug} in zone ${zoneSlug} (repoId=${infraProject.id})`)
+
+    const actions = await this.generateEnvironmentActions(project, infraProject, zoneSlug)
+
+    span?.setAttribute('argocd.repo.actions.count', actions.length)
+    if (actions.length === 0) {
+      this.logger.verbose(`No ArgoCD changes need to be committed for project ${project.slug} in zone ${zoneSlug}`)
+      return
+    }
+
+    this.logger.log(`Applying ArgoCD changes for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Sync ${project.slug}`, actions)
+  }
+
+  private async generateEnvironmentActions(
+    project: ProjectWithDetails,
+    infraProject: ProjectSchema,
+    zoneSlug: string,
+  ) {
+    const environmentActions = await this.generateEnvironmentsUpdateActions(
+      project,
+      project.environments,
+      infraProject,
+      zoneSlug,
+    )
+    const deploymentActions = await this.generateDeploymentsUpdateActions(
+      project,
+      infraProject,
+      zoneSlug,
+    )
+    const purgeEnvironmentActions = await this.generatePurgeEnvironmentActions(
+      project,
+      infraProject,
+      zoneSlug,
+    )
+    return [
+      ...(deploymentActions.length ? deploymentActions : environmentActions),
+      ...purgeEnvironmentActions,
+    ] satisfies CommitAction[]
+  }
+
+  private async generatePurgeEnvironmentActions(
+    project: ProjectWithDetails,
+    infraProject: CondensedProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    const neededFiles = new Set<string>()
+
+    project.environments.forEach((env) => {
+      if (env.cluster?.zone.slug !== zoneSlug) return
+      neededFiles.add(formatEnvironmentValuesFilePath(project, env.cluster, env))
+    })
+
+    const existingFiles = await this.gitlab.listFiles(infraProject, {
+      path: `${project.name}/`,
+      recursive: true,
+    })
+
+    const projectPrefix = `${project.name}/`
+    const actions = existingFiles
+      .filter((existingFile) => {
+        if (existingFile.name !== 'values.yaml') return false
+        if (!existingFile.path.startsWith(projectPrefix)) return false
+
+        return !neededFiles.has(existingFile.path)
+      })
+      .map(existingFile => ({ action: 'delete', filePath: existingFile.path } satisfies CommitAction))
+
+    this.logger.verbose(`Computed ArgoCD purge actions for project ${project.slug} in zone ${zoneSlug} (actions=${actions.length})`)
+
+    return actions
+  }
+
+  private async generateEnvironmentsUpdateActions(
+    project: ProjectWithDetails,
+    environments: ProjectWithDetails['environments'],
+    infraProject: SimpleProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    this.logger.verbose(`Computing ArgoCD environment actions for project ${project.slug} in zone ${zoneSlug} (environments=${environments.length})`)
+    const actions = await Promise.all(
+      environments
+        .filter(env => env.cluster?.zone.slug === zoneSlug)
+        .map(env => this.generateEnvironmentUpdateAction(project, env, infraProject)),
+    )
+    const filteredActions: CommitAction[] = actions.filter(a => !!a)
+    this.logger.verbose(`Computed ArgoCD environment actions for project ${project.slug} in zone ${zoneSlug} (actions=${filteredActions.length})`)
+    return filteredActions
+  }
+
+  private async generateEnvironmentUpdateAction(
+    project: ProjectWithDetails,
+    environment: ProjectWithDetails['environments'][number],
+    infraProject: SimpleProjectSchema,
+  ): Promise<CommitAction | null> {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'environment.id': environment.id,
+      'environment.name': environment.name,
+    })
+    const vaultValues = await this.generateVaultValues(project.slug)
+    const cluster = environment.cluster
+    if (!cluster) {
+      this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
+      throw new Error(`Cluster not found for environment ${environment.id}`)
+    }
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+
+    const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
+
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
+
+    const values = formatValues({
+      project,
+      environment,
+      cluster,
+      gitlabPublicProjectUrl,
+      sharedSourceRepositories: formatSharedSourceRepositories(this.argocdConfig.sharedSourceRepositories, project.slug),
+      argocdExtraRepositories: this.getExtraRepositories(project),
+      infraProject,
+      valueFilePath,
+      vaultValues,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
+    })
+
+    return this.gitlab.generateCreateOrUpdateAction(
+      infraProject,
+      'main',
+      valueFilePath,
+      stringify(values),
+    )
+  }
+
+  private async generateDeploymentsUpdateActions(
+    project: ProjectWithDetails,
+    infraProject: SimpleProjectSchema,
+    zoneSlug: string,
+  ): Promise<CommitAction[]> {
+    this.logger.verbose(`Computing ArgoCD deployment actions for project ${project.slug} in zone ${zoneSlug} (environments=${project.deployments.length})`)
+    const environments = project.deployments.reduce<
+      Record<string, { environment: ProjectWithDetails['environments'][number], deployments: ProjectWithDetails['deployments'][number][] }>
+    >((acc, deployment) => {
+      const environment = deployment.environment
+      if (acc[environment.id]) acc[environment.id].deployments.push(deployment)
+      else acc[environment.id] = { environment, deployments: [deployment] }
+      return acc
+    }, {})
+
+    const actions = await Promise.all(
+      Object.values(environments)
+        .filter(({ environment }) => environment.cluster?.zone.slug === zoneSlug)
+        .map(({ environment, deployments }) => this.generateEnvironmentWithDeploymentsUpdateAction(project, environment, deployments, infraProject)),
+    )
+
+    const filteredActions: CommitAction[] = actions.filter(a => !!a)
+    this.logger.verbose(`Computed ArgoCD deployment actions for project ${project.slug} in zone ${zoneSlug} (actions=${filteredActions.length})`)
+    return filteredActions
+  }
+
+  private async generateEnvironmentWithDeploymentsUpdateAction(
+    project: ProjectWithDetails,
+    environment: ProjectWithDetails['environments'][number],
+    deployments: ProjectWithDetails['deployments'][number][],
+    infraProject: SimpleProjectSchema,
+  ): Promise<CommitAction | null> {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'environment.id': environment.id,
+      'environment.name': environment.name,
+    })
+    const vaultValues = await this.generateVaultValues(project.slug)
+    const cluster = environment.cluster
+    if (!cluster) {
+      this.logger.warn(`Cluster not found for environment ${environment.id} in project ${project.slug}`)
+      throw new Error(`Cluster not found for environment ${environment.id}`)
+    }
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+
+    const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
+
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
+
+    const values = formatValues({
+      project,
+      environment,
+      cluster,
+      gitlabPublicProjectUrl,
+      sharedSourceRepositories: formatSharedSourceRepositories(this.argocdConfig.sharedSourceRepositories, project.slug),
+      argocdExtraRepositories: this.getExtraRepositories(project),
+      infraProject,
+      valueFilePath,
+      vaultValues,
+      argoNamespace: this.argocdConfig.namespace,
+      envChartVersion: this.argocdConfig.dsoEnvChartVersion,
+      nsChartVersion: this.argocdConfig.dsoNsChartVersion,
+      deployments,
+    })
+
+    return this.gitlab.generateCreateOrUpdateAction(
+      infraProject,
+      'main',
+      valueFilePath,
+      stringify(values),
+    )
+  }
+
+  private async generateVaultValues(projectSlug: string): Promise<Record<string, any>> {
+    this.logger.verbose(`Generating Vault project values for projectSlug=${projectSlug}`)
+    const roleId = await this.vault.getAuthApproleRoleRoleId(projectSlug).catch(() => {
+      this.logger.warn(`Couldn't find app role (project=${projectSlug})`)
+      return undefined
+    })
+    const secretId = await this.vault.ensureAuthApproleRoleSecretId(projectSlug).catch(() => {
+      this.logger.warn(`Couldn't find secret (project=${projectSlug})`)
+      return undefined
+    })
+    return {
+      projectsRootDir: this.baseConfig.projectsRootDir,
+      url: this.argocdConfig.vaultDeployVaultConnectionInNs ? this.vaultConfig.url : '',
+      coreKvName: this.vaultConfig.kvName,
+      roleId: roleId ?? 'none',
+      secretId: secretId ?? 'none',
+    }
+  }
+}
+
+type ValueSource
+  = | { type: 'internal', path: string }
+    | { type: 'external', ref: string, repoURL: string, targetRevision: string, path: string }
+
+interface ValuesSchema {
+  common: {
+    'dso/project': string
+    'dso/project.id': string
+    'dso/project.slug': string
+    'dso/environment': string
+    'dso/environment.id': string
+  }
+  argocd: {
+    cluster: string
+    namespace: string
+    project: string
+    envChartVersion: string
+    nsChartVersion: string
+  }
+  environment: {
+    valueFileRepository: string
+    valueFileRevision: string
+    valueFilePath: string
+    consoleAdminGroup: string
+    platformAdminGroup: string
+    platformReadonlyGroup: string
+    platformSecurityGroup: string
+    projectAdminGroup: string
+    projectDevopsGroup: string
+    projectDevelopperGroup: string
+    projectSecurityGroup: string
+    projectReadonlyGroup: string
+  }
+  application: {
+    quota: {
+      cpu: number
+      gpu: number
+      memory: string
+    }
+    sourceRepositories: string[]
+    destination: {
+      namespace: string
+      name: string
+    }
+    autosync: boolean
+    vault: Record<string, any>
+    repositories: {
+      name: string
+      id: string
+      repoURL: string
+      targetRevision: string
+      path: string
+      valueFiles: string[]
+      valueSources: ValueSource[]
+    }[]
+  }
+  features: {
+    fineGrainedRoles: {
+      enabled: boolean
+    }
+  }
+}
+
+function generateProjectConsoleGroupPath(projectSlug: string, suffix: string) {
+  return `/${projectSlug}${suffix}`
+}
+
+function formatAppProjectName(projectSlug: string, env: string) {
+  const envHash = createHmac('sha256', '')
+    .update(env)
+    .digest('hex')
+    .slice(0, 4)
+  return `${projectSlug}-${env}-${envHash}`
+}
+
+function formatEnvironmentValuesFilePath(project: { name: string }, cluster: { label: string }, env: { name: string }): string {
+  return `${project.name}/${cluster.label}/${env.name}/values.yaml`
+}
+
+function splitExtraRepositories(extraRepositories: string | undefined): string[] {
+  if (!extraRepositories) return []
+  return extraRepositories.split(',').map(r => r.trim()).filter(r => r.length > 0)
+}
+
+function formatRepositoriesValues(
+  repositories: ProjectWithDetails['repositories'],
+  gitlabPublicProjectUrl: string,
+  envName: string,
+) {
+  return repositories
+    .filter(repo => repo.isInfra)
+    .map((repository) => {
+      const valueFiles = splitExtraRepositories(repository.helmValuesFiles?.replaceAll('<env>', envName))
+      return {
+        id: repository.id,
+        name: repository.internalRepoName,
+        repoURL: `${gitlabPublicProjectUrl}/${repository.internalRepoName}.git`,
+        targetRevision: repository.deployRevision || 'HEAD',
+        path: repository.deployPath || '.',
+        valueFiles,
+        valueSources: [],
+      } satisfies ValuesSchema['application']['repositories'][number]
+    })
+}
+
+type DeploymentSource = ProjectWithDetails['deployments'][number]['deploymentSources'][number]
+
+function formatDeploymentSourceValueSources(
+  source: DeploymentSource,
+  gitlabPublicProjectUrl: string,
+): ValueSource[] {
+  const internalValueSources = source.internalValueSources.map(valueSource => ({
+    order: valueSource.order,
+    value: { type: 'internal', path: valueSource.path } satisfies ValueSource,
+  }))
+  const externalValueSource = source.externalValueSource
+    ? [{
+        order: source.externalValueSource.order,
+        value: {
+          type: 'external',
+          ref: source.externalValueSource.ref,
+          repoURL: `${gitlabPublicProjectUrl}/${source.externalValueSource.repository.internalRepoName}.git`,
+          targetRevision: source.externalValueSource.targetRevision || 'HEAD',
+          path: source.externalValueSource.path,
+        } satisfies ValueSource,
+      }]
+    : []
+  return [...internalValueSources, ...externalValueSource]
+    .toSorted((a, b) => a.order - b.order)
+    .map(entry => entry.value)
+}
+
+function formatRepositoriesValuesFromDeployments(
+  deployments: ProjectWithDetails['deployments'][number][],
+  gitlabPublicProjectUrl: string,
+) {
+  return deployments.flatMap(deployment =>
+    deployment.deploymentSources
+      .map((source) => {
+        const valueFiles = splitExtraRepositories(source.helmValuesFiles)
+        const valueSources = formatDeploymentSourceValueSources(source, gitlabPublicProjectUrl)
+        return {
+          name: source.repository.internalRepoName,
+          id: source.repository.id,
+          repoURL: `${gitlabPublicProjectUrl}/${source.repository.internalRepoName}.git`,
+          targetRevision: source.targetRevision || 'HEAD',
+          path: source.path || '.',
+          valueFiles,
+          valueSources,
+        } satisfies ValuesSchema['application']['repositories'][number]
+      }),
+  )
+}
+
+function formatEnvironmentValues(
+  project: ProjectWithDetails,
+  infraProject: SimpleProjectSchema,
+  valueFilePath: string,
+) {
+  return {
+    valueFileRepository: infraProject.http_url_to_repo,
+    valueFileRevision: 'HEAD',
+    valueFilePath,
+    consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
+    platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
+    platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
+    platformSecurityGroup: PLATFORM_SECURITY_GROUP_PATH,
+    projectAdminGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_ADMIN_GROUP_PATH_SUFFIX),
+    projectDevopsGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVOPS_GROUP_PATH_SUFFIX),
+    projectDevelopperGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX),
+    projectSecurityGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_SECURITY_GROUP_PATH_SUFFIX),
+    projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READONLY_GROUP_PATH_SUFFIX),
+  } satisfies ValuesSchema['environment']
+}
+
+interface FormatSourceRepositoriesValuesOptions {
+  gitlabPublicProjectUrl: string
+  sharedSourceRepositories: string[]
+  argocdExtraRepositories?: string[]
+}
+
+function formatSharedSourceRepositories(sharedSourceRepositories: string[], projectSlug: string): string[] {
+  return sharedSourceRepositories.map(repository => repository.replaceAll('<project>', projectSlug))
+}
+
+function formatSourceRepositoriesValues(
+  { gitlabPublicProjectUrl, sharedSourceRepositories, argocdExtraRepositories = [] }: FormatSourceRepositoriesValuesOptions,
+): string[] {
+  return [
+    `${gitlabPublicProjectUrl}/**`,
+    ...sharedSourceRepositories,
+    ...argocdExtraRepositories,
+  ]
+}
+
+interface FormatCommonOptions {
+  project: ProjectWithDetails
+  environment: ProjectWithDetails['environments'][number]
+}
+
+function formatCommon({ project, environment }: FormatCommonOptions) {
+  return {
+    'dso/project': project.name,
+    'dso/project.id': project.id,
+    'dso/project.slug': project.slug,
+    'dso/environment': environment.name,
+    'dso/environment.id': environment.id,
+  } satisfies ValuesSchema['common']
+}
+
+interface FormatArgoCDValuesOptions {
+  namespace: string
+  project: string
+  envChartVersion: string
+  nsChartVersion: string
+}
+
+function formatArgoCDValues(options: FormatArgoCDValuesOptions) {
+  const { namespace, project, envChartVersion, nsChartVersion } = options
+  return {
+    cluster: inClusterLabel,
+    namespace,
+    project,
+    envChartVersion,
+    nsChartVersion,
+  } satisfies ValuesSchema['argocd']
+}
+
+interface FormatValuesOptions {
+  project: ProjectWithDetails
+  environment: ProjectWithDetails['environments'][number]
+  cluster: ProjectWithDetails['environments'][number]['cluster']
+  gitlabPublicProjectUrl: string
+  sharedSourceRepositories: string[]
+  argocdExtraRepositories?: string[]
+  vaultValues: Record<string, any>
+  infraProject: SimpleProjectSchema
+  valueFilePath: string
+  argoNamespace: string
+  envChartVersion: string
+  nsChartVersion: string
+  deployments?: ProjectWithDetails['deployments'][number][]
+}
+
+function formatValues({
+  project,
+  environment,
+  cluster,
+  gitlabPublicProjectUrl,
+  sharedSourceRepositories,
+  argocdExtraRepositories,
+  vaultValues,
+  infraProject,
+  valueFilePath,
+  argoNamespace,
+  envChartVersion,
+  nsChartVersion,
+  deployments,
+}: FormatValuesOptions) {
+  return {
+    common: formatCommon({ project, environment }),
+    argocd: formatArgoCDValues({
+      namespace: argoNamespace,
+      project: formatAppProjectName(project.slug, environment.name),
+      envChartVersion,
+      nsChartVersion,
+    }),
+    environment: formatEnvironmentValues(
+      project,
+      infraProject,
+      valueFilePath,
+    ),
+    application: {
+      quota: {
+        cpu: environment.cpu,
+        gpu: environment.gpu,
+        memory: `${environment.memory}Gi`,
+      },
+      sourceRepositories: formatSourceRepositoriesValues({
+        gitlabPublicProjectUrl,
+        sharedSourceRepositories,
+        argocdExtraRepositories,
+      }),
+      destination: {
+        namespace: generateNamespaceName(project.id, environment.id),
+        name: cluster.label,
+      },
+      autosync: environment.autosync,
+      vault: vaultValues,
+      repositories: deployments
+        ? formatRepositoriesValuesFromDeployments(deployments, gitlabPublicProjectUrl)
+        : formatRepositoriesValues(
+            project.repositories,
+            gitlabPublicProjectUrl,
+            environment.name,
+          ),
+    },
+    features: {
+      fineGrainedRoles: {
+        enabled: true,
+      },
+    },
+  } satisfies ValuesSchema
+}

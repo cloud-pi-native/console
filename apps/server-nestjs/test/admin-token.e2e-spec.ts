@@ -6,7 +6,7 @@ import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
-import { AdminTokenModule } from '../src/modules/admin-token/admin-token.module'
+import { AdminTokenModule } from '../src/modules/core/admin-token/admin-token.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
