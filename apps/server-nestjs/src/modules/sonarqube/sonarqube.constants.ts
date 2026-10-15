@@ -54,6 +54,3 @@ export const SONARQUBE_PROJECT_QUALIFIER_PROJECT = 'TRK'
 export const SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW = 'SVW'
 export const SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST = 'UTS'
 export const SONARQUBE_PROJECT_QUALIFIER_VIEW = 'VW'
-
-// Health monitor messages
-export const REQUEST_ERROR_MESSAGE = 'Erreur lors la requête'
