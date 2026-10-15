@@ -3,7 +3,8 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { z } from 'zod'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
-import { PLUGIN_NAME, REQUEST_ERROR_MESSAGE } from './sonarqube.constants'
+import { REQUEST_ERROR_MESSAGE } from '../service-monitor/service-monitor.constants'
+import { PLUGIN_NAME } from './sonarqube.constants'
 
 const sonarqubeHealthBodySchema = z.object({ health: z.string() })
 

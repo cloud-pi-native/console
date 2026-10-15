@@ -1,7 +1,8 @@
+import type { MonitorInfos } from '@cpn-console/shared'
 import type { ServiceHealth } from './service-monitor.service'
 import { MonitorStatus } from '@cpn-console/shared'
-import { isRecord } from '../../utils/record.utils'
-import { ERROR_MESSAGE } from './service-monitor.constants'
+import { z } from 'zod'
+import { ERROR_MESSAGE, PENDING_MESSAGE } from './service-monitor.constants'
 
 export interface ProbeOutcome {
   status: MonitorStatus
@@ -9,21 +10,23 @@ export interface ProbeOutcome {
   cause?: unknown
 }
 
-interface ProbeDetail {
-  status: string
-  message?: string
-  cause?: unknown
+export interface MonitoredService {
+  name: string
+  probe: () => Promise<ProbeOutcome>
 }
 
-function isProbeDetail(detail: unknown): detail is ProbeDetail {
-  return isRecord(detail) && 'status' in detail && typeof detail.status === 'string'
-}
+const probeDetailSchema = z.object({
+  status: z.string(),
+  message: z.string().optional(),
+  cause: z.unknown(),
+})
 
 export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
-  const detail = isRecord(result) ? result[key] : undefined
-  if (!isProbeDetail(detail)) {
+  const parsed = z.object({ [key]: probeDetailSchema }).safeParse(result)
+  if (!parsed.success) {
     return { status: MonitorStatus.UNKNOW, message: ERROR_MESSAGE }
   }
+  const detail = parsed.data[key]
 
   const up = detail.status === 'up'
   if (up) {
@@ -35,6 +38,16 @@ export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
     status: MonitorStatus.ERROR,
     message: detail.message ?? ERROR_MESSAGE,
     cause: toCause(detail.cause ?? detail.message ?? ERROR_MESSAGE),
+  }
+}
+
+export function pendingStatus(interval: number): MonitorInfos {
+  return {
+    interval,
+    lastUpdateTimestamp: Date.now(),
+    status: MonitorStatus.UNKNOW,
+    message: PENDING_MESSAGE,
+    cause: 'App just started',
   }
 }
 
