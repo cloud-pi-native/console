@@ -14,9 +14,9 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
-import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
-import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
-import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
+import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/integrations/keycloak/keycloak-client.service'
+import { projectSelect } from '../src/modules/integrations/keycloak/keycloak-datastore.service'
+import { KeycloakModule } from '../src/modules/integrations/keycloak/keycloak.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
 

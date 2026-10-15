@@ -1,0 +1,373 @@
+import type {
+  SONARQUBE_PROJECT_QUALIFIER_APPLICATION,
+  SONARQUBE_PROJECT_QUALIFIER_BRANCH,
+  SONARQUBE_PROJECT_QUALIFIER_DIRECTORY,
+  SONARQUBE_PROJECT_QUALIFIER_FILE,
+  SONARQUBE_PROJECT_QUALIFIER_LIBRARY,
+  SONARQUBE_PROJECT_QUALIFIER_PROJECT,
+  SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW,
+  SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST,
+  SONARQUBE_PROJECT_QUALIFIER_VIEW,
+} from './sonarqube.constants'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
+import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
+import { SONARQUBE_MAX_PAGES, SONARQUBE_PAGE_SIZE } from './sonarqube.constants'
+import { ensure } from './sonarqube.utils'
+
+export interface SonarqubePaging {
+  pageIndex: number
+  pageSize: number
+  total: number
+}
+
+export interface SonarqubeGroup {
+  id: string
+  name: string
+  description: string
+  membersCount: number
+  default: boolean
+}
+
+export interface SonarqubeUser {
+  login: string
+  name: string
+  active: boolean
+  email: string
+  groups: string[]
+  tokensCount: number
+  local: boolean
+  externalIdentity: string
+  externalProvider: string
+  managed: boolean
+}
+
+export type SonarqubeProjectQualifier
+  = | typeof SONARQUBE_PROJECT_QUALIFIER_APPLICATION
+    | typeof SONARQUBE_PROJECT_QUALIFIER_BRANCH
+    | typeof SONARQUBE_PROJECT_QUALIFIER_DIRECTORY
+    | typeof SONARQUBE_PROJECT_QUALIFIER_FILE
+    | typeof SONARQUBE_PROJECT_QUALIFIER_LIBRARY
+    | typeof SONARQUBE_PROJECT_QUALIFIER_PROJECT
+    | typeof SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST
+    | typeof SONARQUBE_PROJECT_QUALIFIER_VIEW
+    | typeof SONARQUBE_PROJECT_QUALIFIER_SUB_VIEW
+
+export interface SonarqubeProject {
+  key: string
+  name: string
+  qualifier: SonarqubeProjectQualifier
+  visibility: 'private' | 'public'
+  lastAnalysisDate?: string
+  revision?: string
+}
+
+export interface SonarqubeProjectResult {
+  projectSlug: string
+  repository: string
+  key: string
+}
+
+export interface SonarqubeGeneratedToken {
+  token: string
+  login: string
+  name: string
+}
+
+type BaseParams = Record<string, string | number | boolean | undefined>
+
+export interface SearchUserGroupParams extends BaseParams {
+  q?: string
+  p?: number
+  ps?: number
+}
+
+export interface CreateUserGroupParams extends BaseParams {
+  name: string
+  description?: string
+}
+
+export interface CreatePermissionTemplateParams extends BaseParams {
+  name: string
+  description?: string
+  projectKeyPattern?: string
+}
+
+export interface SearchPermissionTemplatesParams extends BaseParams {
+  q?: string
+}
+
+export interface SetPermissionDefaultTemplateParams extends BaseParams {
+  templateName: string
+  projectKeyPattern?: string
+}
+
+export interface AddPermissionProjectCreatorToTemplateParams extends BaseParams {
+  templateName: string
+  permission: string
+}
+
+export interface AddPermissionGroupToTemplateParams extends BaseParams {
+  groupName: string
+  templateName: string
+  permission: string
+}
+
+export interface AddPermissionGroupParams extends BaseParams {
+  groupName: string
+  permission: string
+  projectKey?: string
+}
+
+export interface AddPermissionUserParams extends BaseParams {
+  projectKey: string
+  permission: string
+  login: string
+}
+
+export interface SearchUsersParams extends BaseParams {
+  q?: string
+  p?: number
+  ps?: number
+}
+
+export interface CreateUserParams extends BaseParams {
+  email: string
+  local: string
+  login: string
+  name: string
+  password: string
+}
+
+export interface UpdateUserParams extends BaseParams {
+  login: string
+  password?: string
+  email?: string
+}
+
+export interface DeactivateUserParams extends BaseParams {
+  login: string
+  anonymize: boolean
+}
+
+export interface RevokeUserTokenParams extends BaseParams {
+  login: string
+  name: string
+}
+
+export interface GenerateUserTokenParams extends BaseParams {
+  login: string
+  name: string
+}
+
+export interface SearchProjectParams extends BaseParams {
+  q?: string
+  p?: number
+  ps?: number
+}
+
+export interface CreateProjectParams extends BaseParams {
+  project: string
+  visibility: string
+  name: string
+  mainbranch: string
+}
+
+export interface DeleteProjectParams extends BaseParams {
+  project: string
+}
+
+export interface SearchUserGroupResponse {
+  paging: SonarqubePaging
+  groups: SonarqubeGroup[]
+}
+
+export interface SonarqubePermissionTemplate {
+  id: string
+  name: string
+  description?: string
+}
+
+export interface SearchPermissionTemplatesResponse {
+  permissionTemplates: SonarqubePermissionTemplate[]
+}
+
+export interface SearchUsersResponse {
+  paging: SonarqubePaging
+  users: SonarqubeUser[]
+}
+
+export interface SearchProjectResponse {
+  paging: SonarqubePaging
+  components: SonarqubeProject[]
+}
+
+@Injectable()
+export class SonarqubeClientService {
+  private readonly logger = new Logger(SonarqubeClientService.name)
+
+  constructor(
+    @Inject(SonarqubeHttpClientService) private readonly http: SonarqubeHttpClientService,
+  ) {}
+
+  private async* paginate<T>(fetchPage: (page: number, pageSize: number) => Promise<T[]>): AsyncGenerator<T> {
+    const pageSize = SONARQUBE_PAGE_SIZE
+    let page = 1
+    let pagesFetched = 0
+    this.logger.debug('Pagination start', { action: 'paginate' })
+    // hard cap (1000 * 100) guards a misbehaving endpoint that always returns a full page; raise if a project legitimately exceeds 100k items
+    while (pagesFetched < SONARQUBE_MAX_PAGES) {
+      try {
+        const items = await fetchPage(page, pageSize)
+        pagesFetched += 1
+        this.logger.debug('Pagination page fetched', { action: 'paginate', page, items: items.length, pageSize, pagesFetched })
+        for (const item of items) yield item
+        if (items.length < pageSize) break
+        page += 1
+      } catch (error) {
+        this.logger.error('Pagination request failed', { action: 'paginate', page, err: error })
+        throw error
+      }
+    }
+    if (pagesFetched >= SONARQUBE_MAX_PAGES) {
+      this.logger.error('Pagination hit max page cap, stopping early', { action: 'paginate', pagesFetched })
+    }
+    this.logger.debug('Pagination done', { action: 'paginate', pagesFetched })
+  }
+
+  @StartActiveSpan()
+  searchUserGroup(params: SearchUserGroupParams) {
+    return this.http.fetch<SearchUserGroupResponse>('user_groups/search', { query: params }).then(res => res.data!)
+  }
+
+  @StartActiveSpan()
+  async ensureUserGroup(params: CreateUserGroupParams): Promise<void> {
+    await ensure<SonarqubeGroup | undefined>({
+      create: async () => {
+        await this.http.fetch('user_groups/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        const { groups } = await this.searchUserGroup({ q: params.name })
+        return groups.find(g => g.name === params.name)
+      },
+    })
+  }
+
+  @StartActiveSpan()
+  async ensurePermissionTemplate(params: CreatePermissionTemplateParams): Promise<void> {
+    await ensure<SonarqubePermissionTemplate | undefined>({
+      create: async () => {
+        await this.http.fetch('permissions/create_template', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        const { permissionTemplates } = await this.searchPermissionTemplates({ q: params.name })
+        return permissionTemplates.find(t => t.name.toLowerCase() === params.name.toLowerCase())
+      },
+    })
+  }
+
+  @StartActiveSpan()
+  searchPermissionTemplates(params: SearchPermissionTemplatesParams) {
+    return this.http.fetch<SearchPermissionTemplatesResponse>('permissions/search_templates', { query: params }).then(res => res.data!)
+  }
+
+  @StartActiveSpan()
+  async setPermissionDefaultTemplate(params: SetPermissionDefaultTemplateParams) {
+    await this.http.fetch('permissions/set_default_template', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async addPermissionProjectCreatorToTemplate(params: AddPermissionProjectCreatorToTemplateParams) {
+    await this.http.fetch('permissions/add_project_creator_to_template', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async addPermissionGroupToTemplate(params: AddPermissionGroupToTemplateParams) {
+    await this.http.fetch('permissions/add_group_to_template', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async addPermissionGroup(params: AddPermissionGroupParams) {
+    await this.http.fetch('permissions/add_group', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async addPermissionUser(params: AddPermissionUserParams) {
+    await this.http.fetch('permissions/add_user', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async* searchUsers(params: SearchUsersParams): AsyncGenerator<SonarqubeUser> {
+    yield* this.paginate(async (page, pageSize) => {
+      const res = await this.http.fetch<SearchUsersResponse>('users/search', { query: { ...params, p: page, ps: pageSize } })
+      return res.data!.users
+    })
+  }
+
+  @StartActiveSpan()
+  async ensureUser(params: CreateUserParams): Promise<SonarqubeUser | undefined> {
+    return ensure<SonarqubeUser | undefined>({
+      create: async () => {
+        await this.http.fetch('users/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        for await (const user of this.searchUsers({ q: params.login })) {
+          if (user.login === params.login) return user
+        }
+        return undefined
+      },
+    })
+  }
+
+  @StartActiveSpan()
+  async updateUser(params: UpdateUserParams) {
+    await this.http.fetch('users/update', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async deactivateUser(params: DeactivateUserParams) {
+    await this.http.fetch('users/deactivate', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  async revokeUserToken(params: RevokeUserTokenParams) {
+    await this.http.fetch('user_tokens/revoke', { method: 'POST', query: params })
+  }
+
+  @StartActiveSpan()
+  generateUserToken(params: GenerateUserTokenParams) {
+    return this.http.fetch<SonarqubeGeneratedToken>('user_tokens/generate', { method: 'POST', query: params }).then(res => res.data!)
+  }
+
+  @StartActiveSpan()
+  async* searchProject(params: SearchProjectParams): AsyncGenerator<SonarqubeProject> {
+    yield* this.paginate(async (page, pageSize) => {
+      const res = await this.http.fetch<SearchProjectResponse>('projects/search', { query: { ...params, p: page, ps: pageSize } })
+      return res.data!.components
+    })
+  }
+
+  @StartActiveSpan()
+  async ensureProject(params: CreateProjectParams): Promise<void> {
+    await ensure<SonarqubeProject | undefined>({
+      create: async () => {
+        await this.http.fetch('projects/create', { method: 'POST', query: params })
+        return undefined
+      },
+      reload: async () => {
+        for await (const project of this.searchProject({ q: params.project })) {
+          if (project.key === params.project) return project
+        }
+        return undefined
+      },
+    })
+  }
+
+  @StartActiveSpan()
+  async deleteProject(params: DeleteProjectParams) {
+    await this.http.fetch('projects/delete', { method: 'POST', query: params })
+  }
+}
