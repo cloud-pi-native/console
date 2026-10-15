@@ -1,7 +1,7 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import type { OnModuleInit } from '@nestjs/common'
 import type { Cache } from 'cache-manager'
-import type { ProbeOutcome } from './service-monitor.utils'
+import type { MonitoredService, ProbeOutcome } from './service-monitor.utils'
 import { MonitorStatus } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Optional } from '@nestjs/common'
@@ -13,17 +13,10 @@ import { NexusHealthService } from '../nexus/nexus-health.service'
 import { RegistryHealthService } from '../registry/registry-health.service'
 import { SonarqubeHealthService } from '../sonarqube/sonarqube-health.service'
 import { VaultHealthService } from '../vault/vault-health.service'
-import { INTERVAL_MS, PENDING_MESSAGE, REQUEST_ERROR_MESSAGE } from './service-monitor.constants'
-import { fromHealthCheck } from './service-monitor.utils'
+import { CACHE_KEY, INTERVAL_MS, REQUEST_ERROR_MESSAGE } from './service-monitor.constants'
+import { fromHealthCheck, pendingStatus } from './service-monitor.utils'
 
 export type ServiceHealth = MonitorInfos & { name: string }
-
-interface MonitoredService {
-  name: string
-  probe: () => Promise<ProbeOutcome>
-}
-
-const CACHE_KEY = 'service-monitor:statuses'
 
 @Injectable()
 export class ServiceMonitorService implements OnModuleInit {
@@ -63,23 +56,23 @@ export class ServiceMonitorService implements OnModuleInit {
 
   async getServiceHealth(): Promise<ServiceHealth[]> {
     const statuses = await Promise.all(this.services.map(async ({ name }) => {
-      const cached = await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`)
-      return { name, ...(cached ?? this.pendingStatus()) }
+      const cached = await this.readStatus(name)
+      return { name, ...cached }
     }))
     return statuses
   }
 
   async refreshServiceHealth(): Promise<ServiceHealth[]> {
-    await this.runAll()
+    await this.refreshStatuses()
     return this.getServiceHealth()
   }
 
   onModuleInit(): void {
-    void this.runAll()
+    void this.refreshStatuses()
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  private async runAll(): Promise<void> {
+  private async refreshStatuses(): Promise<void> {
     await Promise.all(this.services.map(async (service) => {
       try {
         const outcome = await service.probe()
@@ -96,17 +89,11 @@ export class ServiceMonitorService implements OnModuleInit {
     }))
   }
 
-  private async writeStatus(name: string, status: MonitorInfos): Promise<void> {
-    await this.cache.set(`${CACHE_KEY}:${name}`, status)
+  private async readStatus(name: string): Promise<MonitorInfos> {
+    return await this.cache.get<MonitorInfos>(`${CACHE_KEY}:${name}`) ?? pendingStatus(this.interval)
   }
 
-  private pendingStatus(): MonitorInfos {
-    return {
-      interval: this.interval,
-      lastUpdateTimestamp: Date.now(),
-      status: MonitorStatus.UNKNOW,
-      message: PENDING_MESSAGE,
-      cause: 'App just started',
-    }
+  private async writeStatus(name: string, status: MonitorInfos): Promise<void> {
+    await this.cache.set(`${CACHE_KEY}:${name}`, status)
   }
 }
