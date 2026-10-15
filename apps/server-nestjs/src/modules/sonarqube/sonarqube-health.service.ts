@@ -1,9 +1,11 @@
 import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
+import { z } from 'zod'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
-import { isRecord } from '../../utils/record.utils'
 import { PLUGIN_NAME, REQUEST_ERROR_MESSAGE } from './sonarqube.constants'
+
+const sonarqubeHealthBodySchema = z.object({ health: z.string() })
 
 @Injectable()
 export class SonarqubeHealthService {
@@ -18,11 +20,11 @@ export class SonarqubeHealthService {
       const response = await fetch(this.healthUrl(), { headers: this.authHeaders() })
       if (response.status !== HttpStatus.OK) return indicator.down({ message: REQUEST_ERROR_MESSAGE })
 
-      const data: unknown = await response.json()
-      const health = isRecord(data) && typeof data.health === 'string' ? data.health : undefined
-      if (health === 'GREEN') return indicator.up()
-      if (health === 'YELLOW') return indicator.up({ message: 'Service dégradé' })
-      if (health === 'RED') return indicator.down({ message: 'Service en panne' })
+      const parsed = sonarqubeHealthBodySchema.safeParse(await response.json())
+      if (!parsed.success) return indicator.down({ message: REQUEST_ERROR_MESSAGE })
+      if (parsed.data.health === 'GREEN') return indicator.up()
+      if (parsed.data.health === 'YELLOW') return indicator.up({ message: 'Service dégradé' })
+      if (parsed.data.health === 'RED') return indicator.down({ message: 'Service en panne' })
       return indicator.down({ message: REQUEST_ERROR_MESSAGE })
     } catch (error) {
       return indicator.down({ message: REQUEST_ERROR_MESSAGE, cause: error })
