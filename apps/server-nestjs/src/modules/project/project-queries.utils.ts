@@ -198,6 +198,7 @@ export const projectForUpdateSelect = {
   members: {
     select: {
       userId: true,
+      roleIds: true,
       user: {
         select: {
           type: true,

@@ -354,17 +354,12 @@ export class ProjectService {
       throw new BadRequestException('Seuls les comptes humains peuvent être propriétaire de projets')
     }
 
-    const oldOwnerIsMember = project.members.some(member => member.userId === project.ownerId)
-    if (!oldOwnerIsMember) {
-      // The owner implicitly holds the admin role (isAdminRole in keycloak.utils.ts);
-      // on transfer that implicit grant must become explicit or the previous owner
-      // drops from MANAGE to guest with no OIDC role group at all.
-      const adminRole = project.roles.find(role => isAdminRole(project, role))
-      await upsertProjectMember(tx, project.id, {
-        userId: project.ownerId,
-        roles: adminRole ? [adminRole.id] : [],
-      })
-    }
+    const adminRole = project.roles.find(role => isAdminRole(project, role))
+    const oldOwner = project.members.find(member => member.userId === project.ownerId)
+    await upsertProjectMember(tx, project.id, {
+      userId: project.ownerId,
+      roles: [...new Set([...oldOwner?.roleIds ?? [], adminRole?.id].filter(roleId => roleId !== undefined))],
+    })
 
     await deleteProjectMember(tx, project.id, ownerIdCandidate)
     await updateProject(tx, project.id, { owner: { connect: { id: ownerIdCandidate } } })
