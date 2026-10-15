@@ -1,5 +1,12 @@
-import type { AdminRoleEventMember, AdminRoleEventPayload } from './app-events.service'
+import type { AdminRoleEventMember, AdminRoleEventPayload, ZoneEventPayload } from './app-events.service'
 import { faker } from '@faker-js/faker'
+
+export function makeZoneEventPayload(overrides: { id?: string, slug?: string } = {}): ZoneEventPayload {
+  return {
+    id: overrides.id ?? faker.string.uuid(),
+    slug: overrides.slug ?? faker.helpers.slugify(faker.string.alphanumeric(10)),
+  }
+}
 
 export function makeAdminRoleEventMember(overrides: { id?: string, email?: string, firstName?: string, lastName?: string } = {}): AdminRoleEventMember {
   return {
