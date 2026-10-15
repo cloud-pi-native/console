@@ -1,0 +1,460 @@
+import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { AdminRoleEventPayload } from '../../core/events/app-events.service'
+import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
+import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
+import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
+import { getBaseRoleType, isExternalRoleType } from '@cpn-console/shared'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import { OnEvent } from '@nestjs/event-emitter'
+import { trace } from '@opentelemetry/api'
+import z from 'zod'
+import { getErrorResponseStatus } from '../../../utils/http.utils'
+import { capturePluginResult } from '../../core/plugin/plugin.utils'
+import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
+import { KeycloakClientService } from './keycloak-client.service'
+import { KeycloakDatastoreService } from './keycloak-datastore.service'
+import { isAdminRole, isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
+
+@Injectable()
+export class KeycloakService {
+  private readonly logger = new Logger(KeycloakService.name)
+
+  constructor(
+    @Inject(KeycloakClientService) private readonly keycloak: KeycloakClientService,
+    @Inject(KeycloakDatastoreService) private readonly datastore: KeycloakDatastoreService,
+  ) {
+    this.logger.log('KeycloakService initialized')
+  }
+
+  @OnEvent('project.upsert')
+  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncProject(project))
+  }
+
+  @StartActiveSpan()
+  private async syncProject(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.log(`Handling a project upsert event for ${project.slug}`)
+    await this.ensureProjectGroups([project])
+    this.logger.log(`Keycloak sync completed for project ${project.slug}`)
+  }
+
+  @OnEvent('project.delete')
+  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.cleanupProject(project))
+  }
+
+  @StartActiveSpan()
+  private async cleanupProject(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    this.logger.log(`Handling a project delete event for ${project.slug}`)
+    const group = await this.keycloak.getGroupByPath(`/${project.slug}`)
+    if (group?.id) {
+      await this.keycloak.deleteGroup(group.id)
+    }
+    this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
+  }
+
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncAdminRole(role.id))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.revokeAdminRoleGroup(role))
+  }
+
+  @StartActiveSpan()
+  private async revokeAdminRoleGroup(role: AdminRoleEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    const roleGroupPath = toGroupPath(role.oidcGroup)
+    if (!roleGroupPath) return
+    const roleGroup = await this.keycloak.getGroupByPath(roleGroupPath)
+    if (!roleGroup?.id) {
+      this.logger.warn(`Keycloak group not found for deleted admin role (roleId=${role.id}, path=${roleGroupPath})`)
+      return
+    }
+    for (const member of role.members) {
+      await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+    }
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(roleId: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', roleId)
+    this.logger.log(`Handling an admin role event for ${roleId}`)
+    const [roles, users] = await Promise.all([
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
+    ])
+    const role = roles.find(({ id }) => id === roleId)
+    if (!role) {
+      this.logger.warn(`Admin role not found for event (roleId=${roleId})`)
+      return
+    }
+    await this.ensureAdminRoleGroup(role, users)
+  }
+
+  // @Cron(CronExpression.EVERY_HOUR)
+  @StartActiveSpan()
+  async handleCron() {
+    const span = trace.getActiveSpan()
+    this.logger.log('Starting periodic Keycloak reconciliation')
+    const [projects, adminRoles, users] = await Promise.all([
+      this.datastore.getAllProjects(),
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
+    ])
+    span?.setAttributes({
+      'keycloak.projects.count': projects.length,
+      'keycloak.admin_roles.count': adminRoles.length,
+      'keycloak.users.count': users.length,
+    })
+    this.logger.debug(`Reconciling Keycloak state (projects=${projects.length}, adminRoles=${adminRoles.length}, users=${users.length})`)
+    await Promise.all([
+      this.ensureAdminRoleGroups(adminRoles, users),
+      this.ensureProjectGroups(projects),
+    ])
+    await this.purgeOrphanGroups(projects)
+    this.logger.log(`Keycloak reconciliation completed (projects=${projects.length}, adminRoles=${adminRoles.length})`)
+  }
+
+  @StartActiveSpan()
+  private async ensureProjectGroups(projects: ProjectWithDetails[]) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('keycloak.projects.count', projects.length)
+    this.logger.verbose(`Reconciling Keycloak project groups (${projects.length})`)
+    await Promise.all(projects.map(project => this.ensureProjectGroup(project)))
+  }
+
+  @StartActiveSpan()
+  private async ensureProjectGroup(project: ProjectWithDetails) {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'project.members.count': project.members.length,
+      'project.roles.count': project.roles.length,
+      'project.environments.count': project.environments.length,
+    })
+    this.logger.verbose(`Reconciling Keycloak project group (${project.slug}): members=${project.members.length} roles=${project.roles.length}`)
+
+    const projectGroup = await this.keycloak.ensureGroupByPath(`/${project.slug}`)
+
+    span?.setAttribute('keycloak.project_group.id', projectGroup.id)
+
+    await Promise.all([
+      this.ensureProjectGroupMembers(project, projectGroup),
+      this.ensureConsoleGroup(project, projectGroup),
+    ])
+    this.logger.verbose(`Keycloak project group reconciled (${project.slug}): groupId=${projectGroup.id}`)
+  }
+
+  @StartActiveSpan()
+  private async ensureConsoleGroup(project: ProjectWithDetails, group: GroupRepresentationWith<'id'>) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('keycloak.console_group.id', group.id)
+    const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
+    this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
+    await Promise.all([
+      this.ensureRoleGroups(project, consoleGroup),
+    ])
+  }
+
+  @StartActiveSpan()
+  private async ensureAdminRoleGroups(
+    adminRoles: AdminRoleWithDetails[],
+    users: UserWithAdminRoles[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'keycloak.admin_roles.count': adminRoles.length,
+      'keycloak.users.count': users.length,
+    })
+    const rolesWithOidcGroup = adminRoles.filter(r => isNonEmptyGroupPath(r.oidcGroup) && !isExternalRoleType(r.type))
+    span?.setAttribute('keycloak.admin_roles.oidc_group.count', rolesWithOidcGroup.length)
+    await Promise.all(rolesWithOidcGroup.map(role => this.ensureAdminRoleGroup(role, users)))
+  }
+
+  @StartActiveSpan()
+  private async ensureAdminRoleGroup(
+    role: AdminRoleWithDetails,
+    users: UserWithAdminRoles[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    span?.setAttribute('admin_role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
+    const roleGroupPath = toGroupPath(role.oidcGroup)
+    if (!roleGroupPath || isExternalRoleType(role.type)) return
+
+    span?.setAttribute('keycloak.group.path', roleGroupPath)
+    const roleGroup = await this.keycloak.ensureGroupByPath(roleGroupPath)
+    span?.setAttribute('keycloak.group.id', roleGroup.id)
+
+    const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
+
+    const desiredUserIds = new Set(
+      users
+        .filter(u => u.adminRoleIds.includes(role.id))
+        .map(u => u.id),
+    )
+    span?.setAttribute('keycloak.group.members.desired', desiredUserIds.size)
+
+    let addedCount = 0
+    let removedCount = 0
+
+    await Promise.all([
+      ...Array.from(desiredUserIds, async (userId) => {
+        if (!groupMembers.some(m => m.id === userId)) {
+          addedCount++
+          await this.maybeAddUserToGroup(userId, roleGroup.id, roleGroup.name)
+        }
+      }),
+      ...groupMembers.map(async (member) => {
+        if (member.id && !desiredUserIds.has(member.id)) {
+          removedCount++
+          await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+        }
+      }),
+    ])
+
+    span?.setAttribute('keycloak.group.members.added', addedCount)
+    span?.setAttribute('keycloak.group.members.removed', removedCount)
+  }
+
+  @StartActiveSpan()
+  private async purgeOrphanGroups(projects: ProjectWithDetails[]) {
+    const span = trace.getActiveSpan()
+    const groups = map(this.keycloak.getAllGroups(), async (group) => {
+      return z.object({
+        id: z.string(),
+        name: z.string(),
+        subGroups: z.array(z.object({ name: z.string() })),
+      }).parse(group)
+    })
+    const projectSlugs = new Set(projects.map(p => p.slug))
+    this.logger.verbose(`Scanning Keycloak groups for orphan cleanup (projects=${projects.length})`)
+    const promises: Promise<void>[] = []
+    let purgedCount = 0
+
+    for await (const group of groups) {
+      if (!projectSlugs.has(group.name)) {
+        if (isOwnedProjectGroup(group)) {
+          this.logger.log(`Deleting an orphan Keycloak group (groupId=${group.id}, groupName=${group.name})`)
+          purgedCount++
+          promises.push(this.keycloak.deleteGroup(group.id))
+        }
+      }
+    }
+    span?.setAttribute('purged.count', purgedCount)
+    await Promise.all(promises)
+    this.logger.log(`Orphan Keycloak group cleanup completed (purged=${purgedCount})`)
+  }
+
+  private async maybeAddUserToGroup(userId: string, groupId: string, groupName: string) {
+    try {
+      await this.keycloak.addUserToGroup(userId, groupId)
+      this.logger.log(`Added user to Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
+    } catch (e) {
+      const status = getErrorResponseStatus(e)
+      if (status === 404) {
+        this.logger.warn(`User not found in Keycloak, skipping addition: userId=${userId} groupId=${groupId} groupName=${groupName}`)
+      } else if (status === 409) {
+        this.logger.verbose(`User already a member of Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
+      } else {
+        throw e
+      }
+    }
+  }
+
+  private async maybeRemoveUserFromGroup(userId: string, groupId: string, groupName: string) {
+    try {
+      await this.keycloak.removeUserFromGroup(userId, groupId)
+      this.logger.log(`Removed user from Keycloak group: userId=${userId} groupId=${groupId} groupName=${groupName}`)
+    } catch (e) {
+      if (getErrorResponseStatus(e) === 404) {
+        this.logger.warn(`User not found in Keycloak, skipping removal: userId=${userId} groupId=${groupId} groupName=${groupName}`)
+      } else {
+        throw e
+      }
+    }
+  }
+
+  @StartActiveSpan()
+  private async ensureProjectGroupMembers(
+    project: ProjectWithDetails,
+    group: GroupRepresentationWith<'id' | 'name'>,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    span?.setAttribute('keycloak.group.id', group.id)
+
+    const groupMembers = await this.keycloak.getGroupMembers(group.id)
+    const desiredUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
+
+    span?.setAttribute('keycloak.group.members.current', groupMembers.length)
+    span?.setAttribute('keycloak.group.members.desired', desiredUserIds.size)
+
+    let addedCount = 0
+    let removedCount = 0
+
+    await Promise.all([
+      ...Array.from(desiredUserIds, async (userId) => {
+        if (!groupMembers.some(m => m.id === userId)) {
+          addedCount++
+          await this.maybeAddUserToGroup(userId, group.id, group.name)
+        }
+      }),
+      ...groupMembers.map(async (member) => {
+        if (member.id && !desiredUserIds.has(member.id)) {
+          removedCount++
+          await this.maybeRemoveUserFromGroup(member.id, group.id, group.name)
+        }
+      }),
+    ])
+
+    span?.setAttribute('keycloak.group.members.added', addedCount)
+    span?.setAttribute('keycloak.group.members.removed', removedCount)
+  }
+
+  @StartActiveSpan()
+  private async ensureRoleGroups(
+    project: ProjectWithDetails,
+    group: GroupRepresentationWithIdNamePath,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'keycloak.group.id': group.id,
+      'project.roles.count': project.roles.length,
+    })
+
+    const rolesWithOidcGroup = project.roles.filter(r => isNonEmptyGroupPath(r.oidcGroup))
+    span?.setAttribute('project.roles.oidc_group.count', rolesWithOidcGroup.length)
+
+    await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
+  }
+
+  @StartActiveSpan()
+  private async ensureRoleGroup(
+    project: ProjectWithDetails,
+    role: ProjectWithDetails['roles'][number],
+    group: GroupRepresentationWithIdNamePath,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    span?.setAttribute('role.id', role.id)
+    span?.setAttribute('role.type', role.type)
+    span?.setAttribute('role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
+    if (!isNonEmptyGroupPath(role.oidcGroup)) return
+
+    span?.setAttribute('role.oidc_group.depth', splitGroupPath(role.oidcGroup).length)
+
+    const relativeOidcGroup = toRoleRelativeGroupPath(role, group)
+    const roleGroup = await this.keycloak.ensureRoleGroup(group, relativeOidcGroup)
+    span?.setAttribute('keycloak.group.id', roleGroup.id)
+    span?.setAttribute('keycloak.group.path', roleGroup.path)
+
+    const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
+    span?.setAttribute('keycloak.group.members.current', groupMembers.length)
+
+    switch (getBaseRoleType(role.type)) {
+      case 'managed':
+        await Promise.all([
+          this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers),
+          this.purgeOrphanRoleGroupMembers(project, role, roleGroup, groupMembers),
+        ])
+        break
+      case 'external':
+        await this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers)
+        break
+      case 'global':
+        await this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers)
+        break
+      default:
+        throw new Error(`Unknown role type ${role.type}`)
+    }
+  }
+
+  @StartActiveSpan()
+  private async ensureRoleGroupMembers(
+    project: ProjectWithDetails,
+    role: ProjectWithDetails['roles'][number],
+    group: GroupRepresentationWithIdNamePath,
+    members: UserRepresentation[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    span?.setAttribute('role.id', role.id)
+    span?.setAttribute('role.type', role.type)
+    span?.setAttribute('keycloak.group.id', group.id)
+    span?.setAttribute('keycloak.group.members.current', members.length)
+
+    const desiredMemberIds = project.members
+      .filter(m => m.roleIds.includes(role.id))
+      .map(m => m.user.id)
+
+    span?.setAttribute('keycloak.group.members.desired', desiredMemberIds.length)
+
+    let addedCount = 0
+    await Promise.all(project.members.map(async (member) => {
+      if (!members.some(m => m.id === member.user.id) && member.roleIds.includes(role.id)) {
+        addedCount++
+        await this.maybeAddUserToGroup(member.user.id, group.id, group.name)
+      }
+    }))
+
+    // The owner implicitly holds the project admin role (the maintainer group):
+    // without this they end up in no Keycloak RBAC group, so SonarQube and the
+    // other SSO-group-mapped services grant them no access at all. Only
+    // meaningful for managed roles — the orphan purge would evict them otherwise.
+    // maybeAddUserToGroup tolerates 409, so no membership pre-check is needed.
+    if (isAdminRole(project, role)) {
+      addedCount++
+      await this.maybeAddUserToGroup(project.ownerId, group.id, group.name)
+    }
+
+    span?.setAttribute('keycloak.group.members.added', addedCount)
+  }
+
+  @StartActiveSpan()
+  private async purgeOrphanRoleGroupMembers(
+    project: ProjectWithDetails,
+    role: ProjectWithDetails['roles'][number],
+    group: GroupRepresentationWithIdNamePath,
+    members: UserRepresentation[],
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    span?.setAttribute('role.id', role.id)
+    span?.setAttribute('role.type', role.type)
+    span?.setAttribute('keycloak.group.id', group.id)
+    span?.setAttribute('keycloak.group.members.current', members.length)
+
+    let removedCount = 0
+    await Promise.all(members.map(async (member) => {
+      if (!isMember(project, member)) {
+        if (!member.id) {
+          throw new Error(`Failed to create or retrieve role group for ${role.oidcGroup}`)
+        }
+        removedCount++
+        await this.maybeRemoveUserFromGroup(member.id, group.id, group.name)
+      }
+    }))
+    span?.setAttribute('keycloak.group.members.removed', removedCount)
+  }
+}
+
+async function* map<T, U>(
+  iterable: AsyncIterable<T>,
+  mapper: (value: T, index: number) => U | Promise<U>,
+): AsyncIterable<U> {
+  let index = 0
+  for await (const value of iterable) {
+    yield await mapper(value, index++)
+  }
+}
