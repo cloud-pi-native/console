@@ -38,7 +38,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
   let projectSlug: string
   let projectPath: string
 
-  const groups = ['GITLAB', 'NEXUS', 'REGISTRY', 'VAULT'] as const
+  const groups = ['GITLAB', 'NEXUS', 'REGISTRY', 'REGISTRY/project-robot', 'VAULT'] as const
 
   beforeAll(async () => {
     vi.stubEnv('USE_GITLAB', 'true')
@@ -98,6 +98,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
           create: [
             { pluginName: 'nexus', key: 'activateNpmRepo', value: ENABLED },
             { pluginName: 'nexus', key: 'activateMavenRepo', value: ENABLED },
+            { pluginName: 'harbor', key: 'publishProjectRobot', value: ENABLED },
           ],
         },
       },
@@ -119,11 +120,16 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
 
   it('returns the synthesized Nexus URLs and the synthetic Vault group when no Vault secrets exist', async () => {
     const secrets = await service.get(projectId)
+    const harborUrlObj = new URL(`${projectSlug}/`, harborUrl)
     expect(secrets).toEqual({
       NEXUS: {
         MAVEN_REPO_RELEASE: new URL(`${projectSlug}-repository-release`, nexusUrl).toString(),
         MAVEN_REPO_SNAPSHOT: new URL(`${projectSlug}-repository-snapshot`, nexusUrl).toString(),
         NPM_REPO: new URL(`${projectSlug}-npm`, nexusUrl).toString(),
+      },
+      REGISTRY: {
+        'Registry base path': `${harborUrlObj.host}${harborUrlObj.pathname}`,
+        '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
       },
       VAULT: {
         '.spec.mount': projectSlug,
@@ -141,7 +147,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
         }, `${projectPath}/GITLAB`),
         vaultClient.write({
           REGISTRY_ROBOT_SECRET: 'robot',
-        }, `${projectPath}/REGISTRY`),
+        }, `${projectPath}/REGISTRY/project-robot`),
         vaultClient.write({
           VAULT_ROLE: 'role',
         }, `${projectPath}/VAULT`),
