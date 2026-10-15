@@ -9,24 +9,24 @@ import { Test } from '@nestjs/testing'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import z from 'zod'
 import { baseConfigFactory } from '../src/config/base.config'
-import { GitlabClientService } from '../src/modules/gitlab/gitlab-client.service'
 import { AuthModule } from '../src/modules/infrastructure/auth/auth.module'
 import { DatabaseModule } from '../src/modules/infrastructure/database/database.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
-import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
-import { ObservabilityClientService } from '../src/modules/observability/observability-client.service'
-import { projectSelect } from '../src/modules/observability/observability-datastore.service'
+import { GitlabClientService } from '../src/modules/integrations/gitlab/gitlab-client.service'
+import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/integrations/keycloak/keycloak-client.service'
+import { ObservabilityClientService } from '../src/modules/integrations/observability/observability-client.service'
+import { projectSelect } from '../src/modules/integrations/observability/observability-datastore.service'
 import {
   GRAFANA_GROUP_NAME,
   GRAFANA_SUBGROUP_HPROD_RO,
   GRAFANA_SUBGROUP_HPROD_RW,
   GRAFANA_SUBGROUP_PROD_RO,
   GRAFANA_SUBGROUP_PROD_RW,
-} from '../src/modules/observability/observability.constants'
-import { ObservabilityModule } from '../src/modules/observability/observability.module'
+} from '../src/modules/integrations/observability/observability.constants'
+import { ObservabilityModule } from '../src/modules/integrations/observability/observability.module'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
 
