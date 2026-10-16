@@ -6,13 +6,13 @@ import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.servic
 import type { GroupSchemaWith } from './gitlab-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { specificallyEnabled } from '@cpn-console/hooks'
+import { daysAgo } from '@cpn-console/shared'
 import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
 import { getAll } from '../../utils/iterable.utils'
-import { daysAgo } from '@cpn-console/shared'
 import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
 import { capturePluginResult } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -212,7 +212,7 @@ export class GitlabService {
     if (!project) {
       throw new Error(`Project not found for member sync (projectId=${payload.projectId})`)
     }
-    const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
+    const group = await this.gitlab.ensureProjectSubGroup(project.slug)
     const members = await this.gitlab.getGroupMembers(group)
     await this.ensureProjectGroupMembers(project, group, members)
     this.logger.log(`GitLab member sync completed (projectId=${payload.projectId}, slug=${project.slug})`)
