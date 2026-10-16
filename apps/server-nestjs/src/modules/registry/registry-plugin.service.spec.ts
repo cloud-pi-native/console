@@ -39,7 +39,7 @@ describe('registryPluginService', () => {
       getProjectByName: vi.fn().mockResolvedValue({ status: 200, data: { project_id: 123 } }),
     })
     vault = mockDeep<VaultClientService>({
-      readRegistrySecrets: vi.fn().mockResolvedValue({}),
+      readProjectRobotRegistrySecrets: vi.fn().mockResolvedValue({}),
     })
     cache = {
       get: vi.fn().mockResolvedValue(undefined),
@@ -73,7 +73,7 @@ describe('registryPluginService', () => {
       const result = await service.secrets('test-project-id')
 
       expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/' })
-      expect(vault.readRegistrySecrets).not.toHaveBeenCalled()
+      expect(vault.readProjectRobotRegistrySecrets).not.toHaveBeenCalled()
     })
 
     it('returns the base path alone when the robot is not published', async () => {
@@ -81,12 +81,12 @@ describe('registryPluginService', () => {
         slug: 'test-project',
         plugins: [{ pluginName: 'harbor', key: 'publishProjectRobot', value: 'disabled' }] as never,
       }))
-      vault.readRegistrySecrets.mockResolvedValue({})
+      vault.readProjectRobotRegistrySecrets.mockResolvedValue({})
 
       const result = await service.secrets('test-project-id')
 
       expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/' })
-      expect(vault.readRegistrySecrets).not.toHaveBeenCalled()
+      expect(vault.readProjectRobotRegistrySecrets).not.toHaveBeenCalled()
     })
 
     it('returns the base path with robot credentials when the robot is published and provisioned', async () => {
@@ -94,7 +94,7 @@ describe('registryPluginService', () => {
         slug: 'test-project',
         plugins: [{ pluginName: 'harbor', key: 'publishProjectRobot', value: 'enabled' }] as never,
       }))
-      vault.readRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example', TOKEN: 'tok' })
+      vault.readProjectRobotRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example', TOKEN: 'tok' })
 
       const result = await service.secrets('test-project-id')
 
@@ -106,7 +106,7 @@ describe('registryPluginService', () => {
         slug: 'test-project',
         plugins: [{ pluginName: 'harbor', key: 'publishProjectRobot', value: 'enabled' }] as never,
       }))
-      vault.readRegistrySecrets.mockResolvedValue({})
+      vault.readProjectRobotRegistrySecrets.mockResolvedValue({})
 
       const result = await service.secrets('test-project-id')
 
@@ -116,7 +116,7 @@ describe('registryPluginService', () => {
     it('defaults to the admin config when the project has no robot setting', async () => {
       datastore.getProject.mockResolvedValue(baseProject)
       datastore.getAdminPluginConfig.mockResolvedValue('enabled')
-      vault.readRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example' })
+      vault.readProjectRobotRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example' })
 
       const result = await service.secrets('test-project-id')
 
@@ -129,7 +129,7 @@ describe('registryPluginService', () => {
         plugins: [{ pluginName: 'harbor', key: 'publishProjectRobot', value: 'default' }] as never,
       }))
       datastore.getAdminPluginConfig.mockResolvedValue('enabled')
-      vault.readRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example' })
+      vault.readProjectRobotRegistrySecrets.mockResolvedValue({ HOST: 'harbor.example' })
 
       const result = await service.secrets('test-project-id')
 

@@ -13,6 +13,7 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
+import { RegistryPluginService } from './registry-plugin.service'
 import { makeNoContent, makeOkResponse, makeProjectWithDetails } from './registry-testing.utils'
 import {
   PLUGIN_NAME,
@@ -25,6 +26,7 @@ import { RegistryService } from './registry.service'
 describe('registryService', () => {
   let service: RegistryService
   let client: DeepMockProxy<RegistryClientService>
+  let registryPlugin
   let datastore: DeepMockProxy<RegistryDatastoreService>
   let vault: DeepMockProxy<VaultClientService>
   let harborConfig: DeepMockProxy<ConfigType<typeof harborConfigFactory>>
@@ -45,6 +47,9 @@ describe('registryService', () => {
       deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
       getRepositories: vi.fn(async function* () {}),
       deleteRepository: vi.fn().mockResolvedValue(makeNoContent()),
+    })
+    registryPlugin = mockDeep<RegistryPluginService>({
+      isProjectRobotEnabled: vi.fn().mockResolvedValue(undefined),
     })
     datastore = mockDeep<RegistryDatastoreService>({
       getAdminPluginConfig: vi.fn().mockResolvedValue(null),
@@ -81,6 +86,7 @@ describe('registryService', () => {
         RegistryService,
         { provide: RegistryClientService, useValue: client },
         { provide: RegistryDatastoreService, useValue: datastore },
+        { provide: RegistryPluginService, useValue: registryPlugin },
         { provide: VaultClientService, useValue: vault },
         { provide: harborConfigFactory.KEY, useValue: harborConfig },
         { provide: baseConfigFactory.KEY, useValue: baseConfig },
@@ -313,6 +319,7 @@ describe('registryService', () => {
       })
       client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
       client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
 
       await service.handleUpsert(project)
 
@@ -331,6 +338,7 @@ describe('registryService', () => {
       client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
       client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
       datastore.getAdminPluginConfig.mockResolvedValue('enabled')
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
 
       await service.handleUpsert(project)
 
