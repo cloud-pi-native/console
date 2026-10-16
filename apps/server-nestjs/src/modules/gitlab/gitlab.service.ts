@@ -184,7 +184,7 @@ export class GitlabService {
     if (!project) {
       throw new Error(`Project not found for member sync (projectId=${payload.projectId})`)
     }
-    const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
+    const group = await this.gitlab.ensureProjectSubGroup(project.slug)
     const members = await this.gitlab.getGroupMembers(group)
     await this.ensureProjectGroupMembers(project, group, members)
     this.logger.log(`GitLab member sync completed (projectId=${payload.projectId}, slug=${project.slug})`)
