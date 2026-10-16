@@ -432,9 +432,10 @@ export class GitlabClientService {
   }
 
   async getUserByEmail(email: string) {
+    // Fuzzy search matches username and display name too; only an exact
+    // email hit is safe on destructive paths (member removal).
     const users = await this.client.Users.all({ search: email, orderBy: 'username' })
-    if (users.length === 0) return undefined
-    return users[0] as UserSchema
+    return users.find(user => user.email === email) as UserSchema | undefined
   }
 
   async createUser(user: EditUserOptions) {
