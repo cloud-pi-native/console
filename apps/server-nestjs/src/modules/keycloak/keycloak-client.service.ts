@@ -1,10 +1,10 @@
-import type KcAdminClient from '@keycloak/keycloak-admin-client'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
 import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
+import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
@@ -327,17 +327,19 @@ export class KeycloakClientService implements OnModuleInit {
     }
   }
 
-  // auth() resolves the token endpoint from client.realmName, which onModuleInit
-  // switches to the project realm — the admin user lives in the master realm.
-  // Restore the realm even when auth fails: the still-valid previous token keeps
-  // serving admin calls, and those must target the project realm, not master
+  // A dedicated client keeps the shared one free to serve concurrent requests
+  // in the project realm while the token endpoint (master) is being called:
+  // realmName is per-client state read when each request URL is built, so
+  // mutating the shared client's realm raced every in-flight admin call onto
+  // /admin/realms/master/... (404 -> null -> reconciliation crash, #2452)
   private async authenticate(credentials: Credentials) {
-    const realmName = this.client.realmName
-    this.client.setConfig({ realmName: ADMIN_AUTH_REALM })
-    try {
-      await this.client.auth(credentials)
-    } finally {
-      this.client.setConfig({ realmName })
+    const authClient = new KcAdminClient({ baseUrl: this.client.baseUrl, realmName: ADMIN_AUTH_REALM })
+    await authClient.auth(credentials)
+    const { accessToken, refreshToken } = authClient
+    if (!accessToken || !refreshToken) {
+      throw new Error('Keycloak Admin Client authentication returned no token pair')
     }
+    this.client.setAccessToken(accessToken)
+    this.client.setRefreshToken(refreshToken)
   }
 }

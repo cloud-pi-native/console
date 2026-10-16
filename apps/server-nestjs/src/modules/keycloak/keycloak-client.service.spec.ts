@@ -160,6 +160,43 @@ describe('keycloakClientService authentication lifecycle', () => {
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
     expect(tokenRequests).toHaveLength(1)
   })
+
+  it('should keep the project realm on the shared client while a token refresh is in flight (#2452)', async () => {
+    const service = module.get(KeycloakClientService)
+    useTokenEndpoint()
+    await module.init()
+
+    let releaseToken!: () => void
+    const tokenStarted = new Promise<void>((resolveTokenStarted) => {
+      server.use(
+        http.post(tokenUrl, () => {
+          resolveTokenStarted()
+          return new Promise((resolve) => {
+            releaseToken = () => resolve(HttpResponse.json({ access_token: 'access-token-rotated', refresh_token: 'refresh-token-rotated', expires_in: 60 }))
+          })
+        }, { once: true }),
+        http.get(childrenUrl, () => HttpResponse.json([{ id: 'sub-id', name: 'sub', path: '/parent/sub' }])),
+      )
+    })
+
+    const refreshed = vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    await tokenStarted
+
+    // The refresh window is open here: the shared client's realm must stay the
+    // project realm, and a concurrent subgroups listing must be served from it
+    // (the pre-fix code mutated realmName to master, 404-ing these requests)
+    expect(client.realmName).toBe(projectRealm)
+    const subgroups = []
+    for await (const subgroup of service.getSubGroups('parent-id')) {
+      subgroups.push(subgroup)
+    }
+    expect(subgroups).toHaveLength(1)
+
+    releaseToken()
+    await refreshed
+    expect(client.accessToken).toBe('access-token-rotated')
+    expect(client.realmName).toBe(projectRealm)
+  })
 })
 
 describe('ensureSubGroupByName', () => {
