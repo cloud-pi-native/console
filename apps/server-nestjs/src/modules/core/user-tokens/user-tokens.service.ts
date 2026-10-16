@@ -1,9 +1,9 @@
 import type { CreatePersonalAccessTokenBody } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
-import { generateTokenPair } from '../../utils/crypto.utils'
-import { PrismaService } from '../infrastructure/database/prisma.service'
-import { StartActiveSpan } from '../infrastructure/telemetry/telemetry.decorator'
+import { generateTokenPair } from '../../../utils/crypto.utils'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { createUserToken, deleteUserToken, listUserTokens } from './user-tokens-queries.utils'
 
 @Injectable()

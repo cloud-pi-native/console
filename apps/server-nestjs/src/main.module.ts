@@ -24,12 +24,12 @@ import { ServiceMonitorModule } from './modules/core/service-monitor/service-mon
 import { StageModule } from './modules/core/stage/stage.module'
 import { SystemConfigModule } from './modules/core/system-config/system-config.module'
 import { SystemSettingsModule } from './modules/core/system-settings/system-settings.module'
+import { UserTokensModule } from './modules/core/user-tokens/user-tokens.module'
 import { UserModule } from './modules/core/user/user.module'
 import { VersionModule } from './modules/core/version/version.module'
 import { ZoneModule } from './modules/core/zone/zone.module'
 import { InfrastructureModule } from './modules/infrastructure/infrastructure.module'
 import { KeycloakModule } from './modules/integrations/keycloak/keycloak.module'
-import { UserTokensModule } from './modules/user-tokens/user-tokens.module'
 import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
