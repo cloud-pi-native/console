@@ -441,8 +441,6 @@ interface ValuesSchema {
     valueFileRepository: string
     valueFileRevision: string
     valueFilePath: string
-    roGroup: string
-    rwGroup: string
     consoleAdminGroup: string
     platformAdminGroup: string
     platformReadonlyGroup: string
@@ -481,18 +479,6 @@ interface ValuesSchema {
       enabled: boolean
     }
   }
-}
-
-function formatReadOnlyGroupName(projectSlug: string, environmentName: string) {
-  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RO')
-}
-
-function formatReadWriteGroupName(projectSlug: string, environmentName: string) {
-  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RW')
-}
-
-function generateEnvironmentConsoleGroupPath(projectSlug: string, environmentName: string, access: 'RO' | 'RW') {
-  return `/${projectSlug}/console/${environmentName}/${access}`
 }
 
 function generateProjectConsoleGroupPath(projectSlug: string, suffix: string) {
@@ -590,15 +576,11 @@ function formatEnvironmentValues(
   project: ProjectWithDetails,
   infraProject: SimpleProjectSchema,
   valueFilePath: string,
-  roGroup: string,
-  rwGroup: string,
 ) {
   return {
     valueFileRepository: infraProject.http_url_to_repo,
     valueFileRevision: 'HEAD',
     valueFilePath,
-    roGroup,
-    rwGroup,
     consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
     platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
     platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
@@ -707,8 +689,6 @@ function formatValues({
       project,
       infraProject,
       valueFilePath,
-      formatReadOnlyGroupName(project.slug, environment.name),
-      formatReadWriteGroupName(project.slug, environment.name),
     ),
     application: {
       quota: {
