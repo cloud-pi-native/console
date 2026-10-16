@@ -1,0 +1,8 @@
+[secrets]
+GITLAB_TOKEN = { provider = "pass", value = "integ/GITLAB_TOKEN" }
+HARBOR_ADMIN = { provider = "pass", value = "integ/HARBOR_ADMIN" }
+HARBOR_ADMIN_PASSWORD = { provider = "pass", value = "integ/HARBOR_ADMIN_PASSWORD" }
+NEXUS_ADMIN = { provider = "pass", value = "integ/NEXUS_ADMIN" }
+NEXUS_ADMIN_PASSWORD = { provider = "pass", value = "integ/NEXUS_ADMIN_PASSWORD" }
+SONAR_API_TOKEN = { provider = "pass", value = "integ/SONAR_API_TOKEN" }
+VAULT_TOKEN = { provider = "pass", value = "integ/VAULT_TOKEN" }

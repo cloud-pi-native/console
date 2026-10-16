@@ -21,6 +21,12 @@ node_modules
 .env.codespace
 .env.docker
 
+# local mise/fnox overrides
+mise.local.toml
+mise.*.local.toml
+fnox.local.toml
+.fnox.local.toml
+
 # init-db
 apps/server/src/init/db/imports/data
 

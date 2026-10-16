@@ -16,7 +16,6 @@ import { RegistryModule } from '../src/modules/registry/registry.module'
 import { RegistryService } from '../src/modules/registry/registry.service'
 import { getHostFromUrl, getProjectVaultPath } from '../src/modules/registry/registry.utils'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 
 const canRunRegistryE2E
@@ -36,7 +35,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory, harborConfigFactory] }), RegistryModule, EventsModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory, harborConfigFactory] }), RegistryModule, EventsModule],
     })
       .compile()
 

@@ -111,17 +111,14 @@ Le développement s'effectue à l'aide de Docker *(le client et le serveur peuve
 Une fois le projet cloné, lancez les commandes suivantes dans votre terminal pour installer le projet et construire l'ensemble de l'application `console` :
 
 ```shell
-# Installer les dépendances du projet
-pnpm install
+# Installer les outils déclarés par le projet (Node, pnpm et fnox)
+mise install
 
-# Créer les fichiers d'environnement exemples
-./ci/scripts/init-env.sh
-
-# Générer le client Prisma côté serveur
-pnpm --filter @cpn-console/server run db:generate
+# Initialiser les secrets locaux de démonstration et le bridge legacy apps/server
+mise run setup
 
 # Construire tous les paquets applicatifs
-pnpm build
+mise exec -- pnpm build
 ```
 
 #### Lancer l'application

@@ -1,0 +1,7 @@
+[secrets]
+SESSION_SECRET = { default = "a-very-strong-secret-with-more-than-32-char" }
+DB_URL = { default = "postgresql://admin:admin@postgres:5432/dso-console-db?schema=public" }
+KEYCLOAK_CLIENT_SECRET = { default = "client-secret-backend" }
+KEYCLOAK_ADMIN = { default = "admin" }
+KEYCLOAK_ADMIN_PASSWORD = { default = "admin" }
+OPENCDS_API_TOKEN = { default = "token" }
