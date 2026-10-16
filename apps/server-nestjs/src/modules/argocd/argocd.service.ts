@@ -1,9 +1,10 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
+import type { ClusterEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
-import { generateNamespaceName, inClusterLabel } from '@cpn-console/shared'
+import { generateNamespaceName, inClusterLabel, KubeconfigSchema } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -27,6 +28,7 @@ import {
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
+import { generateClusterSecretData, generateZoneVaultValues } from './argocd.utils'
 
 @Injectable()
 export class ArgoCDService {
@@ -66,6 +68,83 @@ export class ArgoCDService {
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
     return capturePluginResult('argocd', () => this.cleanupProject(project))
+  }
+
+  @OnEvent('cluster.upsert')
+  async handleClusterUpsert(payload: ClusterEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.syncCluster(payload))
+  }
+
+  @StartActiveSpan()
+  private async syncCluster(payload: ClusterEventPayload) {
+    const cluster = await this.datastore.getCluster(payload.clusterId)
+    if (!cluster) throw new Error(`Cluster not found for event (clusterId=${payload.clusterId})`)
+    const span = trace.getActiveSpan()
+    span?.setAttribute('cluster.label', cluster.label)
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+    this.logger.log(`Handling a cluster upsert event for ${cluster.label}`)
+    const kubeconfig = KubeconfigSchema.parse(cluster.kubeconfig)
+    await this.vault.upsertKvData(
+      `zone-${cluster.zone.slug}`,
+      `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
+      { data: generateClusterSecretData(cluster, kubeconfig) },
+    )
+    await this.commitZoneValues(cluster.zone.slug)
+    if (payload.zoneId && payload.zoneId !== cluster.zone.id) {
+      const previousZoneSlug = await this.datastore.getZoneSlug(payload.zoneId)
+      if (previousZoneSlug) await this.commitZoneValues(previousZoneSlug)
+    }
+    this.logger.log(`ArgoCD cluster sync completed for ${cluster.label}`)
+  }
+
+  @OnEvent('cluster.delete')
+  async handleClusterDelete(payload: ClusterEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', () => this.cleanupCluster(payload))
+  }
+
+  @StartActiveSpan()
+  private async cleanupCluster(payload: ClusterEventPayload) {
+    const cluster = await this.datastore.getCluster(payload.clusterId)
+    if (!cluster) throw new Error(`Cluster not found for event (clusterId=${payload.clusterId})`)
+    const span = trace.getActiveSpan()
+    span?.setAttribute('cluster.label', cluster.label)
+    span?.setAttribute('zone.slug', cluster.zone.slug)
+    this.logger.log(`Handling a cluster delete event for ${cluster.label}`)
+    await this.vault.deleteKvMetadata(
+      `zone-${cluster.zone.slug}`,
+      `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
+    )
+    await this.commitZoneValues(cluster.zone.slug)
+    this.logger.log(`ArgoCD cluster cleanup completed for ${cluster.label}`)
+  }
+
+  private async commitZoneValues(zoneSlug: string) {
+    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const clusters = await this.datastore.getZoneClusterNames(zoneSlug)
+    const vaultValues = await this.generateZoneVaultValues(zoneSlug)
+    const action = await this.gitlab.generateCreateOrUpdateAction(
+      infraProject,
+      'main',
+      'argocd-values.yaml',
+      stringify({ vault: vaultValues, clusters }),
+    )
+    if (!action) {
+      this.logger.verbose(`Zone argocd-values.yaml is up to date (zone=${zoneSlug})`)
+      return
+    }
+    await this.gitlab.maybeCreateCommit(infraProject, `ci: :robot_face: Update zone ${zoneSlug}`, [action])
+  }
+
+  private async generateZoneVaultValues(zoneSlug: string) {
+    const roleId = await this.vault.getAuthApproleRoleRoleId(`zone-${zoneSlug}`).catch(() => {
+      this.logger.warn(`Couldn't find zone app role (zone=${zoneSlug})`)
+      return undefined
+    })
+    const secretId = await this.vault.ensureAuthApproleRoleSecretId(`zone-${zoneSlug}`).catch(() => {
+      this.logger.warn(`Couldn't generate zone app role secret (zone=${zoneSlug})`)
+      return undefined
+    })
+    return generateZoneVaultValues(this.vaultConfig.url, zoneSlug, roleId, secretId)
   }
 
   @StartActiveSpan()
