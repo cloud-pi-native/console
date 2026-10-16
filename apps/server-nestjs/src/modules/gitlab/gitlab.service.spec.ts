@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../config/gitlab.config'
-import { makeAdminRoleEventMember, makeAdminRoleEventPayload } from '../events/app-events-testing.utils'
+import { makeAdminRoleEventMember, makeAdminRoleEventPayload, makeZoneEventPayload } from '../events/app-events-testing.utils'
 import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constants'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
@@ -769,6 +769,50 @@ describe('gitlabService', () => {
       }
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
+    })
+  })
+
+  describe('handleUpsertZone', () => {
+    it('should ensure the zone infra repo and report an OK plugin result', async () => {
+      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
+
+      const result = await service.handleUpsertZone(payload)
+
+      expect(gitlab.ensureInfraGroupRepo).toHaveBeenCalledWith('zone-1')
+      expect(result.gitlab.status).toBe('OK')
+    })
+
+    it('should report a KO plugin result when the infra repo cannot be ensured', async () => {
+      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      gitlab.ensureInfraGroupRepo.mockRejectedValue(new Error('gitlab down'))
+
+      const result = await service.handleUpsertZone(payload)
+
+      expect(result.gitlab.status).toBe('KO')
+      expect(result.gitlab.message).toBe('gitlab down')
+    })
+  })
+
+  describe('handleDeleteZone', () => {
+    it('should delete the zone infra repo and report an OK plugin result', async () => {
+      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      gitlab.deleteInfraGroupRepo.mockResolvedValue(undefined)
+
+      const result = await service.handleDeleteZone(payload)
+
+      expect(gitlab.deleteInfraGroupRepo).toHaveBeenCalledWith('zone-1')
+      expect(result.gitlab.status).toBe('OK')
+    })
+
+    it('should report a KO plugin result when the infra repo cannot be deleted', async () => {
+      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      gitlab.deleteInfraGroupRepo.mockRejectedValue(new Error('gitlab down'))
+
+      const result = await service.handleDeleteZone(payload)
+
+      expect(result.gitlab.status).toBe('KO')
+      expect(result.gitlab.message).toBe('gitlab down')
     })
   })
 
