@@ -79,6 +79,6 @@ peuvent s'interrompre silencieusement.
 - `apps/server/src/resources/index.ts`
 - `packages/shared/src/contracts/`
 - `apps/server-nestjs/src/main.module.ts`
-- `apps/server-nestjs/src/modules/plugin/plugin.module.ts`
-- `apps/server-nestjs/src/modules/events/app-events.service.ts`
+- `apps/server-nestjs/src/modules/core/plugin/plugin.module.ts`
+- `apps/server-nestjs/src/modules/core/events/app-events.service.ts`
 - `apps/nginx-strangler/conf.d/routing.conf`

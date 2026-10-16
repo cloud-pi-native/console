@@ -1,16 +1,16 @@
-# Architecture d’un module (pattern `apps/server-nestjs/src/modules/*`)
+# Architecture d’un module (pattern `apps/server-nestjs/src/modules/<couche>/<module>`)
 
-Les modules NestJS métier vivent dans `src/modules/<nom-du-module>/` et suivent un découpage “vertical slice” avec des responsabilités explicites : **client**, **service (API publique)**, **controller service (orchestration)**, **datastore**, **utils** et **tests**.
+Les modules NestJS métier vivent dans `src/modules/core/<nom-du-module>/` et suivent un découpage “vertical slice” avec des responsabilités explicites : **client**, **service (API publique)**, **controller service (orchestration)**, **datastore**, **utils** et **tests**.
 
 Exemples concrets :
 
-- Module GitLab : `src/modules/gitlab/`
-- Module Keycloak : `src/modules/keycloak/`
+- Module GitLab : `src/modules/integrations/gitlab/`
+- Module Keycloak : `src/modules/integrations/keycloak/`
 
 ## Structure type
 
 ```txt
-src/modules/<module>/
+src/modules/core/<module>/
 ├── <module>.module.ts
 ├── <module>.constants.ts
 ├── <module>-client.service.ts
