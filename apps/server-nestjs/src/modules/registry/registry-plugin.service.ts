@@ -11,7 +11,7 @@ import { hasEntries } from '../../utils/record.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
-import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, ROBOT_NAME_PROJECT } from './registry.constants'
+import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT } from './registry.constants'
 import { createProjectSlugCacheKey } from './registry.utils'
 
 @Injectable()
@@ -147,7 +147,7 @@ export class RegistryPluginService {
     } as const satisfies ServiceInfos
   }
 
-  private async isProjectRobotEnabled(project: ProjectWithDetails): Promise<boolean | undefined> {
+  async isProjectRobotEnabled(project: ProjectWithDetails): Promise<boolean | undefined> {
     const robotDefault = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)
     const robotEnabled = project.plugins?.find(p => p.key === REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)?.value
     return specificallyEnabled(robotEnabled)
@@ -162,7 +162,7 @@ export class RegistryPluginService {
     if (!(await this.isProjectRobotEnabled(project))) {
       return { 'Registry base path': registryBasePath }
     }
-    const robot = await this.vault.readRegistrySecrets(project.slug, ROBOT_NAME_PROJECT)
+    const robot = await this.vault.readProjectRobotRegistrySecrets(project.slug)
     if (!hasEntries(robot)) {
       return { 'Registry base path': registryBasePath, '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' }
     }
