@@ -63,9 +63,9 @@ describe('gitlabService', () => {
       })
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       datastore.getProject.mockResolvedValue(project)
-      gitlab.getOrCreateProjectSubGroup.mockResolvedValue(group)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.upsertUser.mockImplementation(async user => makeExpandedUserSchema({
+      gitlab.ensureUser.mockImplementation(async user => makeExpandedUserSchema({
         id: user.email === 'member@example.com' ? 999 : 998,
         email: user.email,
         username: user.email.split('@')[0] ?? user.email,
