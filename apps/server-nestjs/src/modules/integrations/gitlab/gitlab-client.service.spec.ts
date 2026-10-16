@@ -1,0 +1,1268 @@
+import type { Gitlab as GitlabApi } from '@gitbeaker/core'
+import type { ConfigType } from '@nestjs/config'
+import type { TestingModule } from '@nestjs/testing'
+import type { MockedFunction } from 'vitest'
+import type { DeepMockProxy } from 'vitest-mock-extended'
+import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { Test } from '@nestjs/testing'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
+import { gitlabConfigFactory } from '../../../config/gitlab.config'
+import { GITLAB_REST_CLIENT, GitlabClientService } from './gitlab-client.service'
+import {
+  makeAccessTokenExposedSchema,
+  makeAccessTokenSchema,
+  makeCommitAction,
+  makeExpandedGroupSchema,
+  makeExpandedUserSchema,
+  makeGitbeakerRequestError,
+  makeGroupSchema,
+  makeMemberSchema,
+  makeOffsetPagination,
+  makePipeline,
+  makePipelineTriggerToken,
+  makeProjectSchema,
+  makeRepositoryFileExpandedSchema,
+  makeRepositoryTreeSchema,
+} from './gitlab-testing.utils'
+import {
+  GITLAB_CI_CONFIG_PATH,
+  GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
+  INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
+  MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY,
+  PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
+  SPECIAL_REPO_NAMES,
+  USER_ID_CUSTOM_ATTRIBUTE_KEY,
+} from './gitlab.constants'
+
+describe('gitlab-client', () => {
+  let service: GitlabClientService
+  let gitlabApi: DeepMockProxy<GitlabApi>
+
+  beforeEach(async () => {
+    gitlabApi = mockDeep<GitlabApi>()
+    const config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({
+      url: 'https://gitlab.internal',
+      token: 'token',
+      internalUrl: 'https://gitlab.internal',
+      projectRootDir: 'forge',
+      mirrorTokenExpirationDays: 30,
+    })
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        GitlabClientService,
+        { provide: GITLAB_REST_CLIENT, useValue: gitlabApi },
+        { provide: gitlabConfigFactory.KEY, useValue: config },
+      ],
+    }).compile()
+    service = module.get(GitlabClientService)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should be defined', () => {
+    expect(service).toBeDefined()
+  })
+
+  describe('ensureInfraGroupRepo', () => {
+    it('should create infra project if not exists', async () => {
+      const zoneSlug = 'zone-1'
+      const rootId = 123
+      const infraGroupId = 456
+      const projectId = 789
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: infraGroupId, full_path: 'forge/infra' }))
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({
+        id: projectId,
+        path_with_namespace: 'forge/infra/zone-1',
+        http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
+      }))
+
+      const result = await service.ensureInfraGroupRepo(zoneSlug)
+
+      expect(result).toEqual(expect.objectContaining({
+        id: projectId,
+        http_url_to_repo: 'https://gitlab.internal/infra/zone-1.git',
+        path_with_namespace: 'forge/infra/zone-1',
+      }))
+      expect(gitlabApi.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: zoneSlug,
+        path: zoneSlug,
+        namespaceId: infraGroupId,
+      }))
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    })
+  })
+
+  describe('commitCreateOrUpdate', () => {
+    it('should create commit if file not exists', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const content = 'content'
+      const filePath = 'file.txt'
+      const message = 'ci: :robot_face: Update file content'
+
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
+      const notFoundError = makeGitbeakerRequestError({ description: '404 File Not Found' })
+      gitlabRepositoryFilesShowMock.mockRejectedValue(notFoundError)
+
+      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
+        repoId,
+        'main',
+        message,
+        [{ action: 'create', filePath, content }],
+      )
+    })
+
+    it('should update commit if content differs', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const content = 'new content'
+      const filePath = 'file.txt'
+      const oldHash = 'oldhash'
+      const message = 'ci: :robot_face: Update file content'
+
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
+      gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: oldHash }))
+
+      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
+        repoId,
+        'main',
+        message,
+        [{ action: 'update', filePath, content }],
+      )
+    })
+
+    it('should do nothing if content matches', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const content = 'content'
+      const filePath = 'file.txt'
+      const hash = 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73'
+      const message = 'ci: :robot_face: Update file content'
+
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
+      gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: hash }))
+
+      const action = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, action ? [action] : [])
+
+      expect(gitlabApi.Commits.create).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate an already-applied commit (race) when the file now exists', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(makeRepositoryFileExpandedSchema())
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .resolves.toBeUndefined()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+
+    it('should never create a second commit when two syncs race on the same file', async () => {
+      // Sync A creates the file (commits, file now present). Sync B started before
+      // A landed, so B also emits a `create` action: its commit collides and the
+      // guard must swallow it instead of committing again or throwing.
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const content = 'content'
+      const filePath = 'file.txt'
+      const message = 'ci: :robot_face: Sync file'
+      // Sync A: file absent -> create action -> commit succeeds.
+      const gitlabRepositoryFilesShowMock = gitlabApi.RepositoryFiles.show as MockedFunction<typeof gitlabApi.RepositoryFiles.show>
+      gitlabRepositoryFilesShowMock.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+      const actionA = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionA ? [actionA] : [])
+
+      // Sync B: still saw the file absent, tries the same `create` and collides.
+      gitlabRepositoryFilesShowMock.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+      gitlabApi.Commits.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' }))
+      // The guard's post-collision getFile must see the winner's file.
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(makeRepositoryFileExpandedSchema())
+      const actionB = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionB ? [actionB] : [])
+
+      expect(gitlabApi.Commits.create).toHaveBeenCalledTimes(2)
+      expect(gitlabApi.Commits.create).toHaveBeenLastCalledWith(
+        repoId,
+        'main',
+        message,
+        [{ action: 'create', filePath, content }],
+      )
+      // A third run sees the file present and unchanged: no commit at all.
+      gitlabRepositoryFilesShowMock.mockResolvedValue(makeRepositoryFileExpandedSchema({ content_sha256: 'ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73' }))
+      const actionC = await service.generateCreateOrUpdateAction(repo, 'main', filePath, content)
+      await service.maybeCreateCommit(repo, message, actionC ? [actionC] : [])
+      expect(gitlabApi.Commits.create).toHaveBeenCalledTimes(2)
+    })
+
+    it('should rethrow when the file is still absent after an already-exists commit error', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const message = 'ci: :robot_face: Sync file'
+      const alreadyExistsError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Commits.create.mockRejectedValue(alreadyExistsError)
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(makeGitbeakerRequestError({ description: '404 File Not Found' }))
+
+      await expect(service.maybeCreateCommit(repo, message, [makeCommitAction({ action: 'create' })]))
+        .rejects.toThrow()
+      expect(gitlabApi.Commits.create).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('ensureGroupRepo', () => {
+    it('should reload the existing repo on a create collision (race)', async () => {
+      const groupId = 99
+      const repoName = 'observability-values'
+      const existingRepo = makeProjectSchema({ id: 42, name: repoName, path_with_namespace: `forge/${repoName}` })
+      const collisionError = makeGitbeakerRequestError({ description: 'has already been taken', status: 400, statusText: 'Bad Request' })
+      gitlabApi.Projects.create.mockRejectedValue(collisionError)
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({ data: [existingRepo], paginationInfo: { next: null } })
+
+      const result = await service.createGroupRepo(groupId, repoName)
+
+      expect(result).toEqual(existingRepo)
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+      }))
+      expect(gitlabProjectsAllMock).toHaveBeenCalledOnce()
+    })
+  })
+
+  describe('ensureProjectGroup', () => {
+    it('should create project group if not exists', async () => {
+      const projectSlug = 'project-1'
+      const rootId = 123
+      const groupId = 456
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}` }))
+
+      const result = await service.ensureProjectSubGroup(projectSlug)
+
+      expect(result).toEqual(expect.objectContaining({ id: groupId, name: projectSlug }))
+      expect(gitlabApi.Groups.create).toHaveBeenCalledWith(projectSlug, projectSlug, expect.objectContaining({
+        parentId: rootId,
+      }))
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
+    })
+
+    it('should return existing group', async () => {
+      const projectSlug = 'project-1'
+      const rootId = 123
+      const groupId = 456
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }],
+        paginationInfo: { next: null },
+      })
+
+      const result = await service.ensureProjectSubGroup(projectSlug)
+
+      expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' })
+      expect(gitlabApi.Groups.create).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('repositories', () => {
+    it('should return internal repo url', async () => {
+      const projectSlug = 'project-1'
+      const repoName = 'repo-1'
+      const rootId = 123
+      const groupId = 1
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, full_path: 'forge/project-1' }],
+        paginationInfo: { next: null },
+      })
+
+      const result = await service.ensureProjectGroupInternalRepoUrl(projectSlug, repoName)
+      expect(result).toBe('https://gitlab.internal/forge/project-1/repo-1.git')
+    })
+
+    it('should upsert mirror repo', async () => {
+      const projectSlug = 'project-1'
+      const repoId = 1
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValue({
+        data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
+
+      const result = await service.ensureProjectMirrorRepo(projectSlug)
+
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: 'mirror' }))
+      expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
+        name: 'mirror',
+        path: 'mirror',
+        ciConfigPath: '',
+      }))
+    })
+
+    it('should set managed custom attribute when upserting a project repo', async () => {
+      const projectSlug = 'project-1'
+      const repoName = 'repo-1'
+      const repoId = 101
+
+      gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId }))
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepoSettings(projectSlug, repoName, { description: 'desc' })
+
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+    })
+
+    describe('triggerMirror', () => {
+      const projectSlug = 'project-1'
+      const mirrorId = 10
+
+      function mockProjectGroupRepos(repos: { id: number, name: string }[]) {
+        const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+        gitlabGroupsAllMock.mockResolvedValueOnce({
+          data: [{ id: 123, full_path: 'forge' }],
+          paginationInfo: { next: null },
+        })
+        gitlabGroupsAllMock.mockResolvedValueOnce({
+          data: [{ id: 1, full_path: `forge/${projectSlug}` }],
+          paginationInfo: { next: null },
+        })
+        const gitlabGroupsAllProjectsMock = gitlabApi.Groups.allProjects as MockedFunction<typeof gitlabApi.Groups.allProjects>
+        gitlabGroupsAllProjectsMock.mockResolvedValue({
+          data: repos,
+          paginationInfo: { next: null },
+        })
+      }
+
+      const populatedGroup = [
+        { id: 9, name: 'infra-apps' },
+        { id: mirrorId, name: 'mirror' },
+        { id: 11, name: 'repo-1' },
+        { id: 12, name: 'repo-2' },
+      ]
+
+      it('should start the pipeline on the mirror repo with the target as variable', async () => {
+        mockProjectGroupRepos(populatedGroup)
+        gitlabApi.Pipelines.create.mockResolvedValue(makePipeline({ id: 42 }))
+
+        const pipeline = await service.triggerMirror(projectSlug, 'repo-1', false, 'feat/x')
+
+        expect(pipeline.id).toBe(42)
+        // The pipeline runs on the *mirror* repo, never on the target itself.
+        expect(gitlabApi.Pipelines.create).toHaveBeenCalledWith(mirrorId, 'main', {
+          variables: [
+            { key: 'SYNC_ALL', value: 'false' },
+            { key: 'GIT_BRANCH_DEPLOY', value: 'feat/x' },
+            { key: 'PROJECT_NAME', value: 'repo-1' },
+          ],
+        })
+      })
+
+      it('should send an empty branch when syncing every branch', async () => {
+        mockProjectGroupRepos(populatedGroup)
+        gitlabApi.Pipelines.create.mockResolvedValue(makePipeline())
+
+        await service.triggerMirror(projectSlug, 'repo-1', true)
+
+        expect(gitlabApi.Pipelines.create).toHaveBeenCalledWith(mirrorId, 'main', {
+          variables: [
+            { key: 'SYNC_ALL', value: 'true' },
+            { key: 'GIT_BRANCH_DEPLOY', value: '' },
+            { key: 'PROJECT_NAME', value: 'repo-1' },
+          ],
+        })
+      })
+
+      it.each(SPECIAL_REPO_NAMES)('should refuse to mirror the special repository %s', async (specialRepo) => {
+        await expect(service.triggerMirror(projectSlug, specialRepo, true))
+          .rejects.toThrow('User requested for invalid mirroring')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
+
+      it('should fail when the target repository is absent from the group', async () => {
+        mockProjectGroupRepos([{ id: mirrorId, name: 'mirror' }, { id: 12, name: 'repo-2' }])
+
+        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+          .rejects.toThrow('Unable to find target repository')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
+
+      it('should fail when the project group has no mirror repository', async () => {
+        mockProjectGroupRepos([{ id: 11, name: 'repo-1' }, { id: 12, name: 'repo-2' }])
+
+        await expect(service.triggerMirror(projectSlug, 'repo-1', true))
+          .rejects.toThrow('Unable to find mirror repository')
+        expect(gitlabApi.Pipelines.create).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('ensureUser', () => {
+      it('should create user and set custom attribute if not exists', async () => {
+        const consoleUser = { id: 'u1', email: 'new@example.com', firstName: 'New', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'new',
+          name: 'New User',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([])
+        gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+
+        const result = await service.ensureUser(gitlabUser, { cpnUserId: consoleUser.id })
+
+        expect(result).toEqual(expect.objectContaining({ id: 999, email: consoleUser.email }))
+        expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'new@example.com',
+          username: 'new',
+          name: 'New User',
+          externUid: 'new@example.com',
+          provider: 'openid_connect',
+          skipConfirmation: true,
+        }))
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(999, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(999, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      })
+
+      it('should set custom attribute if user exists', async () => {
+        const consoleUser = { id: 'u1', email: 'existing@example.com', firstName: 'Existing', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'existing',
+          name: 'Existing User',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([makeExpandedUserSchema({ id: 1000, email: consoleUser.email })])
+
+        const result = await service.ensureUser(gitlabUser, { cpnUserId: consoleUser.id })
+
+        expect(result).toEqual(expect.objectContaining({ id: 1000, email: consoleUser.email }))
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.objectContaining({
+          email: 'existing@example.com',
+          username: 'existing',
+          name: 'Existing User',
+          externUid: 'existing@example.com',
+          provider: 'openid_connect',
+        }))
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(1000, USER_ID_CUSTOM_ATTRIBUTE_KEY, consoleUser.id)
+        expect(gitlabApi.UserCustomAttributes.set).toHaveBeenCalledWith(1000, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+        expect(gitlabApi.Users.create).not.toHaveBeenCalled()
+      })
+
+      it('should set admin flag when provided', async () => {
+        const consoleUser = { id: 'u1', email: 'admin@example.com', firstName: 'Admin', lastName: 'User' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'admin',
+          name: 'Admin User',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([])
+        gitlabApi.Users.create.mockResolvedValue(makeExpandedUserSchema({ id: 999, email: consoleUser.email }))
+
+        await service.ensureUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+          email: 'admin@example.com',
+          username: 'admin',
+          name: 'Admin User',
+          externUid: 'admin@example.com',
+          provider: 'openid_connect',
+          admin: true,
+          skipConfirmation: true,
+        }))
+      })
+
+      it('should not disable existing admin flag when enabling auditor flag', async () => {
+        const consoleUser = { id: 'u1', email: 'admin-auditor@example.com', firstName: 'Admin', lastName: 'Auditor' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'admin-auditor',
+          name: 'Admin Auditor',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([
+          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_admin: true }),
+        ])
+
+        await service.ensureUser({ ...gitlabUser, auditor: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          admin: true,
+        }))
+      })
+
+      it('should not disable existing auditor flag when enabling admin flag', async () => {
+        const consoleUser = { id: 'u1', email: 'auditor-admin@example.com', firstName: 'Auditor', lastName: 'Admin' }
+        const gitlabUser = {
+          email: consoleUser.email,
+          username: 'auditor-admin',
+          name: 'Auditor Admin',
+        }
+        const gitlabUsersAllMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+        gitlabUsersAllMock.mockResolvedValue([
+          makeExpandedUserSchema({ id: 1000, email: consoleUser.email, is_auditor: true }),
+        ])
+
+        await service.ensureUser({ ...gitlabUser, admin: true }, { cpnUserId: consoleUser.id })
+
+        expect(gitlabApi.Users.edit).toHaveBeenCalledWith(1000, expect.not.objectContaining({
+          auditor: true,
+        }))
+      })
+    })
+
+    it('should create pipeline trigger token if not exists', async () => {
+      const projectSlug = 'project-1'
+      const repoId = 1
+      const tokenDescription = 'mirroring-from-external-repo'
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValue({
+        data: [{ id: repoId, path_with_namespace: 'forge/project-1/mirror' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: 'mirror' }))
+
+      const gitlabPipelineTriggerTokensAllMock = gitlabApi.PipelineTriggerTokens.all as MockedFunction<typeof gitlabApi.PipelineTriggerTokens.all>
+      gitlabPipelineTriggerTokensAllMock.mockResolvedValue({
+        data: [],
+        paginationInfo: makeOffsetPagination({ next: null }),
+      })
+
+      gitlabApi.PipelineTriggerTokens.create.mockResolvedValue(makePipelineTriggerToken({ id: 2, description: tokenDescription }))
+
+      const result = await service.ensureMirrorPipelineTriggerToken(projectSlug)
+
+      expect(result).toEqual(expect.objectContaining({ id: 2, description: tokenDescription }))
+      expect(gitlabApi.PipelineTriggerTokens.create).toHaveBeenCalledWith(repoId, tokenDescription)
+    })
+  })
+
+  describe('group Members', () => {
+    it('should get group members', async () => {
+      const groupId = 1
+      const group = makeGroupSchema({ id: groupId })
+      const members = [makeMemberSchema({ id: 1, name: 'user' })]
+      const gitlabGroupMembersAllMock = gitlabApi.GroupMembers.all as MockedFunction<typeof gitlabApi.GroupMembers.all>
+      gitlabGroupMembersAllMock.mockResolvedValue(members)
+
+      const result = await service.getGroupMembers(group)
+      expect(result).toEqual(members)
+      expect(gitlabApi.GroupMembers.all).toHaveBeenCalledWith(groupId)
+    })
+
+    it('should add group member', async () => {
+      const groupId = 1
+      const group = makeGroupSchema({ id: groupId })
+      const userId = 2
+      const accessLevel = 30
+      gitlabApi.GroupMembers.add.mockResolvedValue(makeMemberSchema({ id: userId }))
+
+      await service.addGroupMember(group, userId, accessLevel)
+      expect(gitlabApi.GroupMembers.add).toHaveBeenCalledWith(groupId, userId, accessLevel)
+    })
+
+    it('should remove group member', async () => {
+      const groupId = 1
+      const group = makeGroupSchema({ id: groupId })
+      const userId = 2
+      gitlabApi.GroupMembers.remove.mockResolvedValue(undefined)
+
+      await service.removeGroupMember(group, userId)
+      expect(gitlabApi.GroupMembers.remove).toHaveBeenCalledWith(groupId, userId)
+    })
+  })
+
+  describe('createProjectMirrorAccessToken', () => {
+    it('should create project access token with correct scopes', async () => {
+      const projectSlug = 'project-1'
+      const groupId = 456
+      const tokenName = `${projectSlug}-bot`
+      const token = makeAccessTokenExposedSchema({ id: 1, name: tokenName, token: 'secret-token' })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: 123, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: projectSlug, parent_id: 123, full_path: 'forge/project-1' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.GroupAccessTokens.create.mockResolvedValue(token)
+
+      const result = await service.createMirrorAccessToken(projectSlug)
+
+      expect(result).toEqual(token)
+      expect(gitlabApi.GroupAccessTokens.create).toHaveBeenCalledWith(
+        groupId,
+        tokenName,
+        ['write_repository', 'read_repository', 'read_api'],
+        expect.any(String),
+      )
+    })
+  })
+
+  describe('ensureProjectGroupRepo', () => {
+    it('should return existing repo', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [{ id: projectId, path_with_namespace: `forge/${fullPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
+
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
+    })
+
+    it('should create repo if not exists', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
+
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        name: repoName,
+        path: repoName,
+        namespaceId: groupId,
+      }))
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
+      expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(projectId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, 'project-1')
+    })
+
+    it('should create repo with a custom ciConfigPath when provided', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath, GITLAB_CI_CONFIG_PATH)
+
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+      expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
+        ciConfigPath: GITLAB_CI_CONFIG_PATH,
+      }))
+    })
+
+    it('should create repo without a ciConfigPath when none is provided', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
+
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+      expect(gitlabApi.Projects.create).not.toHaveBeenCalledWith(expect.objectContaining({
+        ciConfigPath: expect.anything(),
+      }))
+    })
+
+    it('should reload the existing repo when create fails with an object description', async () => {
+      const subGroupPath = 'project-1'
+      const repoName = 'repo-1'
+      const fullPath = `${subGroupPath}/${repoName}`
+      const projectId = 789
+      const groupId = 456
+      const rootId = 123
+
+      const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
+      gitlabProjectsAllMock.mockResolvedValueOnce({
+        data: [],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: rootId, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
+        paginationInfo: { next: null },
+      })
+
+      // GitLab validation errors carry an object `message`, which gitbeaker copies
+      // verbatim into `cause.description` despite the string type.
+      gitlabApi.Projects.create.mockRejectedValueOnce(makeGitbeakerRequestError({
+        status: 400,
+        statusText: 'Bad Request',
+        description: {
+          'project_namespace.name': ['has already been taken'],
+          name: ['has already been taken'],
+          path: ['has already been taken'],
+        },
+      }))
+      gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepo(subGroupPath, fullPath)
+
+      expect(gitlabApi.Projects.show).toHaveBeenCalledWith(`forge/${fullPath}`)
+      expect(result).toEqual(expect.objectContaining({ id: projectId }))
+    })
+  })
+
+  describe('getFile', () => {
+    it('should return file content', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const filePath = 'file.txt'
+      const ref = 'main'
+      const file = makeRepositoryFileExpandedSchema({ content: 'content' })
+
+      gitlabApi.RepositoryFiles.show.mockResolvedValue(file)
+
+      const result = await service.getFile(repo, filePath, ref)
+      expect(result).toEqual(file)
+    })
+
+    it('should return undefined on 404', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const filePath = 'file.txt'
+      const ref = 'main'
+      const error = makeGitbeakerRequestError({ description: '404 File Not Found' })
+
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(error)
+
+      const result = await service.getFile(repo, filePath, ref)
+      expect(result).toBeUndefined()
+    })
+
+    it('should throw on other errors', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const filePath = 'file.txt'
+      const ref = 'main'
+      const error = new Error('Some other error')
+
+      gitlabApi.RepositoryFiles.show.mockRejectedValue(error)
+
+      await expect(service.getFile(repo, filePath, ref)).rejects.toThrow(error)
+    })
+  })
+
+  describe('listFiles', () => {
+    it('should return files', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const files = [makeRepositoryTreeSchema({ path: 'file.txt' })]
+
+      gitlabApi.Repositories.allRepositoryTrees.mockResolvedValue(files)
+
+      const result = await service.listFiles(repo)
+      expect(result).toEqual(files)
+    })
+
+    it('should return empty array on 404', async () => {
+      const repoId = 1
+      const repo = makeProjectSchema({ id: repoId })
+      const error = makeGitbeakerRequestError({ description: '404 Tree Not Found' })
+
+      gitlabApi.Repositories.allRepositoryTrees.mockRejectedValue(error)
+
+      const result = await service.listFiles(repo)
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getProjectToken', () => {
+    it('should return specific token', async () => {
+      const projectSlug = 'project-1'
+      const groupId = 456
+      const group = makeGroupSchema({ id: groupId })
+      const tokenName = `${projectSlug}-bot`
+      const token = makeAccessTokenSchema({ id: 1, name: tokenName })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: 123, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
+        data: [{ id: groupId, name: projectSlug, parent_id: 123, full_path: `forge/${projectSlug}` }],
+        paginationInfo: { next: null },
+      })
+
+      const gitlabGroupAccessTokensAllMock = gitlabApi.GroupAccessTokens.all as MockedFunction<typeof gitlabApi.GroupAccessTokens.all>
+      gitlabGroupAccessTokensAllMock.mockResolvedValue({
+        data: [token],
+        paginationInfo: makeOffsetPagination({ next: null }),
+      })
+
+      const result = await service.getProjectToken(group, projectSlug)
+      expect(result).toEqual(token)
+    })
+  })
+
+  describe('revokeProjectToken', () => {
+    it('should revoke a project access token by group id and token id', async () => {
+      const projectSlug = 'project-1'
+      const groupId = 456
+      const tokenId = 789
+      const group = makeGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}`, full_name: `forge/${projectSlug}`, parent_id: 123 })
+
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({
+        data: [{ id: 123, full_path: 'forge' }],
+        paginationInfo: { next: null },
+      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
+        data: [group],
+        paginationInfo: { next: null },
+      })
+
+      await service.revokeProjectToken(group, tokenId)
+
+      expect(gitlabApi.GroupAccessTokens.revoke).toHaveBeenCalledWith(groupId, tokenId)
+    })
+  })
+
+  describe('getProjectGroup', () => {
+    it('should return undefined when the project group is not found', async () => {
+      const projectSlug = 'missing'
+      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
+      gitlabGroupsAllMock.mockResolvedValueOnce({ data: [{ id: 123, full_path: 'forge' }], paginationInfo: { next: null } })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+      const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
+      gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({ data: [], paginationInfo: { next: null } })
+
+      await expect(service.getProjectGroup(projectSlug)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('validateProjectToken', () => {
+    const server = setupServer()
+    beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+    afterEach(() => server.resetHandlers())
+    afterAll(() => server.close())
+
+    function stubPersonalAccessTokenSelf(body: object, status = 200) {
+      server.use(
+        http.get('https://gitlab.internal/api/v4/personal_access_tokens/self', () =>
+          HttpResponse.json(body, { status })),
+      )
+    }
+
+    it('should send the candidate token and not the integration token', async () => {
+      let capturedToken: string | null = null
+      server.use(
+        http.get('https://gitlab.internal/api/v4/personal_access_tokens/self', ({ request }) => {
+          capturedToken = request.headers.get('private-token')
+          return HttpResponse.json({ id: 1, active: true, revoked: false })
+        }),
+      )
+
+      await expect(service.validateProjectToken('valid-token')).resolves.toBe(true)
+
+      expect(capturedToken).toBe('valid-token')
+    })
+
+    it.each([
+      { active: false, revoked: false },
+      { active: true, revoked: true },
+    ])('should return false for an inactive or revoked token (%o)', async (state) => {
+      stubPersonalAccessTokenSelf({ id: 1, ...state })
+
+      await expect(service.validateProjectToken('stale-token')).resolves.toBe(false)
+    })
+
+    it('should return false when GitLab rejects the token', async () => {
+      stubPersonalAccessTokenSelf({ message: '401 Unauthorized' }, 401)
+
+      await expect(service.validateProjectToken('invalid-token')).resolves.toBe(false)
+    })
+
+    it('should throw on transient failures instead of reporting an invalid token', async () => {
+      stubPersonalAccessTokenSelf({ message: '502 Bad Gateway' }, 502)
+
+      await expect(service.validateProjectToken('valid-token')).rejects.toThrow()
+    })
+  })
+
+  describe('createUser', () => {
+    it('should create user', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+      const user = makeExpandedUserSchema({ id: 1, username })
+
+      gitlabApi.Users.create.mockResolvedValue(user)
+
+      const result = await service.createUser({ email, username, name })
+
+      expect(result).toEqual(user)
+      expect(gitlabApi.Users.create).toHaveBeenCalledWith(expect.objectContaining({
+        email,
+        username,
+        name,
+        skipConfirmation: true,
+      }))
+    })
+
+    it('ensureUser should return the existing user on 409 (already auto-provisioned via OIDC)', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+      const existing = makeExpandedUserSchema({ id: 2, email, username })
+
+      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+      allMock.mockResolvedValueOnce([])
+      gitlabApi.Users.create.mockRejectedValueOnce(
+        makeGitbeakerRequestError({ status: 409, description: 'Username has already been taken' }),
+      )
+      allMock.mockResolvedValueOnce([existing])
+
+      const result = await service.ensureUser({ email, username, name }, { cpnUserId: 'cpn-user-1' })
+
+      expect(result).toEqual(existing)
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('ensureUser should tolerate a non-string cause.description on 409 (regression: .includes is not a function, #2544)', async () => {
+      // GitLab validation errors serialize `message` as an object; gitbeaker copies
+      // it verbatim into cause.description despite typing it as string.
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+
+      gitlabApi.Users.create.mockRejectedValueOnce(
+        new GitbeakerRequestError('Error', {
+          cause: {
+            description: { 'project_namespace.name': ['has already been taken'] } as unknown as string,
+            request: new Request('https://gitlab.internal.example/api'),
+            response: new Response(null, { status: 400 }),
+          },
+        }),
+      )
+
+      const allMock = gitlabApi.Users.all as MockedFunction<typeof gitlabApi.Users.all>
+      allMock.mockResolvedValue([])
+      // Race path: the flattened description now matches, so the existing-user
+      // lookup runs, finds nothing, and the original error is rethrown.
+      await expect(service.ensureUser({ email, username, name }, { cpnUserId: 'cpn-user-1' }))
+        .rejects.toThrow(GitbeakerRequestError)
+      expect(gitlabApi.Users.all).toHaveBeenCalledTimes(2)
+    })
+
+    it('should propagate a non-collision error', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+
+      gitlabApi.Users.create.mockRejectedValue(
+        makeGitbeakerRequestError({ status: 500, description: 'Internal Server Error' }),
+      )
+
+      await expect(service.createUser({ email, username, name })).rejects.toThrow()
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('commitMirror', () => {
+    it('should create mirror commit', async () => {
+      const repoId = 1
+
+      await service.commitMirror(repoId)
+
+      expect(gitlabApi.Commits.create).toHaveBeenCalledWith(
+        repoId,
+        'main',
+        expect.any(String),
+        expect.arrayContaining([
+          expect.objectContaining({ filePath: '.gitlab-ci.yml', action: 'create' }),
+          expect.objectContaining({ filePath: 'mirror.sh', action: 'create' }),
+        ]),
+      )
+    })
+  })
+
+  describe('cI variables', () => {
+    const groupId = 42
+    const repoId = 99
+
+    it('should create a missing group variable', async () => {
+      gitlabApi.GroupVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group variable Not Found', status: 404 }))
+
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should update a group variable when value differs', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'old', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'new', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.edit).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'new', expect.objectContaining({ variableType: 'env_var' }))
+    })
+
+    it('should skip write when group variable matches', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'secret', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should create a missing repo variable', async () => {
+      gitlabApi.ProjectVariables.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project variable Not Found', status: 404 }))
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', 'key', expect.objectContaining({ variableType: 'env_var', environmentScope: '*' }))
+    })
+
+    it('should skip write when repo variable matches', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'key', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a create collision for a repo variable and no-op when it already matches (race)', async () => {
+      // create() is rejected because the variable already exists; the reload finds it
+      // and the method must not throw (idempotent reconcile, no-op since it matches).
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'key', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a create collision for a repo variable and edit when the existing value differs (race)', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(PROJECT_KEY) has already been taken'] }, status: 400 }))
+      gitlabApi.ProjectVariables.show.mockResolvedValueOnce({ key: 'PROJECT_KEY', value: 'old', variable_type: 'env_var', masked: false, protected: false, environment_scope: '*' })
+
+      await service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'new', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' })
+
+      expect(gitlabApi.ProjectVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.ProjectVariables.edit).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', 'new', expect.objectContaining({ variableType: 'env_var', environmentScope: '*' }))
+    })
+
+    it('should propagate a non-collision create error for a repo variable', async () => {
+      gitlabApi.ProjectVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'Internal Server Error', status: 500 }))
+
+      await expect(service.ensureGitlabRepoVariable(repoId, 'PROJECT_KEY', 'key', { masked: false, protected: false, variableType: 'env_var', environmentScope: '*' }))
+        .rejects.toThrow(GitbeakerRequestError)
+    })
+
+    it('should tolerate a create collision for a group variable and no-op when it already matches (race)', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: { key: ['(SONAR_TOKEN) has already been taken'] }, status: 400 }))
+      gitlabApi.GroupVariables.show.mockResolvedValueOnce({ key: 'SONAR_TOKEN', value: 'secret', variable_type: 'env_var', masked: true, protected: false })
+
+      await service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' })
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledTimes(1)
+      expect(gitlabApi.GroupVariables.edit).not.toHaveBeenCalled()
+    })
+
+    it('should propagate a non-collision create error for a group variable', async () => {
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(makeGitbeakerRequestError({ description: 'Internal Server Error', status: 500 }))
+
+      await expect(service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' }))
+        .rejects.toThrow(GitbeakerRequestError)
+    })
+    it('should tolerate a non-string cause.description (regression: .includes is not a function)', async () => {
+      const error = new GitbeakerRequestError('boom', { cause: { description: 404 as unknown as string, request: new Request('https://gitlab.internal.example/api'), response: new Response(null, { status: 404 }) } })
+      gitlabApi.GroupVariables.create.mockRejectedValueOnce(error)
+
+      await expect(service.ensureGitlabGroupVariable(groupId, 'SONAR_TOKEN', 'secret', { masked: true, protected: false, variableType: 'env_var' }))
+        .rejects.toThrow(GitbeakerRequestError)
+
+      expect(gitlabApi.GroupVariables.create).toHaveBeenCalledWith(groupId, 'SONAR_TOKEN', 'secret', expect.objectContaining({ masked: true, variableType: 'env_var' }))
+    })
+  })
+
+  describe('deleteProjectGroupRepo', () => {
+    it('should delete a project repo with permanent removal', async () => {
+      const projectSlug = 'project-b'
+      const repoName = 'web'
+      const repo = makeProjectSchema({ id: 99, name: repoName, path: repoName, path_with_namespace: `${projectSlug}/${repoName}` })
+
+      gitlabApi.Projects.show.mockResolvedValueOnce(repo)
+      gitlabApi.Projects.remove.mockResolvedValueOnce(undefined)
+
+      await expect(service.deleteProjectGroupRepo(projectSlug, repoName)).resolves.toBeUndefined()
+
+      expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(1, 99)
+      expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(2, 99, {
+        fullPath: `forge/${projectSlug}/${repoName}-deletion_scheduled-99`,
+        permanentlyRemove: true,
+      })
+    })
+  })
+
+  describe('deleteGroup', () => {
+    it('should delete a group with permanent removal', async () => {
+      const group = makeGroupSchema({ id: 77, full_path: 'forge/project-b' })
+
+      gitlabApi.Groups.remove.mockResolvedValue(undefined)
+
+      await expect(service.deleteGroup(group)).resolves.toBeUndefined()
+
+      expect(gitlabApi.Groups.remove).toHaveBeenNthCalledWith(1, 77)
+      expect(gitlabApi.Groups.remove).toHaveBeenNthCalledWith(2, 77, {
+        fullPath: `forge/project-b-deletion_scheduled-77`,
+        permanentlyRemove: true,
+      })
+    })
+  })
+})

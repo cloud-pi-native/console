@@ -1,7 +1,7 @@
 -- Tighten the 20260907170000_backfill_project_roles anti-join to the role
 -- level: the original matches on projectId only, so any project owning at
 -- least one ProjectRole row never receives its missing system roles.
--- Mirrors generateProjectCreateInput (apps/server-nestjs/src/modules/project/project.utils.ts):
+-- Mirrors generateProjectCreateInput (apps/server-nestjs/src/modules/core/project/project.utils.ts):
 --   Administrateur  = MANAGE                                                       = 2
 --   DevOps          = MANAGE_ENVIRONMENTS | MANAGE_REPOSITORIES | REPLAY_HOOKS
 --                     | SEE_SECRETS | LIST_ENVIRONMENTS | LIST_REPOSITORIES        = 984

@@ -11,9 +11,9 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
-import { VaultClientService } from '../src/modules/vault/vault-client.service'
-import { VaultModule } from '../src/modules/vault/vault.module'
-import { VaultService } from '../src/modules/vault/vault.service'
+import { VaultClientService } from '../src/modules/integrations/vault/vault-client.service'
+import { VaultModule } from '../src/modules/integrations/vault/vault.module'
+import { VaultService } from '../src/modules/integrations/vault/vault.service'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { VAULT_PROVISION_TIMEOUT } from './constants'
 
