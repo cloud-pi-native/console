@@ -15,7 +15,7 @@ export const PROJECT_READONLY_GROUP_PATH_SUFFIX = '/console/readonly'
 export const PROJECT_SECURITY_GROUP_PATH_SUFFIX = '/console/security'
 
 // Default chart versions
-export const DEFAULT_DSO_ENV_CHART_VERSION = 'dso-env-1.6.0'
+export const DEFAULT_DSO_ENV_CHART_VERSION = 'dso-env-1.9.3'
 export const DEFAULT_DSO_NS_CHART_VERSION = 'dso-ns-1.1.5'
 
 // Plugin configuration keys
