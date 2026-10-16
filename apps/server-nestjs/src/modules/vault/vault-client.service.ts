@@ -206,10 +206,10 @@ export class VaultClientService {
   }
 
   @StartActiveSpan()
-  async readRegistrySecrets(projectSlug: string, robotName: string): Promise<Record<string, any>> {
+  async readProjectRobotRegistrySecrets(projectSlug: string): Promise<Record<string, any>> {
     // KV v2 cannot read a folder prefix: the REGISTRY group only exists as
     // per-robot leaves, and the UI surface is the project robot.
-    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, `REGISTRY/${robotName}`)
+    const fullPath = generateSecretGroupPath(this.baseConfig.projectsRootDir, projectSlug, `REGISTRY/project-robot`)
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('vault.kv.path', fullPath)

@@ -103,7 +103,7 @@ describe('vault', () => {
     })
   })
 
-  describe('readRegistrySecrets', () => {
+  describe('readProjectRobotRegistrySecrets', () => {
     it('reads the project-robot leaf and returns raw vault data', async () => {
       server.use(
         http.get(`${vaultUrl}/v1/kv/data/*`, () => {
@@ -111,7 +111,7 @@ describe('vault', () => {
         }),
       )
 
-      const result = await service.readRegistrySecrets('my-project', 'project-robot')
+      const result = await service.readProjectRobotRegistrySecrets('my-project')
 
       expect(result).toEqual({ HOST: 'harbor.example', USERNAME: 'robot$my-project+project-robot' })
     })
@@ -123,7 +123,7 @@ describe('vault', () => {
         }),
       )
 
-      const result = await service.readRegistrySecrets('my-project', 'project-robot')
+      const result = await service.readProjectRobotRegistrySecrets('my-project')
 
       expect(result).toEqual({})
     })
