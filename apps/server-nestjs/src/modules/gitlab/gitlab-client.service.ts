@@ -128,10 +128,12 @@ export class GitlabClientService {
 
   async getGroupByPath(path: string) {
     this.logger.verbose(`Looking up a GitLab group by path ${path}`)
-    return find(
-      this.offsetPaginate(opts => this.client.Groups.all({ search: path, orderBy: 'path', ...opts })),
-      g => g.full_path === path,
-    )
+    try {
+      return await this.client.Groups.show(encodeURIComponent(path))
+    } catch (error) {
+      if (isGitbeakerNotFound(error)) return undefined
+      throw error
+    }
   }
 
   private async setManagedGroupAttributesByPath(fullPath: string, groupId: number) {
@@ -177,9 +179,6 @@ export class GitlabClientService {
 
     this.logger.verbose(`Resolving GitLab group path ${path} (depth=${1 + parts.length})`)
     let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.createGroup(rootGroupPath)
-    if (this.config.projectRootDir && parentGroup.full_path === this.config.projectRootDir) {
-      await this.setManagedRootGroupAttributes(parentGroup.id)
-    }
 
     let currentFullPath: string
     for (const part of parts) {
@@ -188,7 +187,7 @@ export class GitlabClientService {
     }
 
     this.logger.verbose(`GitLab group path resolved (path=${path}, groupId=${parentGroup.id})`)
-    return parentGroup as GroupSchemaWith<'id'>
+    return parentGroup as GroupSchemaWith<'id' | 'full_path'>
   }
 
   async ensureProjectGroup() {
@@ -482,10 +481,18 @@ export class GitlabClientService {
     const { description, ciConfigPath, extraTopics = [] } = options
     const fullPath = `${projectSlug}/${repoName}`
     const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
+    const topics = [TOPIC_PLUGIN_MANAGED, ...extraTopics]
+    const sameTopics = (repo.topics ?? []).slice().sort().join(',') === topics.slice().sort().join(',')
+    const sameDescription = (repo.description ?? '') === (description ?? '')
+    const repoCiConfigPath = typeof repo.ci_config_path === 'string' ? repo.ci_config_path : ''
+    if (sameTopics && sameDescription && repoCiConfigPath === (ciConfigPath ?? '')) {
+      this.logger.verbose(`GitLab project repository settings unchanged; skipping edit (path=${fullPath}, repoId=${repo.id})`)
+      return repo
+    }
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
-      topics: [TOPIC_PLUGIN_MANAGED, ...extraTopics],
+      topics,
       description,
       ciConfigPath: ciConfigPath ?? '',
     })
@@ -743,7 +750,7 @@ export class GitlabClientService {
       try {
         const { data, paginationInfo } = await request({
           page,
-          perPage: options?.perPage,
+          perPage: options?.perPage ?? 100,
           maxPages: options?.maxPages,
           showExpanded: true,
           pagination: 'offset',
