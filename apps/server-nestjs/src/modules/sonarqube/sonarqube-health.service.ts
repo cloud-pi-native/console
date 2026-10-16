@@ -1,7 +1,12 @@
 import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
+import { z } from 'zod'
 import { sonarqubeConfigFactory } from '../../config/sonarqube.config'
+import { REQUEST_ERROR_MESSAGE } from '../service-monitor/service-monitor.constants'
+import { PLUGIN_NAME } from './sonarqube.constants'
+
+const sonarqubeHealthBodySchema = z.object({ health: z.string() })
 
 @Injectable()
 export class SonarqubeHealthService {
@@ -10,18 +15,28 @@ export class SonarqubeHealthService {
     @Inject(HealthIndicatorService) private readonly healthIndicator: HealthIndicatorService,
   ) {}
 
-  async check(key: string) {
-    const indicator = this.healthIndicator.check(key)
-    const headers: Record<string, string> = {}
-    const bearerToken = Buffer.from(`${this.sonarqubeConfig.apiToken}:`, 'utf-8').toString('base64')
-    headers.Authorization = `Bearer ${bearerToken}`
+  async check() {
+    const indicator = this.healthIndicator.check(PLUGIN_NAME)
     try {
-      const url = new URL('/api/system/health', this.sonarqubeConfig.internalUrl ?? this.sonarqubeConfig.url).toString()
-      const response = await fetch(url, { headers })
-      if (response.status < HttpStatus.INTERNAL_SERVER_ERROR) return indicator.up({ httpStatus: response.status })
-      return indicator.down({ httpStatus: response.status })
+      const response = await fetch(this.healthUrl(), { headers: this.authHeaders() })
+      if (response.status !== HttpStatus.OK) return indicator.down({ message: REQUEST_ERROR_MESSAGE })
+
+      const parsed = sonarqubeHealthBodySchema.safeParse(await response.json())
+      if (!parsed.success) return indicator.down({ message: REQUEST_ERROR_MESSAGE })
+      if (parsed.data.health === 'GREEN') return indicator.up()
+      if (parsed.data.health === 'YELLOW') return indicator.up({ message: 'Service dégradé' })
+      if (parsed.data.health === 'RED') return indicator.down({ message: 'Service en panne' })
+      return indicator.down({ message: REQUEST_ERROR_MESSAGE })
     } catch (error) {
-      return indicator.down(error instanceof Error ? error.message : String(error))
+      return indicator.down({ message: REQUEST_ERROR_MESSAGE, cause: error })
     }
+  }
+
+  private healthUrl(): string {
+    return new URL('/api/system/health', this.sonarqubeConfig.internalUrl ?? this.sonarqubeConfig.url).toString()
+  }
+
+  private authHeaders(): Record<string, string> {
+    return { Authorization: `Bearer ${this.sonarqubeConfig.apiToken}` }
   }
 }
