@@ -62,11 +62,11 @@ sequenceDiagram
   M->>E: emitProjectEvent(project.upsert, project id)
   E->>E: Charger ProjectWithDetails après commit
   E->>A: emitAsync(project.upsert, ProjectWithDetails)
-  Note over E,A: Écouteurs ArgoCD, GitLab, Keycloak, Nexus, Vault, Harbor, SonarQube et Observability en parallèle
+  Note over E,A: Écouteurs ArgoCD, GitLab, Keycloak, Nexus,<br/>Vault, Harbor, SonarQube et Observability en parallèle
   A->>A: Chaque écouteur synchronise ses ressources externes
   A-->>E: PluginResults via capturePluginResult
   E->>E: Fusionner résultats et écrire le journal
-  E->>E: failed si un plugin est KO ; sinon created pour upsert
+  E->>E: failed si un plugin est KO<br/>sinon created pour upsert
   E-->>M: Fin de l’agrégation (appelant poursuit son cas d’usage)
 ```
 
@@ -87,7 +87,7 @@ sequenceDiagram
   Note over E,A: Écouteurs de nettoyage exécutés en parallèle
   A->>A: Supprimer les ressources propres au module
   A-->>E: résultats OK / KO
-  E->>E: Journaliser ; marquer failed en cas de KO
+  E->>E: Journaliser et marquer failed en cas de KO
   E-->>P: résultats agrégés
 ```
 
@@ -151,7 +151,7 @@ sequenceDiagram
   E->>V: emitAsync(zone.*, ZoneEventPayload)
   V->>V: Synchroniser ou nettoyer les ressources de zone
   V-->>E: PluginResult via capturePluginResult
-  Note over E,K: Aucun écouteur Keycloak NestJS ; le hook zone legacy n'est pas appelé par cet événement
+  Note over E,K: Aucun écouteur Keycloak NestJS<br/>Le hook zone legacy n'est pas appelé par cet événement
   E->>E: Journaliser et agréger
   E-->>Z: résultats
   Z-->>Z: 422 si Vault échoue
