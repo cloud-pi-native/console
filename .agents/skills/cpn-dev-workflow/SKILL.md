@@ -2,9 +2,10 @@
 name: cpn-dev-workflow
 description:
   "Use when contributing to this repo: issue-first lifecycle, workspace
-  isolation, quality gates, and the PR workflow."
-version: 1.0.0
+  isolation, quality gates, PR workflow, or local Playwright E2E testing."
 license: Apache-2.0
+metadata:
+  version: '1.1.0'
 ---
 
 # Console dev workflow
@@ -72,5 +73,23 @@ Before opening the PR:
 pnpm format
 pnpm lint
 pnpm test # targeted specs at minimum
-pnpm playwright:test # always — unlinked changes can break E2E; also flags flaky/slow specs
 ```
+
+Run the full Playwright E2E suite when the change affects browser flows, API data, routing,
+authentication, or E2E fixtures. The suite requires the CI stack and its seeded data; never run it
+against `docker:dev`.
+
+If a development stack is active, stop it with `pnpm docker:dev:clean` before starting CI because
+both Compose configurations share container names and ports. If required `.env` files are missing,
+run `bash ci/scripts/init-env.sh`; it copies templates without overwriting existing files.
+
+Use the single E2E runner, then clean up even when the tests fail:
+
+```bash
+pnpm docker:e2e-ci
+pnpm docker:e2e-ci:delete
+```
+
+## Pitfalls
+
+- A responsive application stack is not proof that E2E fixtures are provisioned. `docker:dev` may start normally while E2E assumptions fail later; use `docker:e2e-ci` for the full suite.

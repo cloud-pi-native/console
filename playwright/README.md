@@ -19,26 +19,42 @@ $ pnpm exec playwright install --with-deps
 
 Note: Il est possible qu'il soit nécessaire que vous fassiez un `sudo`
 
-## Lancer les tests
+## Lancer la suite E2E
 
-Il faut d'abord lancer une stack, par ex, celle de Dev:
+La suite E2E Playwright nécessite les fixtures et les données de la stack CI (`pnpm docker:ci`).
+`docker:e2e-ci` est le seul lanceur de la suite complète ; `docker:dev` ne convient pas.
 
-```shell
-$ pnpm run docker:dev
-```
-On peut lancer ensuite les tests :
-
-```shell
-$ pnpm run playwright:test --grep @e2e
-```
-
-OU (autre possibilité), lancer la "console" Playwright pour parcourir/exécuter les tests manuellement :
+Si les fichiers d'environnement requis n'existent pas encore, les créer sans écraser les fichiers
+présents :
 
 ```shell
-$ pnpm run playwright:test:ui --grep @e2e
+$ bash ci/scripts/init-env.sh
 ```
 
-Et pour les tests d'intégration, il faut au préalable exporter des variables d'environnement :
+Si une stack de développement tourne déjà, l'arrêter avant de démarrer la stack CI :
+
+```shell
+$ pnpm docker:dev:clean
+```
+
+Lancer la suite complète et nettoyer la stack et ses volumes après le résultat, y compris en cas
+d'échec :
+
+```shell
+$ pnpm docker:e2e-ci
+$ pnpm docker:e2e-ci:delete
+```
+
+Pour diagnostiquer manuellement une spec, démarrer la stack CI séparément, lancer le test ciblé,
+puis arrêter les conteneurs. Ce parcours n'est pas le lanceur de la suite complète :
+
+```shell
+$ pnpm docker:ci
+$ pnpm --dir playwright exec playwright test e2e-tests/dashboard.spec.ts -g 'Should display a project statuses'
+$ pnpm docker:ci:clean
+```
+
+Pour les tests d'intégration, exporter au préalable les variables d'environnement suivantes :
 
 ```shell
 $ export KEYCLOAK_DOMAIN=keycloak.example.com
