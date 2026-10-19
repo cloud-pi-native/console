@@ -1,8 +1,9 @@
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
+import type { AdminRoleEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
-import { getBaseRoleType, getPermsByUserRoles, isExternalRoleType, ProjectAuthorized, resourceListToDict } from '@cpn-console/shared'
+import { getBaseRoleType, isExternalRoleType } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -56,6 +57,49 @@ export class KeycloakService {
     this.logger.log(`Keycloak cleanup completed for project ${project.slug}`)
   }
 
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.syncAdminRole(role.id))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
+    return capturePluginResult('keycloak', () => this.revokeAdminRoleGroup(role))
+  }
+
+  @StartActiveSpan()
+  private async revokeAdminRoleGroup(role: AdminRoleEventPayload) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    const roleGroupPath = toGroupPath(role.oidcGroup)
+    if (!roleGroupPath) return
+    const roleGroup = await this.keycloak.getGroupByPath(roleGroupPath)
+    if (!roleGroup?.id) {
+      this.logger.warn(`Keycloak group not found for deleted admin role (roleId=${role.id}, path=${roleGroupPath})`)
+      return
+    }
+    for (const member of role.members) {
+      await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+    }
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(roleId: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', roleId)
+    this.logger.log(`Handling an admin role event for ${roleId}`)
+    const [roles, users] = await Promise.all([
+      this.datastore.getAllAdminRoles(),
+      this.datastore.getAllUsersWithAdminRoleIds(),
+    ])
+    const role = roles.find(({ id }) => id === roleId)
+    if (!role) {
+      this.logger.warn(`Admin role not found for event (roleId=${roleId})`)
+      return
+    }
+    await this.ensureAdminRoleGroup(role, users)
+  }
+
   // @Cron(CronExpression.EVERY_HOUR)
   @StartActiveSpan()
   async handleCron() {
@@ -99,7 +143,7 @@ export class KeycloakService {
     })
     this.logger.verbose(`Reconciling Keycloak project group (${project.slug}): members=${project.members.length} roles=${project.roles.length}`)
 
-    const projectGroup = await this.keycloak.getOrCreateGroupByPath(`/${project.slug}`)
+    const projectGroup = await this.keycloak.ensureGroupByPath(`/${project.slug}`)
 
     span?.setAttribute('keycloak.project_group.id', projectGroup.id)
 
@@ -114,12 +158,10 @@ export class KeycloakService {
   private async ensureConsoleGroup(project: ProjectWithDetails, group: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.console_group.id', group.id)
-    const consoleGroup = await this.keycloak.getOrCreateConsoleGroup(group)
+    const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await Promise.all([
       this.ensureRoleGroups(project, consoleGroup),
-      this.ensureEnvironmentGroups(project, consoleGroup),
-      this.purgeOrphanEnvironmentGroups(project, consoleGroup),
     ])
   }
 
@@ -147,10 +189,10 @@ export class KeycloakService {
     span?.setAttribute('admin_role.id', role.id)
     span?.setAttribute('admin_role.oidc_group.present', isNonEmptyGroupPath(role.oidcGroup))
     const roleGroupPath = toGroupPath(role.oidcGroup)
-    if (!roleGroupPath) return
+    if (!roleGroupPath || isExternalRoleType(role.type)) return
 
     span?.setAttribute('keycloak.group.path', roleGroupPath)
-    const roleGroup = await this.keycloak.getOrCreateGroupByPath(roleGroupPath)
+    const roleGroup = await this.keycloak.ensureGroupByPath(roleGroupPath)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
 
     const groupMembers = await this.keycloak.getGroupMembers(roleGroup.id)
@@ -313,7 +355,7 @@ export class KeycloakService {
     span?.setAttribute('role.oidc_group.depth', splitGroupPath(role.oidcGroup).length)
 
     const relativeOidcGroup = toRoleRelativeGroupPath(role, group)
-    const roleGroup = await this.keycloak.getOrCreateRoleGroup(group, relativeOidcGroup)
+    const roleGroup = await this.keycloak.ensureRoleGroup(group, relativeOidcGroup)
     span?.setAttribute('keycloak.group.id', roleGroup.id)
     span?.setAttribute('keycloak.group.path', roleGroup.path)
 
@@ -405,244 +447,6 @@ export class KeycloakService {
     }))
     span?.setAttribute('keycloak.group.members.removed', removedCount)
   }
-
-  private async ensureEnvironmentGroups(
-    project: ProjectWithDetails,
-    group: GroupRepresentationWith<'id'>,
-  ) {
-    await Promise.all(project.environments.map(environment =>
-      this.ensureEnvironmentGroup(project, environment, group)))
-  }
-
-  @StartActiveSpan()
-  private async ensureEnvironmentGroup(
-    project: ProjectWithDetails,
-    environment: ProjectWithDetails['environments'][number],
-    group: GroupRepresentationWith<'id'>,
-  ) {
-    const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'project.slug': project.slug,
-      'environment.id': environment.id,
-      'environment.name': environment.name,
-      'project.roles.count': project.roles.length,
-    })
-
-    const { roGroup, rwGroup } = await this.keycloak.getOrCreateEnvironmentGroups(group, environment)
-
-    span?.setAttribute('keycloak.env_group.ro.id', roGroup.id)
-    span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
-
-    const rolesById = resourceListToDict(project.roles)
-
-    const [roMembers, rwMembers] = await Promise.all([
-      this.keycloak.getGroupMembers(roGroup.id),
-      this.keycloak.getGroupMembers(rwGroup.id),
-    ])
-
-    span?.setAttribute('keycloak.env_group.ro.members.current', roMembers.length)
-    span?.setAttribute('keycloak.env_group.rw.members.current', rwMembers.length)
-
-    await Promise.all([
-      this.ensureEnvironmentGroupMembers(
-        project,
-        environment,
-        rolesById,
-        roGroup,
-        rwGroup,
-        roMembers,
-        rwMembers,
-      ),
-      this.purgeOrphanEnvironmentGroupMembers(
-        project,
-        environment,
-        roGroup,
-        rwGroup,
-        roMembers,
-        rwMembers,
-      ),
-    ])
-  }
-
-  @StartActiveSpan()
-  private async ensureEnvironmentGroupMembers(
-    project: ProjectWithDetails,
-    environment: ProjectWithDetails['environments'][number],
-    rolesById: Record<string, ProjectWithDetails['roles'][number]>,
-    roGroup: GroupRepresentationWith<'id'>,
-    rwGroup: GroupRepresentationWith<'id'>,
-    roMembers: UserRepresentation[],
-    rwMembers: UserRepresentation[],
-  ) {
-    const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', project.slug)
-    span?.setAttribute('environment.id', environment.id)
-    span?.setAttribute('environment.name', environment.name)
-    span?.setAttribute('keycloak.env_group.ro.id', roGroup.id)
-    span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
-    span?.setAttribute('keycloak.env_group.ro.members.current', roMembers.length)
-    span?.setAttribute('keycloak.env_group.rw.members.current', rwMembers.length)
-    this.logger.verbose(`Reconciling Keycloak environment group members: project=${project.slug} env=${environment.name} roMembers=${roMembers.length} rwMembers=${rwMembers.length}`)
-
-    const projectUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
-    span?.setAttribute('project.users.count', projectUserIds.size)
-
-    let roAdded = 0
-    let roRemoved = 0
-    let rwAdded = 0
-    let rwRemoved = 0
-
-    await Promise.all(Array.from(projectUserIds, async (userId) => {
-      const perms = this.getUserPermissions(project, rolesById, userId)
-
-      const isInRo = roMembers.some(m => m.id === userId)
-      if (perms.ro && !isInRo) {
-        roAdded++
-        await this.maybeAddUserToGroup(userId, roGroup.id, `RO group for ${environment.name}`)
-      } else if (!perms.ro && isInRo) {
-        roRemoved++
-        await this.maybeRemoveUserFromGroup(userId, roGroup.id, `RO group for ${environment.name}`)
-      }
-
-      const isInRw = rwMembers.some(m => m.id === userId)
-      if (perms.rw && !isInRw) {
-        rwAdded++
-        await this.maybeAddUserToGroup(userId, rwGroup.id, `RW group for ${environment.name}`)
-      } else if (!perms.rw && isInRw) {
-        rwRemoved++
-        await this.maybeRemoveUserFromGroup(userId, rwGroup.id, `RW group for ${environment.name}`)
-      }
-    }))
-
-    span?.setAttribute('keycloak.env_group.ro.members.added', roAdded)
-    span?.setAttribute('keycloak.env_group.ro.members.removed', roRemoved)
-    span?.setAttribute('keycloak.env_group.rw.members.added', rwAdded)
-    span?.setAttribute('keycloak.env_group.rw.members.removed', rwRemoved)
-    this.logger.verbose(`Keycloak environment group members reconciled: project=${project.slug} env=${environment.name} roAdded=${roAdded} roRemoved=${roRemoved} rwAdded=${rwAdded} rwRemoved=${rwRemoved}`)
-  }
-
-  @StartActiveSpan()
-  private async purgeOrphanEnvironmentGroupMembers(
-    project: ProjectWithDetails,
-    environment: ProjectWithDetails['environments'][number],
-    roGroup: GroupRepresentationWith<'id'>,
-    rwGroup: GroupRepresentationWith<'id'>,
-    roMembers: UserRepresentation[],
-    rwMembers: UserRepresentation[],
-  ) {
-    const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', project.slug)
-    span?.setAttribute('environment.id', environment.id)
-    span?.setAttribute('environment.name', environment.name)
-    span?.setAttribute('keycloak.env_group.ro.id', roGroup.id)
-    span?.setAttribute('keycloak.env_group.rw.id', rwGroup.id)
-    span?.setAttribute('keycloak.env_group.ro.members.current', roMembers.length)
-    span?.setAttribute('keycloak.env_group.rw.members.current', rwMembers.length)
-    this.logger.verbose(`Purging orphan Keycloak environment group members: project=${project.slug} env=${environment.name} roMembers=${roMembers.length} rwMembers=${rwMembers.length}`)
-
-    const projectUserIds = new Set([project.ownerId, ...project.members.map(m => m.user.id)])
-    span?.setAttribute('project.users.count', projectUserIds.size)
-
-    let roRemoved = 0
-    let rwRemoved = 0
-
-    await Promise.all([
-      ...roMembers.map(async (member) => {
-        if (!member.id) {
-          throw new Error(`Failed to create or retrieve RO and RW groups for ${environment.name}`)
-        }
-        if (!projectUserIds.has(member.id)) {
-          roRemoved++
-          await this.maybeRemoveUserFromGroup(member.id, roGroup.id, `RO group for ${environment.name}`)
-        }
-      }),
-      ...rwMembers.map(async (member) => {
-        if (!member.id) {
-          throw new Error(`Failed to create or retrieve RO and RW groups for ${environment.name}`)
-        }
-        if (!projectUserIds.has(member.id)) {
-          rwRemoved++
-          await this.maybeRemoveUserFromGroup(member.id, rwGroup.id, `RW group for ${environment.name}`)
-        }
-      }),
-    ])
-
-    span?.setAttribute('keycloak.env_group.ro.members.removed', roRemoved)
-    span?.setAttribute('keycloak.env_group.rw.members.removed', rwRemoved)
-    this.logger.log(`Orphan Keycloak environment group member cleanup completed: project=${project.slug} env=${environment.name} roRemoved=${roRemoved} rwRemoved=${rwRemoved}`)
-  }
-
-  @StartActiveSpan()
-  private async purgeOrphanEnvironmentGroups(
-    project: ProjectWithDetails,
-    group: GroupRepresentationWith<'id' | 'name'>,
-  ) {
-    const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', project.slug)
-    span?.setAttribute('keycloak.group.id', group.id)
-    span?.setAttribute('keycloak.group.name', group.name)
-    this.logger.verbose(`Scanning Keycloak environment groups for orphan cleanup: project=${project.slug} groupId=${group.id} groupName=${group.name}`)
-
-    const envGroups = map(this.keycloak.getSubGroups(group.id), envGroup => z.object({
-      id: z.string(),
-      name: z.string(),
-    }).parse(envGroup))
-
-    const promises: Promise<void>[] = []
-    let orphanCount = 0
-
-    for await (const envGroup of envGroups) {
-      span?.setAttribute('keycloak.env_group.id', envGroup.id)
-      span?.setAttribute('keycloak.env_group.name', envGroup.name)
-
-      const subGroups = await getAll(map(this.keycloak.getSubGroups(envGroup.id), subgroup => z.object({
-        name: z.string(),
-      }).parse(subgroup)))
-
-      if (this.isEnvironmentGroup(subGroups) && !this.isOwnedEnvironmentGroup(project, envGroup)) {
-        orphanCount++
-        this.logger.log(`Deleting orphan Keycloak environment group: project=${project.slug} envGroupId=${envGroup.id} envGroupName=${envGroup.name}`)
-        promises.push(
-          this.keycloak.deleteGroup(envGroup.id)
-            .catch(err => this.logger.warn(`Failed to delete orphan Keycloak environment group: project=${project.slug} envGroupId=${envGroup.id} envGroupName=${envGroup.name} err=${err instanceof Error ? err.message : String(err)}`)),
-        )
-      }
-    }
-
-    span?.setAttribute('keycloak.env_groups.orphan.count', orphanCount)
-    await Promise.all(promises)
-    this.logger.log(`Orphan Keycloak environment group cleanup completed: project=${project.slug} groupId=${group.id} orphanCount=${orphanCount}`)
-  }
-
-  private isEnvironmentGroup(
-    subGroups: GroupRepresentationWith<'name'>[],
-  ) {
-    return subGroups.some(subgroup => subgroup.name === 'RO' || subgroup.name === 'RW')
-  }
-
-  private isOwnedEnvironmentGroup(
-    project: ProjectWithDetails,
-    group: GroupRepresentationWith<'name'>,
-  ) {
-    return project.environments.some(e => e.name === group.name)
-  }
-
-  private getUserPermissions(
-    project: ProjectWithDetails,
-    rolesById: Record<string, ProjectWithDetails['roles'][number]>,
-    userId: string,
-  ) {
-    if (userId === project.ownerId) return { ro: true, rw: true }
-    const member = project.members.find(m => m.user.id === userId)
-    if (!member) return { ro: false, rw: false }
-
-    const projectPermissions = getPermsByUserRoles(member.roleIds, rolesById, project.everyonePerms)
-
-    return {
-      ro: ProjectAuthorized.ListEnvironments({ adminPermissions: 0n, projectPermissions }),
-      rw: ProjectAuthorized.ManageEnvironments({ adminPermissions: 0n, projectPermissions }),
-    }
-  }
 }
 
 async function* map<T, U>(
@@ -653,14 +457,4 @@ async function* map<T, U>(
   for await (const value of iterable) {
     yield await mapper(value, index++)
   }
-}
-
-async function getAll<T>(
-  iterable: AsyncIterable<T>,
-): Promise<T[]> {
-  const items: T[] = []
-  for await (const item of iterable) {
-    items.push(item)
-  }
-  return items
 }

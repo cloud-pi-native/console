@@ -61,6 +61,18 @@ describe('userGuard', () => {
     expect(request.userId).toBe('u1')
   })
 
+  it('propagates the oidc-resolved admin role ids onto the request', async () => {
+    authService.authenticate.mockResolvedValue({ userId: 'u1', adminRoleIds: ['oidc-role'] })
+    userPolicy.build.mockReturnValue({ adminPermissions: [], userTypes: [] })
+    const ctx = makeExecutionContext({ 'x-dso-token': 'tok' })
+
+    const result = await guard.canActivate(ctx)
+    const request = ctx.switchToHttp().getRequest()
+
+    expect(result).toBe(true)
+    expect(request.adminRoleIds).toEqual(['oidc-role'])
+  })
+
   it('validates required admin permissions', async () => {
     authService.authenticate.mockResolvedValue({ userId: 'u1', adminPermissions: 32768n })
     const policy: UserPolicyConfig = { adminPermissions: ['ListSystem'], userTypes: [] }

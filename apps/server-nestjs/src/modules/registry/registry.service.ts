@@ -12,6 +12,7 @@ import type {
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { VaultRobotSecret } from './registry.utils'
 import { specificallyEnabled } from '@cpn-console/hooks'
+import { daysAgo } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -138,7 +139,7 @@ export class RegistryService {
     const createdTimeRaw = vaultSecret?.metadata?.created_time
     if (!createdTimeRaw) return false
     const createdTime = new Date(createdTimeRaw)
-    return daysAgoFromNow(createdTime) > this.harborConfig.robotRotationThresholdDays
+    return daysAgo(createdTime) > this.harborConfig.robotRotationThresholdDays
   }
 
   private async ensureProjectGroupMember(
@@ -425,10 +426,6 @@ function generateHarborAccessLevelMapping(args: { guest: string[], developer: st
   for (const groupName of args.platformAdmin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
   for (const groupName of args.platformGuest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
   return byGroupName
-}
-
-function daysAgoFromNow(date: Date) {
-  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function generateRobotFullName(project: ProjectWithDetails, robotName: string) {

@@ -45,5 +45,11 @@ export const ExposedPersonalAccessTokenSchema = TokenSchema.extend({
   password: z.string(),
 })
 
+export const CreatePersonalAccessTokenBodySchema = PersonalAccessTokenSchema
+  .pick({ name: true, expirationDate: true })
+  .extend({ expirationDate: ExpirationDateSchema })
+  .required()
+
 export type PersonalAccessToken = Zod.infer<typeof PersonalAccessTokenSchema>
 export type ExposedPersonalAccessToken = Zod.infer<typeof ExposedPersonalAccessTokenSchema>
+export type CreatePersonalAccessTokenBody = Zod.infer<typeof CreatePersonalAccessTokenBodySchema>

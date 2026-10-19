@@ -41,11 +41,11 @@ describe('test adminRoleContract', () => {
   describe('createAdminRole', () => {
     it('should create a role for authorized users', async () => {
       const user = getUserMockInfos(ADMIN_PERMS.MANAGE_ROLES)
-      const newRole = { id: 'newRole', name: 'New Role' }
+      const newRoles = [{ id: faker.string.uuid(), name: 'New Role', oidcGroup: '', position: 0, permissions: '0', type: 'managed' }]
       const roleData = { name: 'New Role' }
 
       authUserMock.mockResolvedValueOnce(user)
-      businessCreateRoleMock.mockResolvedValueOnce(newRole)
+      businessCreateRoleMock.mockResolvedValueOnce(newRoles)
 
       const response = await app.inject()
         .post(adminRoleContract.createAdminRole.path)
@@ -53,7 +53,7 @@ describe('test adminRoleContract', () => {
         .end()
 
       expect(businessCreateRoleMock).toHaveBeenCalledWith(roleData, expect.any(String))
-      expect(response.json()).toEqual(newRole)
+      expect(response.json()).toEqual(newRoles)
       expect(response.statusCode).toEqual(201)
     })
 

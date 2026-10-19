@@ -1,11 +1,12 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { RepositorySyncEventPayload } from '../events/app-events.service'
+import type { AdminRoleEventPayload, RepositorySyncEventPayload } from '../events/app-events.service'
 import type { RequiredPluginResult } from '../plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
 import type { ProjectWithDetails } from './gitlab-datastore.service'
 import { specificallyEnabled } from '@cpn-console/hooks'
+import { daysAgo } from '@cpn-console/shared'
 import { AccessLevel } from '@gitbeaker/core'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -35,7 +36,6 @@ import {
 } from './gitlab.constants'
 import {
   adminRoleFlag,
-  daysAgoFromNow,
   generateAccessLevelMapping,
   generateAdminRoleMapping,
   generateName,
@@ -83,6 +83,49 @@ export class GitlabService {
   @OnEvent('project.delete')
   async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', () => this.cleanupProject(project))
+  }
+
+  @OnEvent('adminRole.upsert')
+  async handleAdminRoleUpsert(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncAdminRole(role))
+  }
+
+  @OnEvent('adminRole.delete')
+  async handleAdminRoleDelete(role: AdminRoleEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', () => this.syncAdminRole(role, false))
+  }
+
+  @StartActiveSpan()
+  private async syncAdminRole(role: AdminRoleEventPayload, enabled = true) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('admin_role.id', role.id)
+    this.logger.log(`Handling an admin role ${enabled ? 'upsert' : 'delete'} event for ${role.id}`)
+
+    const { isAdminRole, isAuditorRole } = await this.getAdminRoleFlags(role)
+    if (!isAdminRole && !isAuditorRole) {
+      this.logger.verbose(`Not a managed role for GitLab plugin (roleId=${role.id})`)
+      return
+    }
+
+    for (const member of role.members) {
+      await this.gitlab.ensureUser({
+        email: member.email,
+        username: generateUsername(member.email),
+        name: generateName(member.firstName, member.lastName),
+        admin: isAdminRole ? enabled : undefined,
+        auditor: isAuditorRole ? enabled : undefined,
+      }, {
+        cpnUserId: member.id,
+      })
+    }
+  }
+
+  private async getAdminRoleFlags(role: AdminRoleEventPayload) {
+    const oidcGroup = role.oidcGroup ?? ''
+    return {
+      isAdminRole: parseGroupPaths(await this.getAdminGroupPath()).includes(oidcGroup),
+      isAuditorRole: parseGroupPaths(await this.getAuditorGroupPath()).includes(oidcGroup),
+    }
   }
 
   @OnEvent('repository.sync')
@@ -147,7 +190,7 @@ export class GitlabService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling GitLab project group (${project.slug})`)
-    const group = await this.gitlab.getOrCreateProjectSubGroup(project.slug)
+    const group = await this.gitlab.ensureProjectSubGroup(project.slug)
     const members = await this.gitlab.getGroupMembers(group)
     this.logger.verbose(`Loaded GitLab project group state (${project.slug}): groupId=${group.id} members=${members.length}`)
     await this.ensureProjectGroupMembers(project, group, members)
@@ -184,7 +227,7 @@ export class GitlabService {
     const accessLevelByUserId = generateAccessLevelMapping(project, groupPaths)
 
     await Promise.all(project.members.map(async ({ user }) => {
-      const gitlabUser = await this.gitlab.upsertUser({
+      const gitlabUser = await this.gitlab.ensureUser({
         email: user.email,
         username: generateUsername(user.email),
         name: generateName(user.firstName, user.lastName),
@@ -234,7 +277,7 @@ export class GitlabService {
     adminRoleIds: string[],
     auditorRoleIds: string[],
   ) {
-    const gitlabUser = await this.gitlab.upsertUser({
+    const gitlabUser = await this.gitlab.ensureUser({
       email: project.owner.email,
       username: generateUsername(project.owner.email),
       name: generateName(project.owner.firstName, project.owner.lastName),
@@ -258,15 +301,15 @@ export class GitlabService {
     return generateAdminRoleMapping(roles, adminGroupPaths, auditorGroupPaths)
   }
 
-  private async getAdminGroupPath(project: ProjectWithDetails): Promise<string> {
+  private async getAdminGroupPath(project?: ProjectWithDetails): Promise<string> {
     return await this.getAdminOrProjectPluginConfig(project, ADMIN_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_ADMIN_GROUP_PATH
   }
 
-  private async getAuditorGroupPath(project: ProjectWithDetails): Promise<string> {
+  private async getAuditorGroupPath(project?: ProjectWithDetails): Promise<string> {
     return await this.getAdminOrProjectPluginConfig(project, AUDITOR_GROUP_PATH_PLUGIN_KEY) ?? DEFAULT_AUDITOR_GROUP_PATH
   }
 
-  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
+  private async getAdminOrProjectPluginConfig(project: ProjectWithDetails | undefined, key: string): Promise<string | undefined> {
     const adminPluginConfig = await this.datastore.getAdminPluginConfig(PLUGIN_NAME, key)
     if (adminPluginConfig) return adminPluginConfig
     if (!project) return undefined
@@ -375,7 +418,7 @@ export class GitlabService {
         ...(externalHost ? { 'repository.external.host': externalHost } : {}),
         'repository.external': !!repo.externalRepoUrl,
       })
-      await this.gitlab.upsertProjectGroupRepo(project.slug, repo.internalRepoName, {
+      await this.gitlab.ensureProjectGroupRepoSettings(project.slug, repo.internalRepoName, {
         ciConfigPath: repo.externalRepoUrl ? GITLAB_CI_CONFIG_PATH : undefined,
       })
 
@@ -442,7 +485,7 @@ export class GitlabService {
       this.logger.warn(`No existing mirror credentials found in Vault; rotating new credentials (project=${project.slug}, repoName=${repo.internalRepoName})`)
     }
 
-    const internalRepoUrl = await this.gitlab.getOrCreateProjectGroupInternalRepoUrl(project.slug, repo.internalRepoName)
+    const internalRepoUrl = await this.gitlab.ensureProjectGroupInternalRepoUrl(project.slug, repo.internalRepoName)
     const externalRepoUrn = repo.externalRepoUrl.split('://')[1]
     const internalRepoUrn = internalRepoUrl.split('://')[1]
     span?.setAttribute('repository.externalRepoUrn', externalRepoUrn)
@@ -476,11 +519,11 @@ export class GitlabService {
   }
 
   private async ensureInfraAppsRepo(project: ProjectWithDetails) {
-    await this.gitlab.upsertProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
+    await this.gitlab.ensureProjectGroupSystemRepo(project.slug, INFRA_APPS_REPO_NAME)
   }
 
   private async ensureMirrorRepo(project: ProjectWithDetails) {
-    const mirrorRepo = await this.gitlab.upsertProjectMirrorRepo(project.slug)
+    const mirrorRepo = await this.gitlab.ensureProjectMirrorRepo(project.slug)
     if (mirrorRepo.empty_repo) {
       await this.gitlab.commitMirror(mirrorRepo.id)
     }
@@ -491,7 +534,7 @@ export class GitlabService {
   private async ensureMirrorRepoTriggerToken(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const triggerToken = await this.gitlab.getOrCreateMirrorPipelineTriggerToken(project.slug)
+    const triggerToken = await this.gitlab.ensureMirrorPipelineTriggerToken(project.slug)
     const gitlabSecret = {
       PROJECT_SLUG: project.slug,
       GIT_MIRROR_PROJECT_ID: triggerToken.repoId,
@@ -530,7 +573,7 @@ export class GitlabService {
     const createdTimeRaw = vaultSecret?.metadata?.created_time
     if (!createdTimeRaw) return false
     const createdTime = new Date(createdTimeRaw)
-    return daysAgoFromNow(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
+    return daysAgo(createdTime) > this.gitlabConfig.mirrorTokenRotationThresholdDays
   }
 
   @StartActiveSpan()

@@ -9,7 +9,6 @@ on:
   workflow_call:
 
     outputs:
-
       release-created:
         description: Has a new release been created ?
         value: ${{ jobs.prepare.outputs.releases-created && !contains(jobs.prepare.outputs.tag-name, 'rc') }}
@@ -57,12 +56,11 @@ jobs:
   # This job handles (thus the `prepare` name) a prerelease/release MR,
   # and provides the necessary outputs for the two subsequent jobs.
   # It will either:
-  # - Upsert a prerelease MR after a commit has been added to the target branch (namely, `main`)
+  # - Upsert a prerelease MR after a commit has been added to the target branch (`releases`)
   # - Create a prerelease (`X.Y.Z-rc`, `X.Y.Z-rc.1`, `X.Y.Z-rc.2`, etc.), if this workflow has been triggered by the related MR merge
   # - Create a release (`X.Y.Z`), if this workflow has been triggered by the related MR merge
   # - In both cases "Create" means:
-  #   - Updating the CHANGLOG accordingly (with the related commits)
-  #   - Updating the apps package.json versions
+  #   - Updating the release manifest and application package.json versions
   #   - Generating and push the git tag
   #   - Creating the related GitHub Release
   prepare:
@@ -82,6 +80,7 @@ jobs:
         with:
           config-file: ".github/prerelease-please-config.json"
           manifest-file: ".github/prerelease-please-manifest.json"
+          target-branch: releases
 
   # This job only runs when a prerelease has just been created and thus,
   # will create/updade a subsequent "stable" release MR with the changelog incorporating the prereleases
@@ -100,6 +99,7 @@ jobs:
         with:
           config-file: .github/release-please-config.json
           manifest-file: .github/release-please-manifest.json
+          target-branch: releases
           token: ${{ secrets.GITHUB_TOKEN }}
 
   # This job only runs when a release has just been created and thus,

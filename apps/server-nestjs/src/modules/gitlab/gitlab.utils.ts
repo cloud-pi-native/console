@@ -241,10 +241,6 @@ export function isDeclaredRepo(project: ProjectWithDetails, repo: ProjectSchema)
 export function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
 }
-export function daysAgoFromNow(date: Date) {
-  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24))
-}
-
 export function adminRoleFlag(user: Pick<ProjectWithDetails['members'][0]['user'], 'adminRoleIds'>, adminRoleIds: string[]): boolean | undefined {
   if (adminRoleIds.length === 0) return undefined
   return user.adminRoleIds?.some(id => adminRoleIds.includes(id))

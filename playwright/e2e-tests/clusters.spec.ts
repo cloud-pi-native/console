@@ -125,6 +125,14 @@ test.describe('Clusters page', () => {
       await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
         'Dédié',
       )
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
+      await page.locator('#projects-select').click()
+      await expect(page.locator('#projects-select .fr-tag--dismiss')).toHaveCount(1)
+      await page.getByTestId('infosInput').fill('Description modifiée')
+      await page.getByTestId('updateClusterBtn').click()
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
+      await page.locator('#projects-select').click()
+      await expect(page.locator('#projects-select .fr-tag--dismiss')).toHaveCount(1)
     },
   )
 

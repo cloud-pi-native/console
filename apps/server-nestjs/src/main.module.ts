@@ -5,6 +5,7 @@ import { TerminusModule } from '@nestjs/terminus'
 import { baseConfigFactory } from './config/base.config'
 import { AdminRoleModule } from './modules/admin-role/admin-role.module'
 import { AdminTokenModule } from './modules/admin-token/admin-token.module'
+import { AuthModule } from './modules/auth/auth.module'
 import { DeploymentModule } from './modules/deployment/deployment.module'
 import { EnvironmentModule } from './modules/environment/environment.module'
 import { HealthzModule } from './modules/healthz/healthz.module'
@@ -23,6 +24,7 @@ import { RepositoryModule } from './modules/repository/repository.module'
 import { StageModule } from './modules/stage/stage.module'
 import { SystemConfigModule } from './modules/system-config/system-config.module'
 import { SystemSettingsModule } from './modules/system-settings/system-settings.module'
+import { UserTokensModule } from './modules/user-tokens/user-tokens.module'
 import { UserModule } from './modules/user/user.module'
 import { VersionModule } from './modules/version/version.module'
 import { ZoneModule } from './modules/zone/zone.module'
@@ -36,6 +38,7 @@ import { ZoneModule } from './modules/zone/zone.module'
     TerminusModule.forRoot(),
     AdminRoleModule,
     AdminTokenModule,
+    AuthModule,
     DeploymentModule,
     EnvironmentModule,
     HealthzModule,
@@ -56,6 +59,7 @@ import { ZoneModule } from './modules/zone/zone.module'
     SystemConfigModule,
     SystemSettingsModule,
     UserModule,
+    UserTokensModule,
     VersionModule,
     ZoneModule,
   ],

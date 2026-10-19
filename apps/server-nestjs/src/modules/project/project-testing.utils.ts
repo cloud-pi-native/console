@@ -38,6 +38,19 @@ export function makeProjectMemberWithUser(user: User, overrides: Partial<Project
   }
 }
 
+export function makeAdminRole(project: Pick<ProjectWithDetails, 'id' | 'slug'>, overrides: Partial<ProjectWithDetails['roles'][number]> = {}): ProjectWithDetails['roles'][number] {
+  return {
+    id: faker.string.uuid(),
+    name: 'Administrateur',
+    permissions: PROJECT_PERMS.MANAGE,
+    position: 0,
+    oidcGroup: `/${project.slug}/console/admin`,
+    type: 'system:managed',
+    projectId: project.id,
+    ...overrides,
+  }
+}
+
 export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = {}): ProjectWithDetails {
   const owner = overrides.owner ?? makeUser()
   const id = overrides.id ?? faker.string.uuid()

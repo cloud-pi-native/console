@@ -192,16 +192,24 @@ export const projectSelect = {
 export const projectForUpdateSelect = {
   id: true,
   ownerId: true,
+  slug: true,
   status: true,
   locked: true,
   members: {
     select: {
       userId: true,
+      roleIds: true,
       user: {
         select: {
           type: true,
         },
       },
+    },
+  },
+  roles: {
+    select: {
+      id: true,
+      oidcGroup: true,
     },
   },
 } satisfies Prisma.ProjectSelect

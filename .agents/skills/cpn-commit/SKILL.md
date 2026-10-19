@@ -3,7 +3,7 @@ name: cpn-commit
 description:
   "Use when committing in this repo: conventional commit shape enforced by
   commitlint."
-version: 1.0.0
+version: 1.1.0
 license: Apache-2.0
 ---
 
@@ -36,6 +36,16 @@ Never bypass hooks with `--no-verify`.
 
 Reference safety: a bare `#N` resolves to a console issue/PR. Cross-repo
 references use a full URL or `owner/repo#N`.
+
+Keep the subject ≤ 72 chars — GitHub truncates `messageHeadline` at 72
+bytes with `…`, breaking downstream title-parity checks.
+
+## Squash-merge message
+
+When landing (`cpn-merge`), pass the squash message as ONE clean block:
+subject via `-t`, body + trailers via `-b`. `-m` is the `--merge` strategy
+boolean — a second `-m "text"` fails with "accepts at most 1 arg(s)".
+Never trust GitHub's auto-concatenated body.
 
 ## Procedure
 

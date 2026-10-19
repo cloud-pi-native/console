@@ -93,7 +93,7 @@ export class ArgoCDService {
   private async purgeZone(project: ProjectWithDetails, zoneSlug: string): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
     span?.setAttributes({
       'argocd.repo.id': infraProject.id,
       'argocd.repo.path': infraProject.path_with_namespace,
@@ -182,7 +182,7 @@ export class ArgoCDService {
   ): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
     span?.setAttributes({
       'argocd.repo.id': infraProject.id,
       'argocd.repo.path': infraProject.path_with_namespace,
@@ -299,7 +299,7 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
       project,
@@ -372,7 +372,7 @@ export class ArgoCDService {
 
     const valueFilePath = formatEnvironmentValuesFilePath(project, cluster, environment)
 
-    const gitlabPublicProjectUrl = `${(await this.gitlab.getOrCreateProjectGroupPublicUrl())}/${project.slug}`
+    const gitlabPublicProjectUrl = `${(await this.gitlab.ensureProjectGroupPublicUrl())}/${project.slug}`
 
     const values = formatValues({
       project,
@@ -441,8 +441,6 @@ interface ValuesSchema {
     valueFileRepository: string
     valueFileRevision: string
     valueFilePath: string
-    roGroup: string
-    rwGroup: string
     consoleAdminGroup: string
     platformAdminGroup: string
     platformReadonlyGroup: string
@@ -481,18 +479,6 @@ interface ValuesSchema {
       enabled: boolean
     }
   }
-}
-
-function formatReadOnlyGroupName(projectSlug: string, environmentName: string) {
-  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RO')
-}
-
-function formatReadWriteGroupName(projectSlug: string, environmentName: string) {
-  return generateEnvironmentConsoleGroupPath(projectSlug, environmentName, 'RW')
-}
-
-function generateEnvironmentConsoleGroupPath(projectSlug: string, environmentName: string, access: 'RO' | 'RW') {
-  return `/${projectSlug}/console/${environmentName}/${access}`
 }
 
 function generateProjectConsoleGroupPath(projectSlug: string, suffix: string) {
@@ -590,15 +576,11 @@ function formatEnvironmentValues(
   project: ProjectWithDetails,
   infraProject: SimpleProjectSchema,
   valueFilePath: string,
-  roGroup: string,
-  rwGroup: string,
 ) {
   return {
     valueFileRepository: infraProject.http_url_to_repo,
     valueFileRevision: 'HEAD',
     valueFilePath,
-    roGroup,
-    rwGroup,
     consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
     platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
     platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
@@ -707,8 +689,6 @@ function formatValues({
       project,
       infraProject,
       valueFilePath,
-      formatReadOnlyGroupName(project.slug, environment.name),
-      formatReadWriteGroupName(project.slug, environment.name),
     ),
     application: {
       quota: {

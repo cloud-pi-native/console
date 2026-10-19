@@ -38,7 +38,7 @@ async function getAllTokens() {
 
 const formProps = ref<{ exposedToken?: string }>({ exposedToken: undefined })
 async function createToken(token: SimpleToken) {
-  const exposedToken = await tokenStore.createPersonalAccessToken(token)
+  const exposedToken = await tokenStore.createPersonalAccessToken({ ...token, expirationDate: new Date(token.expirationDate) })
   formProps.value.exposedToken = exposedToken.password
   getAllTokens()
 }

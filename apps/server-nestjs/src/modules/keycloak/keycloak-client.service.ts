@@ -1,10 +1,9 @@
-import type KcAdminClient from '@keycloak/keycloak-admin-client'
 import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation'
 import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
-import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
+import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
@@ -101,9 +100,18 @@ export class KeycloakClientService implements OnModuleInit {
       await this.client.groups.del({ id })
     } catch (err) {
       // The group may already be gone (deleted concurrently or pruned in a
-      // prior pass); a 404 is not a failure worth surfacing to the caller.
-      if (getErrorResponseStatus(err) !== 404) throw err
-      this.logger.warn(`Keycloak group ${id} was already deleted; skipping`)
+      // prior pass). Keycloak answers 404 in the simple case but can also
+      // answer 500 unknown_error when the deletion races another one, so a
+      // 500 is only fatal if the group still resolves on re-fetch.
+      if (getErrorResponseStatus(err) === 404) {
+        this.logger.warn(`Keycloak group ${id} was already deleted; skipping`)
+        return
+      }
+      if (getErrorResponseStatus(err) === 500 && !(await this.client.groups.findOne({ id }))) {
+        this.logger.warn(`Keycloak group ${id} was deleted concurrently (500 on delete, gone on re-fetch); skipping`)
+        return
+      }
+      throw err
     }
   }
 
@@ -173,7 +181,7 @@ export class KeycloakClientService implements OnModuleInit {
     }
   }
 
-  async getOrCreateGroupByPath(path: string) {
+  async ensureGroupByPath(path: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.path.depth', splitGroupPath(path).length)
     this.logger.verbose(`Ensuring Keycloak group path exists: ${path}`)
@@ -191,7 +199,7 @@ export class KeycloakClientService implements OnModuleInit {
     const [rootName, ...rest] = parts
     let current = await this.ensureGroup(rootName)
     for (const name of rest) {
-      current = await this.getOrCreateSubGroupByName(current.id, name)
+      current = await this.ensureSubGroupByName(current.id, name)
     }
 
     this.logger.log(`Created Keycloak group path ${path} (groupId=${current.id})`)
@@ -199,7 +207,7 @@ export class KeycloakClientService implements OnModuleInit {
   }
 
   @StartActiveSpan()
-  async getOrCreateSubGroupByName(parentId: string, name: string) {
+  async ensureSubGroupByName(parentId: string, name: string) {
     const span = trace.getActiveSpan()
     span?.setAttribute('group.name', name)
     span?.setAttribute('parent.id', parentId)
@@ -218,14 +226,14 @@ export class KeycloakClientService implements OnModuleInit {
     return group
   }
 
-  async getOrCreateConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
+  async ensureConsoleGroup(projectGroup: GroupRepresentationWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('keycloak.group.id', projectGroup.id)
     this.logger.verbose(`Ensuring Keycloak console group exists (projectGroupId=${projectGroup.id})`)
-    return this.getOrCreateSubGroupByName(projectGroup.id, CONSOLE_GROUP_NAME)
+    return this.ensureSubGroupByName(projectGroup.id, CONSOLE_GROUP_NAME)
   }
 
-  async getOrCreateRoleGroup(
+  async ensureRoleGroup(
     consoleGroup: GroupRepresentationWithIdNamePath,
     oidcGroup: string,
   ) {
@@ -240,29 +248,13 @@ export class KeycloakClientService implements OnModuleInit {
       throw new Error(`Invalid oidcGroup for project role: "${oidcGroup}"`)
     }
 
-    let current = await this.getOrCreateSubGroupByName(consoleGroup.id, parts[0])
+    let current = await this.ensureSubGroupByName(consoleGroup.id, parts[0])
 
     for (const name of parts.slice(1)) {
-      current = await this.getOrCreateSubGroupByName(current.id, name)
+      current = await this.ensureSubGroupByName(current.id, name)
     }
 
     return current
-  }
-
-  async getOrCreateEnvironmentGroups(consoleGroup: GroupRepresentationWith<'id'>, environment: ProjectWithDetails['environments'][number]) {
-    const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'keycloak.group.id': consoleGroup.id,
-      'environment.id': environment.id,
-      'environment.name': environment.name,
-    })
-    const envGroup = await this.getOrCreateSubGroupByName(consoleGroup.id, environment.name)
-    const [roGroup, rwGroup] = await Promise.all([
-      this.getOrCreateSubGroupByName(envGroup.id, 'RO'),
-      this.getOrCreateSubGroupByName(envGroup.id, 'RW'),
-    ])
-    this.logger.verbose(`Resolved Keycloak environment groups (consoleGroupId=${consoleGroup.id}, env=${environment.name}, envGroupId=${envGroup.id})`)
-    return { roGroup, rwGroup }
   }
 
   async onModuleInit() {
@@ -318,17 +310,19 @@ export class KeycloakClientService implements OnModuleInit {
     }
   }
 
-  // auth() resolves the token endpoint from client.realmName, which onModuleInit
-  // switches to the project realm — the admin user lives in the master realm.
-  // Restore the realm even when auth fails: the still-valid previous token keeps
-  // serving admin calls, and those must target the project realm, not master
+  // A dedicated client keeps the shared one free to serve concurrent requests
+  // in the project realm while the token endpoint (master) is being called:
+  // realmName is per-client state read when each request URL is built, so
+  // mutating the shared client's realm raced every in-flight admin call onto
+  // /admin/realms/master/... (404 -> null -> reconciliation crash, #2452)
   private async authenticate(credentials: Credentials) {
-    const realmName = this.client.realmName
-    this.client.setConfig({ realmName: ADMIN_AUTH_REALM })
-    try {
-      await this.client.auth(credentials)
-    } finally {
-      this.client.setConfig({ realmName })
+    const authClient = new KcAdminClient({ baseUrl: this.client.baseUrl, realmName: ADMIN_AUTH_REALM })
+    await authClient.auth(credentials)
+    const { accessToken, refreshToken } = authClient
+    if (!accessToken || !refreshToken) {
+      throw new Error('Keycloak Admin Client authentication returned no token pair')
     }
+    this.client.setAccessToken(accessToken)
+    this.client.setRefreshToken(refreshToken)
   }
 }

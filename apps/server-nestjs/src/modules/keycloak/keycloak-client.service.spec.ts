@@ -160,9 +160,46 @@ describe('keycloakClientService authentication lifecycle', () => {
     await vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS * 2)
     expect(tokenRequests).toHaveLength(1)
   })
+
+  it('should keep the project realm on the shared client while a token refresh is in flight (#2452)', async () => {
+    const service = module.get(KeycloakClientService)
+    useTokenEndpoint()
+    await module.init()
+
+    let releaseToken!: () => void
+    const tokenStarted = new Promise<void>((resolveTokenStarted) => {
+      server.use(
+        http.post(tokenUrl, () => {
+          resolveTokenStarted()
+          return new Promise((resolve) => {
+            releaseToken = () => resolve(HttpResponse.json({ access_token: 'access-token-rotated', refresh_token: 'refresh-token-rotated', expires_in: 60 }))
+          })
+        }, { once: true }),
+        http.get(childrenUrl, () => HttpResponse.json([{ id: 'sub-id', name: 'sub', path: '/parent/sub' }])),
+      )
+    })
+
+    const refreshed = vi.advanceTimersByTimeAsync(ADMIN_TOKEN_REFRESH_INTERVAL_MS)
+    await tokenStarted
+
+    // The refresh window is open here: the shared client's realm must stay the
+    // project realm, and a concurrent subgroups listing must be served from it
+    // (the pre-fix code mutated realmName to master, 404-ing these requests)
+    expect(client.realmName).toBe(projectRealm)
+    const subgroups = []
+    for await (const subgroup of service.getSubGroups('parent-id')) {
+      subgroups.push(subgroup)
+    }
+    expect(subgroups).toHaveLength(1)
+
+    releaseToken()
+    await refreshed
+    expect(client.accessToken).toBe('access-token-rotated')
+    expect(client.realmName).toBe(projectRealm)
+  })
 })
 
-describe('getOrCreateSubGroupByName', () => {
+describe('ensureSubGroupByName', () => {
   let module: TestingModule
   let service: KeycloakClientService
 
@@ -188,7 +225,7 @@ describe('getOrCreateSubGroupByName', () => {
       }),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toMatchObject({ id: 'sub-id', name: 'sub', path: '/parent/sub' })
   })
@@ -207,7 +244,7 @@ describe('getOrCreateSubGroupByName', () => {
       }),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toEqual({ id: 'created-id', name: 'sub', path: '/parent/sub' })
   })
@@ -220,7 +257,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
 
-    const result = await service.getOrCreateSubGroupByName('parent-id', 'sub')
+    const result = await service.ensureSubGroupByName('parent-id', 'sub')
 
     expect(result).toMatchObject({ id: 'concurrent-id', name: 'sub' })
   })
@@ -232,7 +269,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ errorMessage: 'Sibling group named \'sub\' already exists.' }, { status: 409 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('Sibling group named')
+    await expect(service.ensureSubGroupByName('parent-id', 'sub')).rejects.toThrow('Sibling group named')
   })
 
   it('should rethrow non-409 errors without re-fetching', async () => {
@@ -246,7 +283,7 @@ describe('getOrCreateSubGroupByName', () => {
         HttpResponse.json({ error: 'unauthorized' }, { status: 401 })),
     )
 
-    await expect(service.getOrCreateSubGroupByName('parent-id', 'sub')).rejects.toThrow('unauthorized')
+    await expect(service.ensureSubGroupByName('parent-id', 'sub')).rejects.toThrow('unauthorized')
     expect(listCalls).toBe(1)
   })
 })
@@ -309,9 +346,21 @@ describe('deleteGroup', () => {
 
     await expect(service.deleteGroup('gone-id')).resolves.toBeUndefined()
   })
+
+  it('should swallow a 500 on delete when the group is gone on re-fetch (concurrent deletion)', async () => {
+    // Keycloak 26.7.0 answers 500 unknown_error instead of 404 when the deletion
+    // races another deletion of the same group
+    server.use(
+      http.get(childrenUrl, () => HttpResponse.json([])),
+      http.delete(groupUrl, () => HttpResponse.json({ error: 'unknown_error' }, { status: 500 })),
+      http.get(groupUrl, () => HttpResponse.json({ error: 'Not found' }, { status: 404 })),
+    )
+
+    await expect(service.deleteGroup('raced-id')).resolves.toBeUndefined()
+  })
 })
 
-describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
+describe('ensureGroupByPath root resolution (issue #2518)', () => {
   let module: TestingModule
   let service: KeycloakClientService
 
@@ -342,7 +391,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'root-id', path: '/myproject' })
   })
@@ -366,7 +415,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'created-id', path: '/myproject' })
   })
@@ -383,7 +432,7 @@ describe('getOrCreateGroupByPath root resolution (issue #2518)', () => {
       http.get(rootChildrenUrl, () => HttpResponse.json([])),
     )
 
-    const result = await service.getOrCreateGroupByPath('/myproject')
+    const result = await service.ensureGroupByPath('/myproject')
 
     expect(result).toMatchObject({ id: 'concurrent-root-id', path: '/myproject' })
   })

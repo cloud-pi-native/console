@@ -8,6 +8,7 @@ import { UserPermissionService } from './user.service'
 type RequestWithAuthContext = FastifyRequest & {
   userId?: string
   adminPermissions?: bigint
+  adminRoleIds?: string[]
   userType?: string
 }
 
@@ -45,6 +46,7 @@ export class UserGuard implements CanActivate {
 
       request.userId = user.userId
       if (user.adminPermissions !== undefined) request.adminPermissions = user.adminPermissions
+      if (user.adminRoleIds !== undefined) request.adminRoleIds = user.adminRoleIds
       if (user.userType !== undefined) request.userType = user.userType
 
       return user

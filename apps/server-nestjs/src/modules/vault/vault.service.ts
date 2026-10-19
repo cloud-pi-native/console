@@ -95,7 +95,7 @@ export class VaultService {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.slug', zoneSlug)
     this.logger.log(`Handling a zone upsert event for ${zoneSlug}`)
-    await this.upsertZone(zoneSlug)
+    await this.ensureZone(zoneSlug)
     this.logger.log(`Vault zone sync completed for ${zoneSlug}`)
   }
 
@@ -129,26 +129,26 @@ export class VaultService {
     })
     this.logger.log(`Loaded state for Vault reconciliation (projects=${projects.length}, zones=${zones.length})`)
     await Promise.all([
-      this.ensureProjects(projects),
-      this.ensureZones(zones),
+      this.reconcileProjects(projects),
+      this.reconcileZones(zones),
     ])
     this.logger.log(`Vault reconciliation completed (projects=${projects.length} zones=${zones.length})`)
   }
 
   @StartActiveSpan()
-  private async ensureProjects(projects: ProjectWithDetails[]) {
+  private async reconcileProjects(projects: ProjectWithDetails[]) {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.projects.count', projects.length)
     this.logger.verbose(`Reconciling Vault projects (count=${projects.length})`)
-    await Promise.all(projects.map(p => this.ensureProject(p)))
+    await Promise.all(projects.map(p => this.reconcileProject(p)))
   }
 
   @StartActiveSpan()
-  private async ensureProject(project: ProjectWithDetails) {
+  private async reconcileProject(project: ProjectWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     this.logger.verbose(`Reconciling Vault project ${project.slug}`)
-    await this.upsertProject(project)
+    await this.ensureProject(project)
   }
 
   private async getAdminOrProjectPluginConfig(project: ProjectWithDetails, key: string): Promise<string | undefined> {
@@ -190,22 +190,22 @@ export class VaultService {
   }
 
   @StartActiveSpan()
-  private async ensureZones(zones: ZoneWithDetails[]) {
+  private async reconcileZones(zones: ZoneWithDetails[]) {
     const span = trace.getActiveSpan()
     span?.setAttribute('vault.zones.count', zones.length)
     this.logger.verbose(`Reconciling Vault zones (count=${zones.length})`)
-    await Promise.all(zones.map(z => this.ensureZone(z)))
+    await Promise.all(zones.map(z => this.reconcileZone(z)))
   }
 
   @StartActiveSpan()
-  private async ensureZone(zone: ZoneWithDetails) {
+  private async reconcileZone(zone: ZoneWithDetails) {
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.slug', zone.slug)
     this.logger.verbose(`Reconciling Vault zone ${zone.slug}`)
-    await this.upsertZone(zone.slug)
+    await this.ensureZone(zone.slug)
   }
 
-  private async upsertMount(kvName: string): Promise<void> {
+  private async ensureMount(kvName: string): Promise<void> {
     const createBody = {
       type: 'kv',
       config: {
@@ -255,18 +255,18 @@ export class VaultService {
   }
 
   @StartActiveSpan()
-  async upsertZone(zoneName: string): Promise<void> {
+  async ensureZone(zoneName: string): Promise<void> {
     const kvName = generateZoneName(zoneName)
     const span = trace.getActiveSpan()
     span?.setAttribute('zone.name', zoneName)
     span?.setAttribute('vault.kv.name', kvName)
     const policyName = generateZoneTechReadOnlyPolicyName(zoneName)
 
-    await this.upsertMount(kvName)
-    await this.client.upsertSysPoliciesAcl(policyName, {
+    await this.ensureMount(kvName)
+    await this.client.ensureSysPoliciesAcl(policyName, {
       policy: `path "${kvName}/*" { capabilities = ["read"] }`,
     })
-    await this.client.upsertAuthApproleRole(kvName, generateApproleRoleBody([policyName]))
+    await this.client.ensureAuthApproleRole(kvName, generateApproleRoleBody([policyName]))
   }
 
   @StartActiveSpan()
@@ -294,7 +294,7 @@ export class VaultService {
   }
 
   @StartActiveSpan()
-  async upsertProject(project: ProjectWithDetails): Promise<void> {
+  async ensureProject(project: ProjectWithDetails): Promise<void> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('vault.kv.name', project.slug)
@@ -304,7 +304,7 @@ export class VaultService {
     const projectDeveloperPolicyName = generateProjectPolicyName(project, 'developer')
     const projectReadOnlyPolicyName = generateProjectPolicyName(project, 'readonly')
     const projectSecurityPolicyName = generateProjectPolicyName(project, 'security')
-    await this.upsertMount(project.slug)
+    await this.ensureMount(project.slug)
 
     const [
       adminGroupPath,
@@ -355,7 +355,7 @@ export class VaultService {
         this.ensureIdentityGroup(generateProjectGroupName(project, 'readonly'), [projectReadOnlyPolicyName], groupPath)),
       ...projectSecurityGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'security'), [projectSecurityPolicyName], groupPath)),
-      this.client.upsertAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
+      this.client.ensureAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
     ])
   }
 
@@ -402,7 +402,7 @@ export class VaultService {
       'vault.group.name': groupName,
       'vault.policies.count': policies.length,
     })
-    await this.client.upsertIdentityGroupName(groupName, {
+    await this.client.ensureIdentityGroupName(groupName, {
       name: groupName,
       type: 'external',
       policies,
@@ -438,13 +438,13 @@ export class VaultService {
   }
 
   async ensureAppAdminPolicy(name: string, projectSlug: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: `path "${projectSlug}/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
     })
   }
 
   async ensureProjectDevopsPolicy(name: string, projectSlug: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: [
         `path "${projectSlug}/data/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
         `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
@@ -456,13 +456,13 @@ export class VaultService {
   }
 
   async ensureProjectReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: `path "${projectSlug}/data/*" { capabilities = ["list"] }`,
     })
   }
 
   async createProjectSecurityPolicy(name: string, projectSlug: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: [
         `path "${projectSlug}/metadata/*" { capabilities = ["list"] }`,
         `path "transit/keys/${projectSlug}/*" { capabilities = ["list"] }`,
@@ -471,13 +471,13 @@ export class VaultService {
   }
 
   async ensurePlatformAdminPolicy(name: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: `path "sys/*" { capabilities = ["create", "read", "update", "delete", "list", "sudo"] }`,
     })
   }
 
   async ensurePlatformReadOnlyPolicy(name: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: [
         `path "sys/health" { capabilities = ["read"] }`,
         `path "sys/mounts" { capabilities = ["read"] }`,
@@ -490,7 +490,7 @@ export class VaultService {
   }
 
   async ensurePlatformSecurityPolicy(name: string): Promise<void> {
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: [
         `path "sys/audit" { capabilities = ["read", "list"] }`,
         `path "sys/audit/*" { capabilities = ["read", "list"] }`,
@@ -503,7 +503,7 @@ export class VaultService {
 
   async ensureTechReadOnlyPolicy(name: string, projectSlug: string): Promise<void> {
     const robotSecretPath = generateProjectPath(this.baseConfig.projectsRootDir, `${projectSlug}/REGISTRY/ro-robot`)
-    await this.client.upsertSysPoliciesAcl(name, {
+    await this.client.ensureSysPoliciesAcl(name, {
       policy: `path "${this.vaultConfig.kvName}/data/${robotSecretPath}" { capabilities = ["read"] }`,
     })
   }

@@ -28,7 +28,7 @@ export class AdminRoleController {
   @RequireAdminPermission('ManageRoles')
   async createAdminRole(
     @Body(new ZodValidationPipe(CreateAdminRoleBodySchema)) body: CreateAdminRoleBody,
-  ): Promise<AdminRole> {
+  ): Promise<AdminRole[]> {
     return this.adminRoleService.create(body)
   }
 

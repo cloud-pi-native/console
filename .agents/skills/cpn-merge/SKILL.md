@@ -3,7 +3,7 @@ name: cpn-merge
 description:
   "Use when merging a reviewed PR in this repo: DoD ledger, threads, CI, and
   human approval gates, then squash-merge."
-version: 1.0.0
+version: 1.1.0
 license: Apache-2.0
 ---
 
@@ -86,6 +86,8 @@ base first, one squash each. Never force-push.
 
 - Merge after a new push without re-approval — approval binds to a head
   commit.
+- `gh pr merge -m "text"` to set a message — `-m` is the `--merge` boolean;
+  the message flags are `-t <subject>` / `-b <body>`.
 - `Closes #N` in the squash body — auto-close fires before the ledger is
   verified; issues close deliberately.
 - Watch and merge joined with `&&` — the merge fires on stale gates.

@@ -23,6 +23,7 @@ export interface RequestWithProjectContext extends FastifyRequest {
 type RequestWithUserContext = FastifyRequest & {
   userId?: string
   adminPermissions?: bigint
+  adminRoleIds?: string[]
   userType?: string
 }
 
@@ -70,6 +71,7 @@ export class ProjectGuard implements CanActivate {
 
       request.userId = user.userId
       if (user.adminPermissions !== undefined) request.adminPermissions = user.adminPermissions
+      if (user.adminRoleIds !== undefined) request.adminRoleIds = user.adminRoleIds
       if (user.userType !== undefined) request.userType = user.userType
 
       return user

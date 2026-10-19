@@ -62,8 +62,8 @@ describe('sonarqubeService', () => {
     gitlab = mockDeep<GitlabClientService>({
       ensureGitlabGroupVariable: vi.fn().mockResolvedValue(undefined),
       ensureGitlabRepoVariable: vi.fn().mockResolvedValue(undefined),
-      getOrCreateProjectGroup: vi.fn().mockResolvedValue({ id: 42, full_path: 'root', name: 'root' }),
-      getOrCreateProjectGroupRepo: vi.fn().mockResolvedValue({ id: 99 }),
+      ensureProjectGroup: vi.fn().mockResolvedValue({ id: 42, full_path: 'root', name: 'root' }),
+      ensureProjectGroupRepo: vi.fn().mockResolvedValue({ id: 99 }),
     })
 
     const moduleRef = await Test.createTestingModule({
