@@ -6,9 +6,6 @@ permissions:
 on:
   workflow_call:
     inputs:
-      NODE_VERSION:
-        required: true
-        type: string
       PUBLISH_APPS:
         required: true
         type: boolean
@@ -23,10 +20,6 @@ on:
         type: boolean
   workflow_dispatch:
     inputs:
-      NODE_VERSION:
-        description: Nodejs version used
-        required: true
-        type: string
       PUBLISH_APPS:
         description: Publish apps modules
         required: true

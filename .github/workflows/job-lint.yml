@@ -5,16 +5,7 @@ permissions:
 
 on:
   workflow_call:
-    inputs:
-      NODE_VERSION:
-        required: false
-        type: string
   workflow_dispatch:
-    inputs:
-      NODE_VERSION:
-        description: Nodejs version used to run tests
-        required: true
-        type: string
 
 jobs:
   lint:
@@ -53,6 +44,15 @@ jobs:
 
       - name: Check environment-file boundary
         run: ./ci/scripts/check-environment-files.sh
+
+      - name: Test environment launchers and configuration
+        run: |
+          ./scripts/with-nestjs-env.spec.sh
+          ./scripts/bootstrap-secrets.spec.sh
+          ./ci/scripts/run-unit-tests.spec.sh
+          ./ci/scripts/check-workflow-environment.spec.sh
+          ./ci/scripts/init-env.sh
+          ./ci/scripts/check-compose-environment.spec.sh
 
       - name: Validate nginx-strangler config
         run: |

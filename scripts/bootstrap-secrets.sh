@@ -19,9 +19,16 @@ if [ "$confirmation" != "y" ] && [ "$confirmation" != "Y" ]; then
   exit 0
 fi
 
+# fnox set rewrites its config even when the secret reference already exists.
+# Write through a disposable copy so contributor edits are never overwritten.
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+cp "$project_dir/fnox.toml" "$tmp_dir/fnox.toml"
+
 while IFS='|' read -r name value; do
   [ -n "$name" ] || continue
-  fnox get "$name" >/dev/null 2>&1 || fnox set "$name" "$value" --provider pass
+  fnox get "$name" >/dev/null 2>&1 || printf '%s' "$value" | fnox --config "$tmp_dir/fnox.toml" set "$name" --provider pass
 done <<'SECRETS'
 SESSION_SECRET|a-very-strong-secret-with-more-than-32-char
 DB_URL|postgresql://admin:admin@localhost:5432/dso-console-db?schema=public

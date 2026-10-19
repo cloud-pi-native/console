@@ -19,7 +19,6 @@ env:
   BUILD_AMD64: true
   BUILD_ARM64: true
   USE_QEMU: false
-  NODE_VERSION: 26.7.0
 
 jobs:
   expose-vars:
@@ -30,7 +29,6 @@ jobs:
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       BUILD_ARM64: ${{ env.BUILD_ARM64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
-      NODE_VERSION: ${{ env.NODE_VERSION }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"

@@ -2,8 +2,5 @@
 
 set -euo pipefail
 
-for name in "${!NESTJS_@}"; do
-  export "${name#NESTJS_}=${!name}"
-done
-
-exec fnox exec -- pnpm test:cov
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+exec "$project_dir/scripts/with-nestjs-env.sh" pnpm test:cov
