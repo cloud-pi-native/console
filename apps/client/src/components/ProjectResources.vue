@@ -12,6 +12,7 @@ import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { getProjectResourceUsage } from '@/utils/project-resource-usage.js'
 import { toCreateRepositoryBody, toUpdateRepositoryBody } from '@/utils/repository-utils.js'
 
 type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
@@ -19,6 +20,7 @@ type Source = 'Privée extérieure' | 'Publique extérieure' | 'Interne'
 const props = defineProps<{
   project: Project
   asProfile: 'user' | 'admin'
+  stagesReady: boolean
 }>()
 
 const zoneStore = useZoneStore()
@@ -28,11 +30,14 @@ const stageStore = useStageStore()
 const userStore = useUserStore()
 
 const environments = ref<(EnvironmentWithDeploymentsCount & { cluster?: Cluster, zone?: Zone, stage?: Stage })[]>([])
+const environmentsLoaded = ref(false)
 const repositories = ref<(Repo & { source: Source })[]>([])
-const projectUsage = ref<({
-  hprod: { cpu: number, gpu: number, memory: number }
-  prod: { cpu: number, gpu: number, memory: number }
-})>()
+const projectUsage = computed(() => getProjectResourceUsage({
+  environments: environments.value,
+  stages: stageStore.stages,
+  stagesReady: props.stagesReady,
+  environmentsLoaded: environmentsLoaded.value,
+}))
 
 const branchName = ref<string>(defaultBranchName)
 
@@ -51,8 +56,6 @@ const hideEnvs = computed(() => props.asProfile === 'user' && !ProjectAuthorized
 const hideRepos = computed(() => props.asProfile === 'user' && !ProjectAuthorized.ListRepositories({ projectPermissions: props.project.myPerms }))
 
 const openedModal = computed(() => !!(selectedRepo.value || selectedEnv.value || newResource.value))
-
-const prodStageId = stageStore.stages.find(stage => stage.name === 'prod')?.id
 
 const publicClusters = computed(() => clusterStore.clusters.filter(({ privacy }) => privacy === 'public'))
 const dedicatedProjectClusters = computed(() => clusterStore.clusters.filter(cluster => props.project.clusterIds.includes(cluster.id)))
@@ -144,6 +147,7 @@ TimeAgo.addLocale(fr)
 const timeAgo = new TimeAgo('fr-FR')
 
 async function reload() {
+  environmentsLoaded.value = false
   environments.value = await props.project.Environments.list()
     .then(envs => envs.map((environment: EnvironmentWithDeploymentsCount) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
@@ -156,6 +160,7 @@ async function reload() {
         stage,
       }
     }))
+  environmentsLoaded.value = true
   repositories.value = await props.project.Repositories.list()
     .then((repos) => {
       return repos.map((repo: Repo) => {
@@ -171,25 +176,6 @@ async function reload() {
         }
       })
     })
-  projectUsage.value = environments.value?.reduce(
-    (accumulator, current) => {
-      if (current.stageId === prodStageId) {
-        accumulator.prod.cpu += current.cpu
-        accumulator.prod.gpu += current.gpu
-        accumulator.prod.memory += current.memory
-      } else {
-        accumulator.hprod.cpu += current.cpu
-        accumulator.hprod.gpu += current.gpu
-        accumulator.hprod.memory += current.memory
-      }
-      return accumulator
-    },
-    {
-      hprod: { cpu: 0, gpu: 0, memory: 0 },
-      prod: { cpu: 0, gpu: 0, memory: 0 },
-    },
-  )
-
   logger.debug({ projectSlug: props.project.slug, environmentsCount: props.project.environments?.value?.length }, 'Loaded project resources')
 }
 onMounted(reload)
@@ -283,7 +269,7 @@ async function copyToClipboard(text: string) {
           </td>
         </tr>
       </DsfrTable>
-      <div v-if="!project.limitless">
+      <div v-if="!project.limitless && projectUsage">
         Utilisation des ressources projets :
         <ul>
           <li>Hors-Prod: {{ projectUsage?.hprod.memory.toLocaleString() }}/{{ project.hprodMemory.toLocaleString() }} GiB {{ projectUsage?.hprod.cpu.toLocaleString() }}/{{ project.hprodCpu.toLocaleString() }} CPU {{ projectUsage?.hprod.gpu.toLocaleString() }}/{{ project.hprodGpu.toLocaleString() }} GPU</li>

@@ -32,6 +32,7 @@ const userStore = useUserStore()
 const stageStore = useStageStore()
 
 const teamId = ref(getRandomId('team'))
+const stagesReady = ref(false)
 
 const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
 
@@ -45,8 +46,11 @@ async function archive() {
 }
 
 onBeforeMount(async () => {
+  const stagesLoaded = stageStore.getAllStages().then(() => {
+    stagesReady.value = true
+  })
   await Promise.all([
-    stageStore.getAllStages(),
+    stagesLoaded,
     clusterStore.getClusters(),
     zoneStore.getAllZones(),
   ])
@@ -243,6 +247,7 @@ async function saveProject() {
             :key="project.id"
             :project="project"
             :as-profile="asProfile"
+            :stages-ready="stagesReady"
           />
         </DsfrTabContent>
 
