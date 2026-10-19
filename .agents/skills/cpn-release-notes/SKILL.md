@@ -3,7 +3,7 @@ name: cpn-release-notes
 description: Use when preparing, updating, or reviewing a human-readable dso-console release note for an RC or stable release.
 license: Apache-2.0
 metadata:
-  version: '2.1.0'
+  version: '2.2.0'
 ---
 
 # Console release notes
@@ -25,18 +25,46 @@ answer before adding it to the note or Mattermost file.
 
 ## Collect and verify
 
-Ask one question at a time, in this order: stable target (`X.Y.Z`), candidate
-tag (`vX.Y.Z-rc*` or `vX.Y.Z`), then confirmation of the exact milestone titled
-`X.Y.Z`. Run `git fetch --tags origin`; the preceding stable tag starts the
-range. A missing tag or milestone is a blocker: do not guess. Locate the existing
+Accept a single request containing any known values and decisions. Do not ask
+again for information the user explicitly supplied or confirmed. Verify every
+supplied value against repository evidence; user input is not proof that a tag,
+milestone, Release, or Helm diff exists. Ask one focused question only for the
+first missing or contradictory required value, preserving this order when
+several are missing: stable target (`X.Y.Z`), candidate tag
+(`vX.Y.Z-rc*` or `vX.Y.Z`), exact milestone titled `X.Y.Z`.
+
+A complete request may use this compact form:
+
+```text
+Version stable: 9.28.0
+Tag candidat: v9.28.0-rc
+Milestone exact « 9.28.0 » : confirmé
+Chart: version 2.4.48 approuvée si le diff confirme appVersion=v9.28.0-rc
+Changements fonctionnels hors milestone: exclure (ou décisions explicites par ticket)
+Publication/envoi: aucun
+```
+
+Run `git fetch --tags origin`; the preceding stable tag starts the range. A
+missing tag or milestone is a blocker: do not guess. Locate the existing
 GitHub Release for the candidate tag; a missing or mismatched release blocks
 updating its description.
 
 Locate the generated `dso-console` Helm MR for the candidate tag. If multiple
 MRs match, ask for its URL. Read its chart diff: `appVersion` must equal the
-candidate tag and share the target base version. Propose its chart `version`
-and require explicit confirmation. An RC uses its own Helm MR; replace these
-values only after the stable Helm MR exists.
+candidate tag. For an RC, `appVersion` stays equal to the RC candidate tag;
+the stable target identifies the release line and must not replace that tag in
+`appVersion`. The chart `version` must share the target base version. If the user supplied a
+chart version approval conditional on that diff and the verified diff matches,
+accept it without asking again. Do not ask the user to reconfirm a condition
+that the provided evidence explicitly shows is met. If no required decision
+remains, state that clearly rather than inventing a confirmation request. For
+example, when the approved chart value matches the verified MR diff, say it is
+confirmed and proceed to the preview. Otherwise propose the verified chart
+`version` and require explicit confirmation. Never silently replace a supplied
+or approved version when the diff disagrees; stop and ask how to resolve the
+contradiction.
+An RC uses its own Helm MR; replace these values only after the stable Helm MR
+exists.
 
 ## Reconcile before drafting
 
@@ -48,9 +76,9 @@ before the preceding stable tag; or technical exclusion.
 
 Only delivered, attributed items enter the source automatically. Never claim
 planned or late-attached work as delivered. List all other categories in the
-separate audit. Ask for an explicit decision before including any unmilestoned
-functional change; do not include it in a preview as though that decision had
-already been made.
+separate audit. Exclude unmilestoned functional changes by default when the
+request says to do so. Otherwise ask for an explicit yes/no inclusion decision
+for each such change before adding it to the source or Mattermost preview.
 
 ## Explain changes and verify documentation
 
@@ -77,10 +105,13 @@ Read [the Mattermost contract](references/mattermost.md) for that rendering.
 
 Expose every missing, incomplete or obsolete explanation in the audit, with
 the affected change, page or search scope, missing information and expected
-correction. Distinguish an inaccessible/unverified source from confirmed
+correction. Do not classify the absence of an explanation for an exceptional
+bug/failure path as a documentation gap by itself: require follow-up when users
+need durable instructions to use the behavior or complete an operational
+procedure. Distinguish an inaccessible/unverified source from confirmed
 missing documentation: label it « Documentation non vérifiée », not a proven
 content gap. Never invent a link, substitute the homepage, or
-silently exempt a change. Present these gaps explicitly before content
+silently exempt a change. Present confirmed gaps explicitly before content
 approval and ask for a correction decision; keep them open until corrected
 content has been checked. Reporting a gap does not resolve it. Do not claim
 complete documentation while a gap is open. Do not create documentation
@@ -140,3 +171,5 @@ editorial text without explicit approval.
   ineffective warnings. Keep actionable instructions at the top of each format.
 - Empty action sections and « aucune action nécessaire » sentences add noise;
   unknown upgrade consequences require clarification, not reassurance.
+- Do not ask users to reconfirm a supplied value or an approval condition that
+  repository evidence already verifies; report the verification and continue.
