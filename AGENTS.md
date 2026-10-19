@@ -62,8 +62,16 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 ## Testing
 
 - **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
-- **Playwright**: E2E in `playwright/` (Chromium + Firefox, parallel)
-- Commands: `pnpm test` (all unit), `pnpm playwright:test`
+- **Playwright**: the E2E suite in `playwright/` (Chromium + Firefox,
+  parallel) requires the CI stack and its fixtures.
+- Commands: `pnpm test` (all unit), `pnpm docker:e2e-ci` (the only Docker
+  E2E runner; starts the CI stack and runs the full Playwright suite).
+- If required `.env` files are missing, run `bash ci/scripts/init-env.sh`.
+  Stop an active dev stack with `pnpm docker:dev:clean` before E2E;
+  `docker:dev` does not provide E2E fixtures. Clean up with
+  `pnpm docker:e2e-ci:delete` after the suite, including a failed run.
+- For one-spec manual debugging only, start the CI stack with `pnpm docker:ci`,
+  run `pnpm --dir playwright exec playwright test e2e-tests/dashboard.spec.ts -g 'Should display a project statuses'`, then stop it with `pnpm docker:ci:clean`.
 
 ## Code quality
 

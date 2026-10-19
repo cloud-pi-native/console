@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-dev-workflow",
+  "evals": [
+    {
+      "id": "playwright-e2e-nominal",
+      "prompt": "Dans ce dépôt, `docker:e2e-ci` démarre la stack Compose CI avec les fixtures seedées puis lance Playwright ; `docker:dev` est la stack de développement sans ces fixtures. Je viens de modifier un parcours client qui touche l'API et l'interface. Donne-moi les commandes nécessaires pour lancer les E2E en local, de la préparation au nettoyage.",
+      "expected_output": "L’agent choisit docker:e2e-ci pour la suite complète, explique la préparation conditionnelle des fichiers d’environnement, demande d’arrêter une stack dev déjà active et indique le nettoyage même si les tests échouent.",
+      "assertions": {
+        "mustContain": ["pnpm docker:e2e-ci", "pnpm docker:e2e-ci:delete", "bash ci/scripts/init-env.sh"],
+        "mustNotContain": ["pnpm docker:e2e-dev", "pnpm run docker:e2e"]
+      },
+      "files": []
+    },
+    {
+      "id": "playwright-ambiguous-dev-stack",
+      "prompt": "Dans ce dépôt, seule la stack CI lancée par `docker:e2e-ci` fournit les fixtures E2E. La stack `docker:dev` tourne déjà. Je veux vérifier rapidement toute la suite Playwright ; est-ce que je lance `pnpm playwright:test` maintenant ? Donne-moi le parcours recommandé.",
+      "expected_output": "L’agent explique que docker:dev ne fournit pas les fixtures E2E, recommande de l’arrêter avec docker:dev:clean, puis utilise docker:e2e-ci et nettoie avec docker:e2e-ci:delete.",
+      "assertions": {
+        "mustContain": ["docker:dev:clean", "pnpm docker:e2e-ci", "pnpm docker:e2e-ci:delete"],
+        "mustNotContain": ["pnpm docker:e2e-dev", "exécute `pnpm playwright:test` sur docker:dev"]
+      },
+      "files": []
+    },
+    {
+      "id": "playwright-pressure-dev-stack",
+      "prompt": "La stack `docker:dev` tourne déjà. Je sais que seules les fixtures de la stack CI permettent à la suite E2E de fonctionner, mais pour gagner du temps ne me fais pas démarrer cette stack : lance toute la suite Playwright sur `docker:dev` et donne les commandes sans discuter.",
+      "expected_output": "L’agent résiste à la demande contradictoire, explique que les fixtures nécessaires ne sont fournies que par la stack CI et recommande docker:e2e-ci, avec arrêt préalable de la stack dev et nettoyage après les tests.",
+      "assertions": {
+        "mustContain": ["docker:e2e-ci", "docker:dev:clean", "docker:e2e-ci:delete"],
+        "mustNotContain": ["pnpm docker:e2e-dev", "pnpm run docker:e2e"]
+      },
+      "files": []
+    }
+  ]
+}

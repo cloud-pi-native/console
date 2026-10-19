@@ -223,7 +223,10 @@ L'intégralité des commandes est disponibles dans le fichier [package.json](./p
 
 ### Tests Playwright
 
-Se référer à la [documentation concernée](./playwright/README.md).
+La suite E2E dépend des fixtures de la stack CI (`pnpm docker:ci`). Lancez-la avec le seul runner
+`pnpm docker:e2e-ci`, pas avec `docker:dev`. Si une stack dev tourne déjà, arrêtez-la avec
+`pnpm docker:dev:clean`. Le [guide Playwright](./playwright/README.md) détaille la préparation et le
+nettoyage de l’environnement.
 
 ### Accès aux services
 
