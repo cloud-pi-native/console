@@ -31,7 +31,7 @@ export function fromHealthCheck(result: unknown, key: string): ProbeOutcome {
   const up = detail.status === 'up'
   if (up) {
     return detail.cause !== undefined || detail.message !== undefined
-      ? { status: detail.cause !== undefined ? MonitorStatus.UNKNOW : MonitorStatus.WARNING, message: detail.message ?? MonitorStatus.WARNING }
+      ? { status: detail.cause === undefined ? MonitorStatus.WARNING : MonitorStatus.UNKNOW, message: detail.message ?? MonitorStatus.WARNING }
       : { status: MonitorStatus.OK, message: MonitorStatus.OK }
   }
   return {
@@ -56,7 +56,7 @@ export function toCause(cause: unknown): string {
 }
 
 export function toServiceHealth({ cause, ...health }: ServiceHealth): ServiceHealth {
-  return { ...health, ...(cause !== undefined ? { cause: toCause(cause) } : {}) }
+  return { ...health, ...(cause === undefined ? {} : { cause: toCause(cause) }) }
 }
 
 // MonitorInfos.cause is admin-only
