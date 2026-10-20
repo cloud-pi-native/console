@@ -22,9 +22,9 @@ reste servie par `apps/server`.
 | Routé vers NestJS | 16 |
 | Routé, conditionnel à confirmer (`USE_SERVICE_CHAIN=true`) | 5 |
 | Bloqué par parité d'événements | 4 |
-| Enregistré, non routé | 7 |
+| Enregistré, non routé | 10 |
 | Porté, non enregistré | 5 |
-| Legacy seul | 38 |
+| Legacy seul | 35 |
 | **Total** | **75** |
 
 Les 16 routes routées sans blocage structurel couvrent `project`,
