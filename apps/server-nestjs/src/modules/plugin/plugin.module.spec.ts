@@ -26,6 +26,16 @@ describe('pluginModule', () => {
     vi.stubEnv('SONARQUBE_URL', 'https://sonar.test/')
     vi.stubEnv('SONAR_API_TOKEN', 'token')
     vi.stubEnv('PROJECTS_ROOT_DIR', '/')
+    vi.stubEnv('DB_URL', 'postgres://user:pw@localhost:5432/db')
+    vi.stubEnv('KEYCLOAK_DOMAIN', 'keycloak.test')
+    vi.stubEnv('KEYCLOAK_REALM', 'console')
+    vi.stubEnv('KEYCLOAK_CLIENT_ID', 'console')
+    vi.stubEnv('KEYCLOAK_CLIENT_SECRET', 'secret')
+    vi.stubEnv('KEYCLOAK_ADMIN', 'admin')
+    vi.stubEnv('KEYCLOAK_ADMIN_PASSWORD', 'pw')
+    vi.stubEnv('KEYCLOAK_REDIRECT_URI', 'https://console.test/redirect')
+    vi.stubEnv('GRAFANA_URL', 'https://grafana.test/')
+    vi.stubEnv('DSO_OBSERVABILITY_CHART_VERSION', '1.0.0')
     vi.stubEnv('ARGOCD_URL', 'https://argocd.test/')
     const module = await Test.createTestingModule({
       imports: [
