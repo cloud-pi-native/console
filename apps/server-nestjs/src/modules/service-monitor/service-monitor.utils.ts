@@ -10,11 +10,6 @@ export interface ProbeOutcome {
   cause?: unknown
 }
 
-export interface MonitoredService {
-  name: string
-  probe: () => Promise<ProbeOutcome>
-}
-
 const probeDetailSchema = z.object({
   status: z.string(),
   message: z.string().optional(),
