@@ -1,7 +1,7 @@
 import type { MonitorInfos } from '@cpn-console/shared'
 import type { OnModuleInit } from '@nestjs/common'
 import type { Cache } from 'cache-manager'
-import type { MonitoredService, ProbeOutcome } from './service-monitor.utils'
+import type { ProbeOutcome } from './service-monitor.utils'
 import { MonitorStatus } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Optional } from '@nestjs/common'
@@ -21,7 +21,7 @@ export type ServiceHealth = MonitorInfos & { name: string }
 @Injectable()
 export class ServiceMonitorService implements OnModuleInit {
   private readonly interval: number = INTERVAL_MS
-  private readonly services: MonitoredService[]
+  private readonly services: Map<string, () => Promise<ProbeOutcome>>
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -51,15 +51,14 @@ export class ServiceMonitorService implements OnModuleInit {
       ['Vault', vaultHealth && (() => vaultHealth.check().then(result => fromHealthCheck(result, 'vault')))],
     ]
 
-    this.services = probes.flatMap(([name, probe]) => probe ? [{ name, probe }] : [])
+    this.services = new Map(probes.filter((p): p is [string, () => Promise<ProbeOutcome>] => p[1] !== undefined))
   }
 
   async getServiceHealth(): Promise<ServiceHealth[]> {
-    const statuses = await Promise.all(this.services.map(async ({ name }) => {
+    return Promise.all([...this.services.keys()].map(async (name) => {
       const cached = await this.readStatus(name)
       return { name, ...cached }
     }))
-    return statuses
   }
 
   async refreshServiceHealth(): Promise<ServiceHealth[]> {
@@ -73,12 +72,12 @@ export class ServiceMonitorService implements OnModuleInit {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   private async refreshStatuses(): Promise<void> {
-    await Promise.all(this.services.map(async (service) => {
+    await Promise.all([...this.services].map(async ([name, probe]) => {
       try {
-        const outcome = await service.probe()
-        await this.writeStatus(service.name, { ...outcome, interval: this.interval, lastUpdateTimestamp: Date.now() })
+        const outcome = await probe()
+        await this.writeStatus(name, { ...outcome, interval: this.interval, lastUpdateTimestamp: Date.now() })
       } catch (error) {
-        await this.writeStatus(service.name, {
+        await this.writeStatus(name, {
           interval: this.interval,
           lastUpdateTimestamp: Date.now(),
           status: MonitorStatus.UNKNOW,
