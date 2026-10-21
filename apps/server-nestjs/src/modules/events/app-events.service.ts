@@ -55,7 +55,6 @@ export interface ClusterEventPayload {
   zoneId?: string
 }
 
-
 /** Admin-log action labels (legacy hooks wording). */
 export type EventLogAction
   = | 'Create Project' | 'Update Project' | 'Delete all project resources'
