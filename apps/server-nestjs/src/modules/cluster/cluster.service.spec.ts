@@ -111,14 +111,14 @@ describe('clusterService', () => {
     expect(result.id).toEqual(details.id)
     expect(prisma.cluster.create).toHaveBeenCalled()
     expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: cluster.id }), expect.any(Object), 'Echec des services à la création/mise à jour du cluster')
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: cluster.id }), expect.any(Object))
   })
 
   it('rejects cluster creation when a plugin reports KO', async () => {
     prisma.cluster.findUnique.mockResolvedValue(null)
     prisma.cluster.create.mockResolvedValue(makeCluster())
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeClusterDetailsRecord())
-    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
+    appEvents.emitClusterEvent.mockResolvedValue({ gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: new Error('boom') } })
 
     await expect(
       service.createCluster(
@@ -172,7 +172,7 @@ describe('clusterService', () => {
 
     expect(result.id).toEqual(record.id)
     expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: record.id }), expect.any(Object), 'Echec des services à la création/mise à jour du cluster')
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: record.id }), expect.any(Object))
   })
 
   it('rejects updating a missing cluster', async () => {
@@ -196,13 +196,13 @@ describe('clusterService', () => {
 
     expect(forcedCount).toBe(0)
     expect(appEvents.emitClusterEvent).toHaveBeenCalledBefore(prisma.cluster.delete)
-    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.delete', expect.objectContaining({ clusterId: record.id }), expect.any(Object), 'Echec des services à la suppression du cluster')
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.delete', expect.objectContaining({ clusterId: record.id }), expect.any(Object))
   })
 
   it('rejects cluster deletion and keeps the row when a plugin reports KO', async () => {
     const record = makeClusterListRecord()
     prisma.environment.findFirst.mockResolvedValue(null)
-    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la suppression du cluster'))
+    appEvents.emitClusterEvent.mockResolvedValue({ gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: new Error('boom') } })
 
     await expect(
       service.deleteCluster({
@@ -240,7 +240,7 @@ describe('clusterService', () => {
       argocdUrl: 'https://example.com',
     })
     prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeCluster())
-    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
+    appEvents.emitClusterEvent.mockResolvedValue({ gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: new Error('boom') } })
 
     await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
       .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
