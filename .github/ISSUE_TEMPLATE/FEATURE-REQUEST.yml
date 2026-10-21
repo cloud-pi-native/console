@@ -32,7 +32,7 @@ body:
   - type: textarea
     id: references
     attributes:
-      label: Exemples et références
+      label: Références
       description: Ajoutez des exemples, liens ou documents utiles si vous en avez.
       placeholder: https://...
     validations:
