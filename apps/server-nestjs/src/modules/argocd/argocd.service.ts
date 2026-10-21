@@ -114,13 +114,13 @@ export class ArgoCDService {
       `zone-${cluster.zone.slug}`,
       `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
     )
-    await this.commitZoneValues(cluster.zone.slug)
+    await this.commitZoneValues(cluster.zone.slug, cluster.label)
     this.logger.log(`ArgoCD cluster cleanup completed for ${cluster.label}`)
   }
 
-  private async commitZoneValues(zoneSlug: string) {
+  private async commitZoneValues(zoneSlug: string, excludedClusterLabel?: string) {
     const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
-    const clusters = await this.datastore.getZoneClusterNames(zoneSlug)
+    const clusters = await this.datastore.getZoneClusterNames(zoneSlug, excludedClusterLabel)
     const vaultValues = await this.generateZoneVaultValues(zoneSlug)
     const action = await this.gitlab.generateCreateOrUpdateAction(
       infraProject,

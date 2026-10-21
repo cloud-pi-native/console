@@ -1,6 +1,8 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { ClusterWithZone } from './argocd-datastore.service'
 import { generateNamespaceName } from '@cpn-console/shared'
+import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -8,6 +10,7 @@ import { parse, stringify } from 'yaml'
 import { argocdConfigFactory } from '../../config/argocd.config'
 import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
+import { makeKubeconfig } from '../cluster/cluster-testing.utils'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
@@ -22,6 +25,17 @@ import {
   makeProjectWithDetails,
 } from './argocd-testing.utils'
 import { ArgoCDService } from './argocd.service'
+import { generateClusterSecretData } from './argocd.utils'
+
+function makeClusterWithZone(overrides: Partial<ClusterWithZone> = {}): ClusterWithZone {
+  return {
+    label: 'review-cluster',
+    clusterResources: true,
+    kubeconfig: makeKubeconfig(),
+    zone: { id: faker.string.uuid(), slug: 'zone-review' },
+    ...overrides,
+  }
+}
 
 describe('argoCDService', () => {
   let service: ArgoCDService
@@ -854,5 +868,33 @@ describe('argoCDService', () => {
       'https://gitlab.internal/group/project-1/**',
       'repo2',
     ])
+  })
+
+  describe('cluster events', () => {
+    it('serializes the argocd cluster secret config field as JSON', () => {
+      const secret = generateClusterSecretData(
+        { label: 'review-cluster', clusterResources: true },
+        { cluster: { tlsServerName: 'example.com' }, user: { token: 'tok' } },
+      )
+
+      const config = JSON.parse(secret.config)
+      expect(config.bearerToken).toBe('tok')
+      expect(config.tlsClientConfig.serverName).toBe('example.com')
+    })
+
+    it('passes the zone slug and excludes the deleted cluster label from the values', async () => {
+      datastore.getCluster.mockResolvedValue(makeClusterWithZone())
+      datastore.getZoneClusterNames.mockResolvedValue(['review-cluster'])
+      datastore.getZoneSlug.mockResolvedValue(null)
+      gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' }))
+      gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
+      vault.getAuthApproleRoleRoleId.mockRejectedValue(new Error('missing'))
+      vault.ensureAuthApproleRoleSecretId.mockRejectedValue(new Error('missing'))
+
+      const result = await service.handleClusterDelete({ clusterId: faker.string.uuid() })
+
+      expect(result.argocd?.status).toBe('OK')
+      expect(datastore.getZoneClusterNames).toHaveBeenCalledWith('zone-review', 'review-cluster')
+    })
   })
 })
