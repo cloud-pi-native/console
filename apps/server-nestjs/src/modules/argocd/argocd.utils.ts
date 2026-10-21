@@ -29,8 +29,6 @@ export function generateClusterSecretData(cluster: { label: string, clusterResou
     name: cluster.label,
     clusterResources: String(cluster.clusterResources),
     server: kubeconfig.cluster.server,
-    // ArgoCD's cluster-secret `config` field is a JSON string (legacy parity:
-    // the plugin fed JSON.stringify(convertConfig(cluster)) to Vault).
     config: JSON.stringify(generateClusterTlsClientConfig(kubeconfig)),
   }
 }

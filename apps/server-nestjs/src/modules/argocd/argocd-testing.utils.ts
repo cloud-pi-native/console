@@ -1,6 +1,16 @@
-import type { ProjectWithDetails } from './argocd-datastore.service'
-
+import type { ClusterWithZone, ProjectWithDetails } from './argocd-datastore.service'
 import { faker } from '@faker-js/faker'
+import { makeKubeconfig } from '../cluster/cluster-testing.utils'
+
+export function makeClusterWithZone(overrides: Partial<ClusterWithZone> = {}): ClusterWithZone {
+  return {
+    label: 'review-cluster',
+    clusterResources: true,
+    kubeconfig: makeKubeconfig(),
+    zone: { id: faker.string.uuid(), slug: 'zone-review' },
+    ...overrides,
+  }
+}
 
 export function makeProjectDeploymentSource(
   overrides: Partial<ProjectWithDetails['deployments'][number]['deploymentSources'][number]> = {},

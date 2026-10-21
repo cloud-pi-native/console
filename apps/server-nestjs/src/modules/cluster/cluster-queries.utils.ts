@@ -1,9 +1,6 @@
-import type { Kubeconfig } from '@cpn-console/shared'
+import type { CreateClusterBody, Kubeconfig, UpdateClusterBody } from '@cpn-console/shared'
 import type { Cluster, Prisma } from '@prisma/client'
 import { ClusterPrivacySchema } from '@cpn-console/shared'
-
-const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
-const CLUSTER_DEDICATED = ClusterPrivacySchema.enum.dedicated
 
 export const clusterListSelect = {
   id: true,
@@ -102,7 +99,7 @@ export function generateClusterWhere(userId?: string): Prisma.ClusterWhereInput 
   return userId
     ? {
         OR: [
-          { privacy: CLUSTER_PUBLIC },
+          { privacy: ClusterPrivacySchema.enum.public },
           { projects: { some: { members: { some: { userId } } } } },
           { projects: { some: { ownerId: userId } } },
           { environments: { some: { project: { members: { some: { userId } } } } } },
@@ -227,11 +224,11 @@ export async function syncClusterProjectLinks(
   clusterId: string,
   projectIds: string[] | undefined,
 ) {
-  if (projectIds && clusterUpdated.privacy === CLUSTER_DEDICATED) {
+  if (projectIds && clusterUpdated.privacy === ClusterPrivacySchema.enum.dedicated) {
     await linkClusterToProjects(tx, clusterId, projectIds)
   }
 
-  if (clusterUpdated.privacy === CLUSTER_PUBLIC) {
+  if (clusterUpdated.privacy === ClusterPrivacySchema.enum.public) {
     const dbProjects = await getProjectsByClusterId(tx, clusterId)
     for (const projectId of dbProjects?.map(project => project.id) ?? []) {
       await removeClusterFromProject(tx, clusterUpdated.id, projectId)
@@ -239,9 +236,9 @@ export async function syncClusterProjectLinks(
     return
   }
 
-  // Legacy parity: project removals are only computed when the caller actually
-  // sent projectIds. An update that omits the field must keep every existing
-  // link, while an explicit [] detaches all of them.
+  // Project removals run only when the caller actually sent projectIds: an
+  // update that omits the field keeps every existing link, while an explicit
+  // [] detaches all of them.
   if (projectIds === undefined) return
   const dbProjects = await getProjectsByClusterId(tx, clusterId)
   const dbProjectIds = dbProjects?.map(project => project.id) ?? []
@@ -252,6 +249,36 @@ export async function syncClusterProjectLinks(
 
 export function deleteCluster(tx: Prisma.TransactionClient, id: string) {
   return tx.cluster.delete({ where: { id } })
+}
+
+export async function createClusterWithLinks(tx: Prisma.TransactionClient, data: CreateClusterBody) {
+  const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
+
+  const clusterCreated = await createCluster(tx, clusterData, kubeconfig, zoneId)
+
+  if (data.privacy !== ClusterPrivacySchema.enum.public && projectIds?.length) {
+    await linkClusterToProjects(tx, clusterCreated.id, projectIds)
+  }
+
+  if (stageIds?.length) {
+    await linkClusterToStages(tx, clusterCreated.id, stageIds)
+  }
+
+  return clusterCreated
+}
+
+export async function updateClusterWithLinks(tx: Prisma.TransactionClient, clusterId: string, data: UpdateClusterBody) {
+  const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
+  const publicProjectIds = data.privacy === ClusterPrivacySchema.enum.public ? undefined : projectIds
+
+  const clusterUpdated = await updateCluster(tx, clusterId, clusterData, kubeconfig)
+
+  if (zoneId) {
+    await linkZoneToClusters(tx, zoneId, [clusterId])
+  }
+
+  await syncClusterProjectLinks(tx, clusterUpdated, clusterId, publicProjectIds)
+  await syncClusterStageLinks(tx, clusterUpdated, clusterId, stageIds)
 }
 
 export function linkZoneToClusters(tx: Prisma.TransactionClient, zoneId: string, clusterIds: string[]) {

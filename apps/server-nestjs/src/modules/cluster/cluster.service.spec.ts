@@ -186,7 +186,7 @@ describe('clusterService', () => {
     ).rejects.toThrow('Cluster not found')
   })
 
-  it('deletes a cluster after a successful reconcile, in the legacy order', async () => {
+  it('deletes a cluster after a successful reconcile, event before delete', async () => {
     const record = makeClusterListRecord()
     prisma.environment.findFirst.mockResolvedValue(null)
     prisma.cluster.delete.mockResolvedValue(record)
@@ -258,7 +258,7 @@ describe('clusterService', () => {
     await service.updateCluster({ infos: 'updated' }, record.id, 'u', 'r')
 
     // Only the field update ran: no per-project disconnect when the body omits
-    // projectIds (legacy parity).
+    // projectIds.
     expect(prisma.cluster.update).toHaveBeenCalledTimes(1)
   })
 
