@@ -3,9 +3,8 @@ import type { Repository } from '@prisma/client'
 import type { EventLogAction, RepositorySyncEventPayload } from '../events/app-events.service'
 import type { PluginResults } from '../plugin/plugin.utils'
 import type { RepositoryMirrorCredentialUpdate } from './repository.utils'
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional, UnprocessableEntityException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
-import { getFailedPlugins } from '../plugin/plugin.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RepositoryDatastoreService } from './repository-datastore.service'
 import { buildRepositoryCreateData, buildRepositoryUpdateData, parseRepositoryCredentialUpdate } from './repository.utils'
@@ -49,7 +48,7 @@ export class RepositoryService {
       }
     }
 
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Create Repository',
       userId,
@@ -69,8 +68,6 @@ export class RepositoryService {
       )
       if (!Object.keys(results).length) {
         this.logger.warn(`repository.sync after creation had no listener (repositoryId=${repository.id}): no sync plugin is enabled`)
-      } else if (getFailedPlugins(results).length) {
-        throw new UnprocessableEntityException('Echec des services à la synchronisation du dépôt')
       }
     }
 
@@ -89,7 +86,7 @@ export class RepositoryService {
       await this.repositoryDatastoreService.updateBranchName(repositoryId, syncRequest.branchName)
     }
 
-    const results = await this.syncRepositoryMirror(
+    await this.syncRepositoryMirror(
       {
         projectId,
         projectSlug,
@@ -101,10 +98,6 @@ export class RepositoryService {
       userId,
       requestId,
     )
-
-    if (getFailedPlugins(results).length) {
-      throw new UnprocessableEntityException('Echec des services à la synchronisation du dépôt')
-    }
   }
 
   private syncRepositoryMirror(payload: RepositorySyncEventPayload, userId: string, requestId: string): Promise<PluginResults> {
@@ -112,7 +105,7 @@ export class RepositoryService {
       action: 'Sync Repository',
       userId,
       requestId,
-    })
+    }, 'Echec des services à la synchronisation du dépôt')
   }
 
   async updateRepository(projectId: string, projectSlug: string, repositoryId: string, repositoryToUpdate: UpdateRepository, userId: string, requestId: string): Promise<Repository> {
@@ -129,7 +122,7 @@ export class RepositoryService {
     // removal) must be persisted first.
     await this.applyMirrorCredentialUpdate(projectSlug, repository, parseRepositoryCredentialUpdate(repositoryToUpdate))
 
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Update Repository',
       userId,
@@ -171,7 +164,7 @@ export class RepositoryService {
   async deleteRepository(projectId: string, repositoryId: string, userId: string, requestId: string): Promise<void> {
     await this.getProjectRepositoryOrThrow(projectId, repositoryId)
     await this.repositoryDatastoreService.deleteRepository(repositoryId)
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Delete Repository',
       userId,
@@ -196,17 +189,13 @@ export class RepositoryService {
    * success on a project that AppEventsService just marked `failed`. The row change
    * stays committed — the reconciliation is replayable.
    */
-  private async reconcileProjectAndThrowOnFailure(
+  private async reconcileProject(
     projectId: string,
     action: EventLogAction,
     userId: string,
     requestId: string,
     failureMessage: string,
   ): Promise<void> {
-    const results = await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
-
-    if (getFailedPlugins(results).length) {
-      throw new UnprocessableEntityException(failureMessage)
-    }
+    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId }, failureMessage)
   }
 }

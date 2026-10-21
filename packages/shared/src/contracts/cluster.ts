@@ -135,3 +135,4 @@ export const clusterContract = contractInstance.router({
 })
 
 export type ClusterAssociatedEnvironments = ClientInferResponseBody<typeof clusterContract.getClusterEnvironments, 200>
+export type ClusterList = ClientInferResponseBody<typeof clusterContract.listClusters, 200>

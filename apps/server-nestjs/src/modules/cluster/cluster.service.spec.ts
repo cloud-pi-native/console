@@ -1,5 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { ADMIN_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { UnprocessableEntityException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
@@ -8,86 +9,61 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../config/base.config'
 import { makeEnvironment } from '../environment/environment-testing.utils'
+import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import { LogService } from '../log/log.service'
 import {
   makeCluster,
   makeClusterDetailsRecord,
-  makeClusterEnvironmentsRecord,
   makeClusterListRecord,
+  makeCreateClusterBody,
 } from './cluster-testing.utils'
 import { ClusterService } from './cluster.service'
 
 describe('clusterService', () => {
   let service: ClusterService
   let prisma: DeepMockProxy<PrismaService>
-  let logs: DeepMockProxy<LogService>
   let events: DeepMockProxy<EventEmitter2>
   let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
+  let appEvents: DeepMockProxy<AppEventsService>
 
   beforeEach(async () => {
     prisma = mockDeep<PrismaService>()
     prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
-    logs = mockDeep<LogService>()
     events = mockDeep<EventEmitter2>()
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>()
+    appEvents = mockDeep<AppEventsService>()
+    appEvents.emitClusterEvent.mockResolvedValue({})
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         ClusterService,
         { provide: PrismaService, useValue: prisma },
-        { provide: LogService, useValue: logs },
         { provide: EventEmitter2, useValue: events },
         { provide: baseConfigFactory.KEY, useValue: baseConfig },
+        { provide: AppEventsService, useValue: appEvents },
       ],
     }).compile()
 
     service = moduleRef.get(ClusterService)
   })
 
-  it('lists clusters with stageIds and normalized infos', async () => {
+  it('lists raw cluster records for an admin', async () => {
     const record = makeClusterListRecord({ infos: null })
     prisma.cluster.findMany.mockResolvedValue([record])
 
-    const result = await service.listClusters()
+    const result = await service.listClustersForUser({ userId: 'admin-1', adminPermissions: ADMIN_PERMS.LIST_CLUSTERS })
 
-    expect(result).toEqual([{
-      id: record.id,
-      label: record.label,
-      infos: '',
-      clusterResources: record.clusterResources,
-      privacy: record.privacy,
-      zoneId: record.zoneId,
-      cpu: record.cpu,
-      gpu: record.gpu,
-      memory: record.memory,
-      stageIds: [record.stages[0].id],
-    }])
+    expect(result).toEqual([record])
   })
 
   it('passes the authorized user filter when listing clusters', async () => {
     prisma.cluster.findMany.mockResolvedValue([])
 
     const userId = faker.string.uuid()
-    await service.listClusters(userId)
+    await service.listClustersForUser({ userId })
 
     expect(prisma.cluster.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { OR: expect.any(Array) },
-    }))
-  })
-
-  it('maps cluster details to the contract shape', async () => {
-    const record = makeClusterDetailsRecord({ infos: null })
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
-
-    const result = await service.getClusterDetails(record.id)
-
-    expect(result).toEqual(expect.objectContaining({
-      id: record.id,
-      infos: '',
-      projectIds: [record.projects[0].id],
-      stageIds: [record.stages[0].id],
-      kubeconfig: { cluster: record.kubeconfig.cluster, user: record.kubeconfig.user },
     }))
   })
 
@@ -135,8 +111,27 @@ describe('clusterService', () => {
     expect(result.id).toEqual(details.id)
     expect(prisma.cluster.create).toHaveBeenCalled()
     expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: cluster.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Create Cluster' }))
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: cluster.id }), expect.any(Object), 'Echec des services à la création/mise à jour du cluster')
+  })
+
+  it('rejects cluster creation when a plugin reports KO', async () => {
+    prisma.cluster.findUnique.mockResolvedValue(null)
+    prisma.cluster.create.mockResolvedValue(makeCluster())
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeClusterDetailsRecord())
+    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
+
+    await expect(
+      service.createCluster(
+        makeCreateClusterBody({
+          label: 'ko-cluster',
+          infos: '',
+          clusterResources: false,
+          privacy: 'public',
+        }),
+        faker.string.uuid(),
+        faker.string.uuid(),
+      ),
+    ).rejects.toThrow(UnprocessableEntityException)
   })
 
   it('rejects cluster creation when the label is already taken', async () => {
@@ -177,8 +172,7 @@ describe('clusterService', () => {
 
     expect(result.id).toEqual(record.id)
     expect(prisma.cluster.update).toHaveBeenCalled()
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: record.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Update Cluster' }))
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.upsert', expect.objectContaining({ clusterId: record.id }), expect.any(Object), 'Echec des services à la création/mise à jour du cluster')
   })
 
   it('rejects updating a missing cluster', async () => {
@@ -189,21 +183,35 @@ describe('clusterService', () => {
     ).rejects.toThrow('Cluster not found')
   })
 
-  it('deletes a cluster when no environments are deployed', async () => {
+  it('deletes a cluster after a successful hook, in the legacy order', async () => {
     const record = makeClusterListRecord()
     prisma.environment.findFirst.mockResolvedValue(null)
     prisma.cluster.delete.mockResolvedValue(record)
 
-    const message = await service.deleteCluster({
+    const forcedCount = await service.deleteCluster({
       clusterId: record.id,
       userId: faker.string.uuid(),
       requestId: faker.string.uuid(),
     })
 
-    expect(message).toBeNull()
-    expect(prisma.cluster.delete).toHaveBeenCalledWith({ where: { id: record.id } })
-    expect(events.emitAsync).toHaveBeenCalledWith('cluster.delete', expect.objectContaining({ clusterId: record.id }))
-    expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'Delete Cluster' }))
+    expect(forcedCount).toBe(0)
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledBefore(prisma.cluster.delete)
+    expect(appEvents.emitClusterEvent).toHaveBeenCalledWith('cluster.delete', expect.objectContaining({ clusterId: record.id }), expect.any(Object), 'Echec des services à la suppression du cluster')
+  })
+
+  it('rejects cluster deletion and keeps the row when a plugin reports KO', async () => {
+    const record = makeClusterListRecord()
+    prisma.environment.findFirst.mockResolvedValue(null)
+    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la suppression du cluster'))
+
+    await expect(
+      service.deleteCluster({
+        clusterId: record.id,
+        userId: faker.string.uuid(),
+        requestId: faker.string.uuid(),
+      }),
+    ).rejects.toThrow(UnprocessableEntityException)
+    expect(prisma.cluster.delete).not.toHaveBeenCalled()
   })
 
   it('rejects cluster deletion when environments are deployed', async () => {
@@ -218,29 +226,21 @@ describe('clusterService', () => {
     ).rejects.toThrow('Impossible de supprimer le cluster')
   })
 
-  it('maps cluster environments for the contract response', async () => {
-    const envs = [makeClusterEnvironmentsRecord(), makeClusterEnvironmentsRecord()]
-    prisma.environment.findMany.mockResolvedValue(envs)
-
-    const result = await service.getClusterAssociatedEnvironments(faker.string.uuid())
-
-    expect(result).toEqual(envs.map(env => ({
-      project: env.project.name,
-      name: env.name,
-      owner: env.project.owner.email,
-      cpu: env.cpu,
-      gpu: env.gpu,
-      memory: env.memory,
-    })))
-  })
-
   it('propagates upsert hook failure as 422', async () => {
     const record = makeClusterDetailsRecord()
-    prisma.cluster.findUnique.mockResolvedValue(record as never)
-    prisma.cluster.update.mockResolvedValue(record as never)
-    prisma.zone.update.mockResolvedValue(record as never)
-    prisma.cluster.findUniqueOrThrow.mockResolvedValue({ projects: [] } as never)
-    events.emitAsync.mockRejectedValue(new Error('hook down'))
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValue(record)
+    prisma.zone.update.mockResolvedValue({
+      id: faker.string.uuid(),
+      slug: 'tz',
+      label: 'test-zone',
+      description: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      argocdUrl: 'https://example.com',
+    })
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeCluster())
+    appEvents.emitClusterEvent.mockRejectedValue(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
 
     await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
       .rejects.toThrow(new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster'))
