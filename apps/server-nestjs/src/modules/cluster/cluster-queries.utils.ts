@@ -97,7 +97,7 @@ export function listClusters(prisma: Prisma.TransactionClient, where: Prisma.Clu
   })
 }
 
-export function listClustersWhere(userId?: string): Prisma.ClusterWhereInput {
+export function generateClusterWhereInput(userId?: string): Prisma.ClusterWhereInput {
   return userId
     ? {
         OR: [
