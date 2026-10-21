@@ -888,13 +888,31 @@ describe('argoCDService', () => {
       datastore.getZoneSlug.mockResolvedValue(null)
       gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100, http_url_to_repo: 'https://gitlab.internal/infra' }))
       gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
-      vault.getAuthApproleRoleRoleId.mockRejectedValue(new Error('missing'))
-      vault.ensureAuthApproleRoleSecretId.mockRejectedValue(new Error('missing'))
 
       const result = await service.handleClusterDelete({ clusterId: faker.string.uuid() })
 
       expect(result.argocd?.status).toBe('OK')
       expect(datastore.getZoneClusterNames).toHaveBeenCalledWith('zone-review', 'review-cluster')
+    })
+
+    it.each<[field: 'role-id' | 'secret-id']>([
+      ['role-id'],
+      ['secret-id'],
+    ])('does not commit zone values when the %s cannot be fetched', async (field) => {
+      datastore.getCluster.mockResolvedValue(makeClusterWithZone())
+      if (field === 'role-id') {
+        vault.getAuthApproleRoleRoleId.mockRejectedValue(new Error('missing'))
+        vault.ensureAuthApproleRoleSecretId.mockResolvedValue('valid-secret')
+      } else {
+        vault.getAuthApproleRoleRoleId.mockResolvedValue('valid-role')
+        vault.ensureAuthApproleRoleSecretId.mockRejectedValue(new Error('missing'))
+      }
+
+      const result = await service.handleClusterUpsert({ clusterId: faker.string.uuid() })
+
+      expect(result.argocd?.status).toBe('KO')
+      expect(result.argocd?.message).toBe('missing')
+      expect(gitlab.maybeCreateCommit).not.toHaveBeenCalled()
     })
   })
 })

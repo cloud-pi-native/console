@@ -136,14 +136,12 @@ export class ArgoCDService {
   }
 
   private async generateZoneVaultValues(zoneSlug: string) {
-    const roleId = await this.vault.getAuthApproleRoleRoleId(`zone-${zoneSlug}`).catch(() => {
-      this.logger.warn(`Couldn't find zone app role (zone=${zoneSlug})`)
-      return undefined
-    })
-    const secretId = await this.vault.ensureAuthApproleRoleSecretId(`zone-${zoneSlug}`).catch(() => {
-      this.logger.warn(`Couldn't generate zone app role secret (zone=${zoneSlug})`)
-      return undefined
-    })
+    // Propagate failures instead of falling back to `none`: AppRole is required
+    // to read cluster secrets (#1833), and committing placeholder credentials
+    // would overwrite the functional ones for the whole zone. Legacy parity:
+    // the error reaches the ArgoCD hook catch, which returns KO (→ API 422).
+    const roleId = await this.vault.getAuthApproleRoleRoleId(`zone-${zoneSlug}`)
+    const secretId = await this.vault.ensureAuthApproleRoleSecretId(`zone-${zoneSlug}`)
     return generateZoneVaultValues(this.vaultConfig.url, zoneSlug, roleId, secretId)
   }
 
