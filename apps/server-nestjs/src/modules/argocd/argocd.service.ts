@@ -84,7 +84,7 @@ export class ArgoCDService {
     span?.setAttribute('zone.slug', cluster.zone.slug)
     this.logger.log(`Handling a cluster upsert event for ${cluster.label}`)
     const kubeconfig = KubeconfigSchema.parse(cluster.kubeconfig)
-    await this.vault.upsertKvData(
+    await this.vault.ensureKvData(
       `zone-${cluster.zone.slug}`,
       `clusters/cluster-${cluster.label}/argocd-cluster-secret`,
       { data: generateClusterSecretData(cluster, kubeconfig) },
@@ -119,7 +119,7 @@ export class ArgoCDService {
   }
 
   private async commitZoneValues(zoneSlug: string) {
-    const infraProject = await this.gitlab.getOrCreateInfraGroupRepo(zoneSlug)
+    const infraProject = await this.gitlab.ensureInfraGroupRepo(zoneSlug)
     const clusters = await this.datastore.getZoneClusterNames(zoneSlug)
     const vaultValues = await this.generateZoneVaultValues(zoneSlug)
     const action = await this.gitlab.generateCreateOrUpdateAction(
