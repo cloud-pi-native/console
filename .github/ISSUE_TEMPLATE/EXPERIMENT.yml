@@ -1,0 +1,49 @@
+name: Expérimentation
+description: Tester une hypothèse issue d'un ticket parent, en consignant les observations ici plutôt que d'alimenter le parent en commentaires.
+labels: [question]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothèse
+      description: Énoncer l'hypothèse testée et lier le ticket parent exploré.
+      placeholder: Nous pensons que ... — parent #...
+    validations:
+      required: true
+
+  - type: textarea
+    id: demands
+    attributes:
+      label: Exigences
+      description: Lister les exigences que la solution doit satisfaire quel que soit le résultat de l'expérimentation.
+      placeholder: "- [ ] ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Protocole
+      description: Indiquer comment l'hypothèse est testée (mesure, ensemble de candidats, durée).
+      placeholder: Mesurer ..., comparer ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: observations
+    attributes:
+      label: Observations
+      description: Ajouter une entrée par passe avec date, preuve et effet sur l'hypothèse. Mettre ce champ à jour au lieu d'alimenter le parent en commentaires.
+      value: |
+        - YYYY-MM-DD: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Références
+      description: Tickets, PR, discussions ou documents associés — tout ce qui donne du contexte. Laisser vide si aucun.
+      placeholder: https://github.com/...
+    validations:
+      required: false
