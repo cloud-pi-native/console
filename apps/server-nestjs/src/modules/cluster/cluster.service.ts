@@ -7,13 +7,10 @@ import type {
   UpdateClusterBody,
 } from '@cpn-console/shared'
 import type { ConfigType } from '@nestjs/config'
-import type { Cluster, Prisma, Project, User } from '@prisma/client'
+import type { Cluster, Project, User } from '@prisma/client'
 import type { ClientInferResponseBody } from '@ts-rest/core'
-import {
-  ClusterPrivacySchema,
-  KubeconfigSchema,
-} from '@cpn-console/shared'
-import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { ClusterPrivacySchema, KubeconfigSchema } from '@cpn-console/shared'
+import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { baseConfigFactory } from '../../config/base.config'
 import { PrismaService } from '../infrastructure/database/prisma.service'
@@ -31,6 +28,7 @@ import {
   linkClusterToStages,
   linkZoneToClusters,
   listClusters as listClustersQuery,
+  listClustersWhere,
   listStagesByClusterId,
   removeClusterFromProject,
   removeClusterFromStage,
@@ -54,16 +52,7 @@ export class ClusterService {
   ) {}
 
   async listClusters(userId?: User['id']): Promise<CleanedCluster[]> {
-    const where: Prisma.ClusterWhereInput = userId
-      ? {
-          OR: [
-            { privacy: CLUSTER_PUBLIC },
-            { projects: { some: { members: { some: { userId } } } } },
-            { projects: { some: { ownerId: userId } } },
-            { environments: { some: { project: { members: { some: { userId } } } } } },
-          ],
-        }
-      : {}
+    const where = listClustersWhere(userId)
     const clusters = await listClustersQuery(this.prisma, where)
     return clusters.map(({ stages, infos, secretName, kubeConfigId, createdAt, updatedAt, ...cluster }) => ({
       ...cluster,
@@ -112,15 +101,19 @@ export class ClusterService {
 
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
 
-    const clusterCreated = await createClusterQuery(this.prisma, clusterData, kubeconfig, zoneId)
+    const clusterCreated = await this.prisma.$transaction(async (tx) => {
+      const clusterCreated = await createClusterQuery(tx, clusterData, kubeconfig, zoneId)
 
-    if (data.privacy !== CLUSTER_PUBLIC && projectIds?.length) {
-      await linkClusterToProjects(this.prisma, clusterCreated.id, projectIds)
-    }
+      if (data.privacy !== CLUSTER_PUBLIC && projectIds?.length) {
+        await linkClusterToProjects(tx, clusterCreated.id, projectIds)
+      }
 
-    if (stageIds?.length) {
-      await linkClusterToStages(this.prisma, clusterCreated.id, stageIds)
-    }
+      if (stageIds?.length) {
+        await linkClusterToStages(tx, clusterCreated.id, stageIds)
+      }
+
+      return clusterCreated
+    })
 
     await this.upsertClusterHook(clusterCreated.id, zoneId)
     await this.logs.addLog({
@@ -146,43 +139,43 @@ export class ClusterService {
 
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
 
-    const clusterUpdated = await updateClusterQuery(this.prisma, clusterId, clusterData,
-      // @ts-ignore
-      kubeconfig)
+    await this.prisma.$transaction(async (tx) => {
+      const clusterUpdated = await updateClusterQuery(tx, clusterId, clusterData, kubeconfig)
 
-    if (zoneId) {
-      await linkZoneToClusters(this.prisma, zoneId, [clusterId])
-    }
+      if (zoneId) {
+        await linkZoneToClusters(tx, zoneId, [clusterId])
+      }
 
-    const dbProjects = await getProjectsByClusterId(this.prisma, clusterId)
+      const dbProjects = await getProjectsByClusterId(tx, clusterId)
 
-    let projectsToRemove: Project['id'][] = []
+      let projectsToRemove: Project['id'][] = []
 
-    if (projectIds && clusterUpdated.privacy === CLUSTER_PUBLIC) {
-      projectsToRemove = dbProjects?.map(project => project.id) ?? []
-    } else if (projectIds && clusterUpdated.privacy === CLUSTER_DEDICATED) {
-      await linkClusterToProjects(this.prisma, clusterId, projectIds)
-      projectsToRemove = dbProjects?.map(project => project.id)?.filter(dbProjectId => !projectIds.includes(dbProjectId)) ?? []
-    } else if (clusterUpdated.privacy === CLUSTER_PUBLIC) {
-      projectsToRemove = dbProjects?.map(project => project.id) ?? []
-    }
+      if (projectIds && clusterUpdated.privacy === CLUSTER_PUBLIC) {
+        projectsToRemove = dbProjects?.map(project => project.id) ?? []
+      } else if (projectIds && clusterUpdated.privacy === CLUSTER_DEDICATED) {
+        await linkClusterToProjects(tx, clusterId, projectIds)
+        projectsToRemove = dbProjects?.map(project => project.id)?.filter(dbProjectId => !projectIds.includes(dbProjectId)) ?? []
+      } else if (clusterUpdated.privacy === CLUSTER_PUBLIC) {
+        projectsToRemove = dbProjects?.map(project => project.id) ?? []
+      }
 
-    for (const projectId of projectsToRemove) {
-      await removeClusterFromProject(this.prisma, clusterUpdated.id, projectId)
-    }
+      for (const projectId of projectsToRemove) {
+        await removeClusterFromProject(tx, clusterUpdated.id, projectId)
+      }
 
-    if (stageIds) {
-      await linkClusterToStages(this.prisma, clusterId, stageIds)
+      if (stageIds) {
+        await linkClusterToStages(tx, clusterId, stageIds)
 
-      const dbStages = await listStagesByClusterId(this.prisma, clusterId)
-      if (dbStages) {
-        for (const stage of dbStages) {
-          if (!stageIds.includes(stage.id)) {
-            await removeClusterFromStage(this.prisma, clusterUpdated.id, stage.id)
+        const dbStages = await listStagesByClusterId(tx, clusterId)
+        if (dbStages) {
+          for (const stage of dbStages) {
+            if (!stageIds.includes(stage.id)) {
+              await removeClusterFromStage(tx, clusterUpdated.id, stage.id)
+            }
           }
         }
       }
-    }
+    })
 
     await this.upsertClusterHook(clusterId, dbCluster.zoneId)
     await this.logs.addLog({
@@ -207,15 +200,19 @@ export class ClusterService {
     force?: boolean
   }): Promise<string | null> {
     let message: string | null = null
-    if (force) {
-      const envs = await this.prisma.environment.deleteMany({
-        where: { clusterId },
-      })
-      message = `${envs.count} environnements supprimés de force, n'oubliez pas de reprovisionner les projets concernés`
-    } else {
-      const environment = await this.prisma.environment.findFirst({ where: { clusterId } })
-      if (environment) throw new BadRequestException('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
-    }
+    await this.prisma.$transaction(async (tx) => {
+      if (force) {
+        const envs = await tx.environment.deleteMany({
+          where: { clusterId },
+        })
+        message = `${envs.count} environnements supprimés de force, n'oubliez pas de reprovisionner les projets concernés`
+      } else {
+        const environment = await tx.environment.findFirst({ where: { clusterId } })
+        if (environment) throw new BadRequestException('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
+      }
+
+      await deleteClusterQuery(tx, clusterId)
+    })
 
     await this.deleteClusterHook(clusterId)
     await this.logs.addLog({
@@ -225,17 +222,15 @@ export class ClusterService {
       requestId,
     })
 
-    await deleteClusterQuery(this.prisma, clusterId)
     return message
   }
-
-  // ── Cluster hook helpers ────────────────────────────────────────────────────────
 
   private async upsertClusterHook(clusterId: string, zoneId: Cluster['zoneId']): Promise<void> {
     try {
       await this.eventEmitter.emitAsync('cluster.upsert', { clusterId, zoneId })
     } catch (error) {
       this.logger.error(`cluster.upsert hook failed (clusterId=${clusterId})`, error instanceof Error ? error.stack : String(error))
+      throw new UnprocessableEntityException('Echec des services à la création/mise à jour du cluster')
     }
   }
 
