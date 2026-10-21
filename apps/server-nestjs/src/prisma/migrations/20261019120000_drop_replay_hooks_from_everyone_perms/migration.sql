@@ -8,6 +8,7 @@
 -- and existing rows are realigned here. Admins who genuinely want
 -- everyone-replay can re-grant the permission from the project roles
 -- screen afterwards.
+ALTER TABLE "Project" ALTER COLUMN "everyonePerms" SET DEFAULT 768;
 UPDATE "Project"
 SET "everyonePerms" = "everyonePerms" & ~128::bigint
 WHERE "everyonePerms" & 128::bigint <> 0;
