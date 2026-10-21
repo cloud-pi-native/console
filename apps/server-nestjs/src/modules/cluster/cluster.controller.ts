@@ -69,6 +69,7 @@ export class ClusterController {
   }
 
   @Delete(':clusterId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @RequireAdminPermission('ManageClusters')
   async delete(
     @Param('clusterId', ParseUUIDPipe) clusterId: string,

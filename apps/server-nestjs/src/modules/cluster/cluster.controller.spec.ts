@@ -217,4 +217,24 @@ describe('clusterController', () => {
     expect(await controller.delete(faker.string.uuid(), { force: true }, user, request))
       .toBe('3 environnements supprimés de force, n\'oubliez pas de reprovisionner les projets concernés')
   })
+
+  it.each<[query: string]>([
+    [''],
+    ['?force=true'],
+  ])('returns the contract status 204 on a successful HTTP DELETE%s', async (query) => {
+    service.deleteCluster.mockResolvedValue(0)
+    auth.authenticate.mockResolvedValue({ userId, adminPermissions: ADMIN_PERMS.MANAGE, userType: 'human' })
+    const clusterId = faker.string.uuid()
+
+    const app = module.createNestApplication(new FastifyAdapter())
+    await app.init()
+    const response = await app.getHttpAdapter().getInstance().inject({
+      method: 'DELETE',
+      url: `/api/v1/clusters/${clusterId}${query}`,
+    })
+    await app.close()
+
+    expect(response.statusCode).toBe(204)
+    expect(service.deleteCluster).toHaveBeenCalledTimes(1)
+  })
 })
