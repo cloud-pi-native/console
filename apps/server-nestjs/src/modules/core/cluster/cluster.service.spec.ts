@@ -10,9 +10,9 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../../config/base.config'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { makeEnvironment } from '../environment/environment-testing.utils'
 import { AppEventsService } from '../events/app-events.service'
-import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { makeProject } from '../project/project-testing.utils'
 import {
   makeCluster,

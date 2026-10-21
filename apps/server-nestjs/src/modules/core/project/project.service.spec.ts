@@ -21,6 +21,7 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import {
+  makeAdminRole,
   makeCreateProjectBody,
   makeListProjectsQuery,
   makeProject,
@@ -460,6 +461,81 @@ describe('projectService', () => {
         }),
       )
       expect(result).toBeDefined()
+    })
+
+    it('grants the previous owner the admin role on transfer', async () => {
+      const ownerId = faker.string.uuid()
+      const newOwnerId = faker.string.uuid()
+      const ctx = makeProjectContext({ locked: false })
+      const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
+      const adminRoleId = faker.string.uuid()
+      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findFirst.mockResolvedValue(
+        makeProjectWithMembersResult(pwd, [
+          makeProjectMemberWithUser(
+            makeUser({ id: newOwnerId, type: 'human' }),
+            { roleIds: [faker.string.uuid()] },
+          ),
+        ]),
+      )
+      tx.project.findUnique.mockResolvedValue(
+        makeProjectWithDetails({ id: ctx.id, ownerId: newOwnerId } as never),
+      )
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await service.update(
+        { ownerId: newOwnerId },
+        { userId: ownerId, adminPermissions: 0n },
+        ctx.id,
+      )
+
+      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
+        where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [adminRoleId] },
+        update: { roleIds: [adminRoleId] },
+      })
+    })
+
+    it('grants the previous owner the admin role on transfer when already a member', async () => {
+      const ownerId = faker.string.uuid()
+      const newOwnerId = faker.string.uuid()
+      const ctx = makeProjectContext({ locked: false })
+      const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
+      const adminRoleId = faker.string.uuid()
+      const existingRoleId = faker.string.uuid()
+      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findFirst.mockResolvedValue(
+        makeProjectWithMembersResult(pwd, [
+          makeProjectMemberWithUser(
+            makeUser({ id: ownerId, type: 'human' }),
+            { roleIds: [existingRoleId] },
+          ),
+          makeProjectMemberWithUser(
+            makeUser({ id: newOwnerId, type: 'human' }),
+            { roleIds: [existingRoleId] },
+          ),
+        ]),
+      )
+      tx.project.findUnique.mockResolvedValue(
+        makeProjectWithDetails({ id: ctx.id, ownerId: newOwnerId } as never),
+      )
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await service.update(
+        { ownerId: newOwnerId },
+        { userId: ownerId, adminPermissions: 0n },
+        ctx.id,
+      )
+
+      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
+        where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, adminRoleId] },
+        update: { roleIds: [existingRoleId, adminRoleId] },
+      })
     })
   })
 

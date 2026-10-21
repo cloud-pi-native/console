@@ -2,7 +2,6 @@ import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/us
 import type { Credentials } from '@keycloak/keycloak-admin-client/lib/utils/auth'
 import type { OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
-import type { ProjectWithDetails } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
 import KcAdminClient from '@keycloak/keycloak-admin-client'
 import { Inject, Injectable, Logger } from '@nestjs/common'
@@ -256,22 +255,6 @@ export class KeycloakClientService implements OnModuleInit {
     }
 
     return current
-  }
-
-  async ensureEnvironmentGroups(consoleGroup: GroupRepresentationWith<'id'>, environment: ProjectWithDetails['environments'][number]) {
-    const span = trace.getActiveSpan()
-    span?.setAttributes({
-      'keycloak.group.id': consoleGroup.id,
-      'environment.id': environment.id,
-      'environment.name': environment.name,
-    })
-    const envGroup = await this.ensureSubGroupByName(consoleGroup.id, environment.name)
-    const [roGroup, rwGroup] = await Promise.all([
-      this.ensureSubGroupByName(envGroup.id, 'RO'),
-      this.ensureSubGroupByName(envGroup.id, 'RW'),
-    ])
-    this.logger.verbose(`Resolved Keycloak environment groups (consoleGroupId=${consoleGroup.id}, env=${environment.name}, envGroupId=${envGroup.id})`)
-    return { roGroup, rwGroup }
   }
 
   async onModuleInit() {
