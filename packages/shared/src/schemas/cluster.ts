@@ -86,3 +86,4 @@ export type UpdateClusterBody = Zod.infer<typeof UpdateClusterBodySchema>
 export type DeleteClusterQuery = Zod.infer<typeof DeleteClusterQuerySchema>
 
 export type CleanedCluster = Zod.infer<typeof CleanedClusterSchema>
+export type ClusterUsage = Zod.infer<typeof ClusterUsageSchema>
