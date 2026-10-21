@@ -158,8 +158,7 @@ export class ArgoCDDatastoreService {
   }
 
   // Runs while the cluster row still exists (the service deletes it only after
-  // this listener succeeds), so it must be excluded explicitly — legacy parity:
-  // hook-wrapper removed the deleted label from zone.clusterNames.
+  // this listener succeeds), so it must be excluded explicitly.
   async getZoneClusterNames(zoneSlug: string, excludedClusterLabel?: string): Promise<string[]> {
     const zones = await this.prisma.zone.findUnique({
       where: { slug: zoneSlug },

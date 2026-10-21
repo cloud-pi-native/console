@@ -140,9 +140,9 @@ export class AppEventsService {
 
   /**
    * Emits a cluster event. The caller awaits the merged results and answers 422 on
-   * failure, mirroring emitZoneEvent consumers (legacy hooks 422 on KO), and only
-   * emits the delete after every plugin cleaned up successfully (the caller must
-   * not have removed the row yet).
+   * failure, like the emitZoneEvent consumers, and only emits the delete after
+   * every plugin cleaned up successfully (the caller must not have removed the
+   * row yet).
    */
   async emitClusterEvent(
     event: ClusterEventName,
