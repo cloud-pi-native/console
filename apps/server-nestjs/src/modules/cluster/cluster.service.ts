@@ -1,14 +1,12 @@
 import type {
   CleanedCluster,
   ClusterAssociatedEnvironments,
-  clusterContract,
   ClusterDetails,
+  ClusterUsage,
   CreateClusterBody,
   UpdateClusterBody,
 } from '@cpn-console/shared'
 import type { ConfigType } from '@nestjs/config'
-import type { Cluster, Project, User } from '@prisma/client'
-import type { ClientInferResponseBody } from '@ts-rest/core'
 import { ClusterPrivacySchema, KubeconfigSchema } from '@cpn-console/shared'
 import { BadRequestException, ConflictException, Inject, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
@@ -35,8 +33,6 @@ import {
   updateCluster as updateClusterQuery,
 } from './cluster-queries.utils'
 
-type ClusterUsage = ClientInferResponseBody<typeof clusterContract.getClusterUsage, 200>
-
 const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
 const CLUSTER_DEDICATED = ClusterPrivacySchema.enum.dedicated
 
@@ -51,7 +47,7 @@ export class ClusterService {
     @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
   ) {}
 
-  async listClusters(userId?: User['id']): Promise<CleanedCluster[]> {
+  async listClusters(userId?: string): Promise<CleanedCluster[]> {
     const where = listClustersWhere(userId)
     const clusters = await listClustersQuery(this.prisma, where)
     return clusters.map(({ stages, infos, secretName, kubeConfigId, createdAt, updatedAt, ...cluster }) => ({
@@ -93,7 +89,7 @@ export class ClusterService {
 
   async createCluster(
     data: CreateClusterBody,
-    userId: User['id'],
+    userId: string,
     requestId: string,
   ): Promise<ClusterDetails> {
     const isLabelTaken = await getClusterByLabel(this.prisma, data.label)
@@ -129,7 +125,7 @@ export class ClusterService {
   async updateCluster(
     data: UpdateClusterBody,
     clusterId: string,
-    userId: User['id'],
+    userId: string,
     requestId: string,
   ): Promise<ClusterDetails> {
     if (data?.privacy === CLUSTER_PUBLIC) delete data.projectIds
@@ -148,7 +144,7 @@ export class ClusterService {
 
       const dbProjects = await getProjectsByClusterId(tx, clusterId)
 
-      let projectsToRemove: Project['id'][] = []
+      let projectsToRemove: string[] = []
 
       if (projectIds && clusterUpdated.privacy === CLUSTER_PUBLIC) {
         projectsToRemove = dbProjects?.map(project => project.id) ?? []
@@ -225,7 +221,7 @@ export class ClusterService {
     return message
   }
 
-  private async upsertClusterHook(clusterId: string, zoneId: Cluster['zoneId']): Promise<void> {
+  private async upsertClusterHook(clusterId: string, zoneId: string): Promise<void> {
     try {
       await this.eventEmitter.emitAsync('cluster.upsert', { clusterId, zoneId })
     } catch (error) {
