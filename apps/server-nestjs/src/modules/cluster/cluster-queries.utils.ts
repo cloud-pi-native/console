@@ -202,6 +202,24 @@ export function removeClusterFromStage(prisma: Prisma.TransactionClient, id: str
   })
 }
 
+export async function syncClusterStageLinks(
+  tx: Prisma.TransactionClient,
+  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
+  clusterId: string,
+  stageIds: string[] | undefined,
+) {
+  if (!stageIds) return
+
+  await linkClusterToStages(tx, clusterId, stageIds)
+
+  const dbStages = await listStagesByClusterId(tx, clusterId)
+  for (const stage of dbStages ?? []) {
+    if (!stageIds.includes(stage.id)) {
+      await removeClusterFromStage(tx, clusterUpdated.id, stage.id)
+    }
+  }
+}
+
 export function deleteCluster(prisma: Prisma.TransactionClient, id: string) {
   return prisma.cluster.delete({ where: { id } })
 }
