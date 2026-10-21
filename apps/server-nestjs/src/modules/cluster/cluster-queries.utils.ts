@@ -1,4 +1,4 @@
-import type { Kubeconfig as KubeconfigBody } from '@cpn-console/shared'
+import type { Kubeconfig } from '@cpn-console/shared'
 import type { Cluster, Prisma } from '@prisma/client'
 import { ClusterPrivacySchema } from '@cpn-console/shared'
 
@@ -127,7 +127,7 @@ export function listStagesByClusterId(prisma: Prisma.TransactionClient, id: stri
 export function createCluster(
   prisma: Prisma.TransactionClient,
   data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
-  kubeconfig: Pick<KubeconfigBody, 'user' | 'cluster'>,
+  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
   zoneId: string,
 ) {
   return prisma.cluster.create({
@@ -148,7 +148,7 @@ export function updateCluster(
   prisma: Prisma.TransactionClient,
   id: string,
   data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'zoneId'>>,
-  kubeconfig?: Pick<KubeconfigBody, 'user' | 'cluster'>,
+  kubeconfig?: Pick<Kubeconfig, 'user' | 'cluster'>,
 ) {
   return prisma.cluster.update({
     where: { id },
