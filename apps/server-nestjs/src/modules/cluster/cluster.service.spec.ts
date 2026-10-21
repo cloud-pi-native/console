@@ -1,5 +1,7 @@
 import type { ConfigType } from '@nestjs/config'
+import type { Cluster, Project } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { ClusterDetailsRecord } from './cluster-queries.utils'
 import { ADMIN_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { UnprocessableEntityException } from '@nestjs/common'
@@ -11,6 +13,7 @@ import { baseConfigFactory } from '../../config/base.config'
 import { makeEnvironment } from '../environment/environment-testing.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
+import { makeProject } from '../project/project-testing.utils'
 import {
   makeCluster,
   makeClusterDetailsRecord,
@@ -244,5 +247,48 @@ describe('clusterService', () => {
 
     await expect(service.updateCluster({ infos: 'x' }, record.id, 'u', 'r'))
       .rejects.toThrow(new UnprocessableEntityException('Echec des services à la mise à jour du cluster'))
+  })
+
+  it('keeps dedicated project links when an update omits projectIds', async () => {
+    const record: Cluster & { projects: Project[] } = { ...makeClusterDetailsRecord({ privacy: 'dedicated' }), projects: [makeProject()] }
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValue(record)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
+
+    await service.updateCluster({ infos: 'updated' }, record.id, 'u', 'r')
+
+    // Only the field update ran: no per-project disconnect when the body omits
+    // projectIds (legacy parity).
+    expect(prisma.cluster.update).toHaveBeenCalledTimes(1)
+  })
+
+  it('detaches dedicated project links on an explicit empty projectIds', async () => {
+    const record = makeClusterDetailsRecord({ privacy: 'dedicated' })
+    const dbCluster: Cluster & { projects: Project[] } = { ...record, projects: [makeProject({ id: 'project-1' })] }
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValue(record)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(dbCluster)
+
+    await service.updateCluster({ infos: 'updated', projectIds: [] }, record.id, 'u', 'r')
+
+    expect(prisma.cluster.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ projects: { disconnect: { id: 'project-1' } } }),
+    }))
+  })
+
+  it('detaches all projects when an update flips the cluster to public', async () => {
+    const record = makeClusterDetailsRecord({ privacy: 'dedicated' })
+    const publicRecord: ClusterDetailsRecord = { ...record, privacy: 'public' }
+    const dbCluster: Cluster & { projects: Project[] } = { ...record, projects: [makeProject({ id: 'project-1' }), makeProject({ id: 'project-2' })] }
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValueOnce(publicRecord)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(dbCluster)
+
+    await service.updateCluster({ privacy: 'public' }, record.id, 'u', 'r')
+
+    expect(prisma.cluster.update).toHaveBeenCalledTimes(3)
+    expect(prisma.cluster.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ projects: { disconnect: { id: 'project-2' } } }),
+    }))
   })
 })
