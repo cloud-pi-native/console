@@ -113,7 +113,7 @@ export function makeProject(overrides: Partial<Project> = {}): Project {
     prodCpu: 0,
     prodGpu: 0,
     prodMemory: 0,
-    everyonePerms: 896n,
+    everyonePerms: 768n,
     ownerId: faker.string.uuid(),
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
