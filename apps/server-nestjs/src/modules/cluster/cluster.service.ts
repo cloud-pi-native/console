@@ -13,6 +13,7 @@ import { PrismaService } from '../infrastructure/database/prisma.service'
 import {
   createCluster,
   deleteCluster,
+  generateClusterWhereInput,
   getClusterById,
   getClusterByLabel,
   getClusterDetails,
@@ -23,10 +24,8 @@ import {
   linkClusterToStages,
   linkZoneToClusters,
   listClusters,
-  generateClusterWhereInput,
-  listStagesByClusterId,
   removeClusterFromProject,
-  removeClusterFromStage,
+  syncClusterStageLinks,
   updateCluster,
 } from './cluster-queries.utils'
 
@@ -188,23 +187,5 @@ async function syncClusterProjectLinks(
   const dbProjects = await getProjectsByClusterId(tx, clusterId)
   for (const projectId of projectsToRemoveFrom(clusterUpdated.privacy, projectIds, dbProjects?.map(project => project.id) ?? [])) {
     await removeClusterFromProject(tx, clusterUpdated.id, projectId)
-  }
-}
-
-async function syncClusterStageLinks(
-  tx: Prisma.TransactionClient,
-  clusterUpdated: Awaited<ReturnType<typeof updateCluster>>,
-  clusterId: string,
-  stageIds: string[] | undefined,
-) {
-  if (!stageIds) return
-
-  await linkClusterToStages(tx, clusterId, stageIds)
-
-  const dbStages = await listStagesByClusterId(tx, clusterId)
-  for (const stage of dbStages ?? []) {
-    if (!stageIds.includes(stage.id)) {
-      await removeClusterFromStage(tx, clusterUpdated.id, stage.id)
-    }
   }
 }
