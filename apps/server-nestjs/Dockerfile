@@ -55,7 +55,7 @@ RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
 # Générer le client Prisma (schéma multi-fichiers : il faut pointer sur le dossier)
 RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate --schema=src/prisma/schema
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
 ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
@@ -105,7 +105,10 @@ RUN npm run db:generate
 USER node
 EXPOSE 3001
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-ENTRYPOINT ["node", "dist/src/main"]
+# Appliquer les migrations de l'arbre Prisma server-nestjs avant de démarrer
+# l'application : le legacy le fait via `prestart` -> `db:deploy`, sans quoi les
+# migrations propres à cet arbre ne sont jamais déployées.
+ENTRYPOINT ["sh", "-c", "npm run db:deploy && exec node dist/src/main"]
