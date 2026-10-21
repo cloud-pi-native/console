@@ -29,8 +29,6 @@ import {
   updateCluster,
 } from './cluster-queries.utils'
 
-const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
-
 @Injectable()
 export class ClusterService {
   constructor(
@@ -72,7 +70,7 @@ export class ClusterService {
     const clusterCreated = await this.prisma.$transaction(async (tx) => {
       const clusterCreated = await createCluster(tx, clusterData, kubeconfig, zoneId)
 
-      if (data.privacy !== CLUSTER_PUBLIC && projectIds?.length) {
+      if (data.privacy !== ClusterPrivacySchema.enum.public && projectIds?.length) {
         await linkClusterToProjects(tx, clusterCreated.id, projectIds)
       }
 
@@ -102,7 +100,7 @@ export class ClusterService {
     if (!dbCluster) throw new NotFoundException('Cluster not found')
 
     const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
-    const publicProjectIds = data.privacy === CLUSTER_PUBLIC ? undefined : projectIds
+    const publicProjectIds = data.privacy === ClusterPrivacySchema.enum.public ? undefined : projectIds
 
     await this.prisma.$transaction(async (tx) => {
       const clusterUpdated = await updateCluster(tx, clusterId, clusterData, kubeconfig)
