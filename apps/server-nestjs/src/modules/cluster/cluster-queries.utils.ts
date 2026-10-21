@@ -239,9 +239,13 @@ export async function syncClusterProjectLinks(
     return
   }
 
+  // Legacy parity: project removals are only computed when the caller actually
+  // sent projectIds. An update that omits the field must keep every existing
+  // link, while an explicit [] detaches all of them.
+  if (projectIds === undefined) return
   const dbProjects = await getProjectsByClusterId(tx, clusterId)
   const dbProjectIds = dbProjects?.map(project => project.id) ?? []
-  for (const projectId of dbProjectIds.filter(dbProjectId => !projectIds?.includes(dbProjectId))) {
+  for (const projectId of dbProjectIds.filter(dbProjectId => !projectIds.includes(dbProjectId))) {
     await removeClusterFromProject(tx, clusterUpdated.id, projectId)
   }
 }

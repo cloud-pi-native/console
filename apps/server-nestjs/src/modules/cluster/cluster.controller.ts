@@ -59,7 +59,7 @@ export class ClusterController {
   @RequireAdminPermission('ManageClusters')
   @HttpCode(HttpStatus.OK)
   async update(
-    @Param('clusterId') clusterId: string,
+    @Param('clusterId', ParseUUIDPipe) clusterId: string,
     @Body(new ZodValidationPipe(UpdateClusterBodySchema)) data: UpdateClusterBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
