@@ -49,3 +49,12 @@ body:
       placeholder: Version, navigateur, environnement...
     validations:
       required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Références
+      description: Tickets, PR, discussions ou documents associés — tout ce qui donne du contexte. Laisser vide si aucun.
+      placeholder: https://github.com/...
+    validations:
+      required: false
