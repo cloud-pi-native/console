@@ -74,6 +74,30 @@ describe('clusterController', () => {
     })
   })
 
+  it.each<[method: 'GET' | 'PUT' | 'DELETE', url: string]>([
+    ['GET', '/api/v1/clusters/not-a-uuid'],
+    ['GET', '/api/v1/clusters/usage/not-a-uuid'],
+    ['GET', '/api/v1/clusters/not-a-uuid/environments'],
+    ['PUT', '/api/v1/clusters/not-a-uuid'],
+    ['DELETE', '/api/v1/clusters/not-a-uuid'],
+  ])('rejects a malformed clusterId on %s %s with 400', async (method, url) => {
+    const requestor: UserContext = { userId, adminPermissions: ADMIN_PERMS.MANAGE, userType: 'human' }
+    auth.authenticate.mockResolvedValue(requestor)
+
+    const app = module.createNestApplication(new FastifyAdapter())
+    await app.init()
+    const response = await app.getHttpAdapter().getInstance().inject({
+      method,
+      url,
+      payload: method === 'PUT' ? {} : undefined,
+    })
+    await app.close()
+
+    expect(response.statusCode).toBe(400)
+    expect(service.updateCluster).not.toHaveBeenCalled()
+    expect(service.deleteCluster).not.toHaveBeenCalled()
+  })
+
   it('maps raw list records to the contract shape', async () => {
     const record = makeClusterListRecord({ infos: null })
     service.listClustersForUser.mockResolvedValue([record])
