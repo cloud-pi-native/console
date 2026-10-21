@@ -3,13 +3,13 @@ import type {
   CreateClusterBody,
   UpdateClusterBody,
 } from '@cpn-console/shared'
-import type { ClusterEventName, ClusterEventPayload, EventContext } from '../events/app-events.service'
 import type { UserContext } from '../../infrastructure/auth/auth-user.decorator'
+import type { ClusterEventName, ClusterEventPayload, EventContext } from '../events/app-events.service'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
-import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { AppEventsService } from '../events/app-events.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
 import {
   createClusterWithLinks,
