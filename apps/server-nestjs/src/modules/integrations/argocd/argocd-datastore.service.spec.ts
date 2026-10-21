@@ -3,8 +3,8 @@ import type { DeepMockProxy } from 'vitest-mock-extended'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { makeZone } from '../../core/zone/zone-testing.utils'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 
 function makeZoneWithClusters(labels: string[]) {

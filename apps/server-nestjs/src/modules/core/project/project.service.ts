@@ -9,10 +9,10 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
+import { isAdminRole } from '../../integrations/keycloak/keycloak.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
-import { isAdminRole } from '../../integrations/keycloak/keycloak.utils'
 import { deleteProjectMember, upsertProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,

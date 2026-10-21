@@ -54,10 +54,6 @@ export function upsertProjectMemberIfMissing(tx: Prisma.TransactionClient, proje
   })
 }
 
-export function createProjectMember(tx: Prisma.TransactionClient, projectId: string, userId: string) {
-  return tx.projectMembers.create({ data: { projectId, userId } })
-}
-
 export function deleteProjectMember(tx: Prisma.TransactionClient, projectId: string, userId: string) {
   return tx.projectMembers.delete({ where: { projectId_userId: { projectId, userId } } })
 }
