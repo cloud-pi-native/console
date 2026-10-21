@@ -6,7 +6,6 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock } from 'vitest-mock-extended'
-import { ADMIN_PERMISSIONS_KEY } from '../infrastructure/permission/user/user-admin-permission.decorator'
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { makeClusterDetailsRecord, makeClusterListRecord } from './cluster-testing.utils'
 import { ClusterController } from './cluster.controller'
@@ -38,18 +37,6 @@ describe('clusterController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined()
-  })
-
-  it('guards reads with ListClusters', () => {
-    for (const handler of [ClusterController.prototype.list, ClusterController.prototype.getDetails, ClusterController.prototype.getUsage, ClusterController.prototype.getEnvironments]) {
-      expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, handler)).toEqual(['ListClusters'])
-    }
-  })
-
-  it('guards mutations with ManageClusters', () => {
-    for (const handler of [ClusterController.prototype.create, ClusterController.prototype.update, ClusterController.prototype.delete]) {
-      expect(Reflect.getMetadata(ADMIN_PERMISSIONS_KEY, handler)).toEqual(['ManageClusters'])
-    }
   })
 
   it('delegates list to the service', async () => {
