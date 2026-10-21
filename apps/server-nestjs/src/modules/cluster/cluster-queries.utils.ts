@@ -1,7 +1,9 @@
-import type { Cluster, Kubeconfig, Prisma, Project, Stage, Zone } from '@prisma/client'
-import type { PrismaService } from '../infrastructure/database/prisma.service'
+import type { Kubeconfig as KubeconfigBody } from '@cpn-console/shared'
+import type { Cluster, Prisma, Project, Stage, User, Zone } from '@prisma/client'
+import { ClusterPrivacySchema } from '@cpn-console/shared'
 
-// ── selects ───────────────────────────────────────────────────────────────────────────
+const CLUSTER_PUBLIC = ClusterPrivacySchema.enum.public
+
 export const clusterListSelect = {
   id: true,
   label: true,
@@ -63,97 +65,108 @@ export const clusterEnvironmentsSelect = {
 } satisfies Prisma.EnvironmentSelect
 export type ClusterEnvironmentsRecord = Prisma.EnvironmentGetPayload<{ select: typeof clusterEnvironmentsSelect }>
 
-// ── query: getClusterById ───────────────────────────────────────────────────────────
-export function getClusterById(prisma: PrismaService, id: Cluster['id']) {
+export function getClusterById(prisma: Prisma.TransactionClient, id: Cluster['id']) {
   return prisma.cluster.findUnique({
     where: { id },
     include: { kubeconfig: true },
   })
 }
 
-// ── query: getClusterEnvironments ────────────────────────────────────────────────────
-export function getClusterEnvironments(prisma: PrismaService, clusterId: Cluster['id']) {
+export function getClusterEnvironments(prisma: Prisma.TransactionClient, clusterId: Cluster['id']) {
   return prisma.environment.findMany({
     where: { clusterId },
     select: clusterEnvironmentsSelect,
   })
 }
 
-// ── query: getClusterDetails ─────────────────────────────────────────────────────────
-export function getClusterDetails(prisma: PrismaService, id: Cluster['id']) {
+export function getClusterDetails(prisma: Prisma.TransactionClient, id: Cluster['id']) {
   return prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: clusterDetailsSelect,
   })
 }
 
-// ── query: getClusterByLabel ──────────────────────────────────────────────────────────
-export function getClusterByLabel(prisma: PrismaService, label: Cluster['label']) {
+export function getClusterByLabel(prisma: Prisma.TransactionClient, label: Cluster['label']) {
   return prisma.cluster.findUnique({ where: { label } })
 }
 
-// ── query: listClusters ──────────────────────────────────────────────────────────────
-export function listClusters(prisma: PrismaService, where: Prisma.ClusterWhereInput) {
+export function listClusters(prisma: Prisma.TransactionClient, where: Prisma.ClusterWhereInput) {
   return prisma.cluster.findMany({
     where,
     select: clusterListSelect,
   })
 }
 
-// ── query: getProjectsByClusterId ─────────────────────────────────────────────────────
-export async function getProjectsByClusterId(prisma: PrismaService, id: Cluster['id']) {
+export function listClustersWhere(userId?: User['id']): Prisma.ClusterWhereInput {
+  return userId
+    ? {
+        OR: [
+          { privacy: CLUSTER_PUBLIC },
+          { projects: { some: { members: { some: { userId } } } } },
+          { projects: { some: { ownerId: userId } } },
+          { environments: { some: { project: { members: { some: { userId } } } } } },
+        ],
+      }
+    : {}
+}
+
+export async function getProjectsByClusterId(prisma: Prisma.TransactionClient, id: Cluster['id']) {
   return (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { projects: true },
   }))?.projects
 }
 
-// ── query: listStagesByClusterId ──────────────────────────────────────────────────────
-export async function listStagesByClusterId(prisma: PrismaService, id: Cluster['id']) {
+export async function listStagesByClusterId(prisma: Prisma.TransactionClient, id: Cluster['id']) {
   return (await prisma.cluster.findUniqueOrThrow({
     where: { id },
     select: { stages: true },
   }))?.stages
 }
 
-// ── query: createCluster ─────────────────────────────────────────────────────────────
 export function createCluster(
-  prisma: PrismaService,
+  prisma: Prisma.TransactionClient,
   data: Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'secretName' | 'zoneId'>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+  kubeconfig: Pick<KubeconfigBody, 'user' | 'cluster'>,
   zoneId: string,
 ) {
   return prisma.cluster.create({
     data: {
       ...data,
-      // @ts-ignore
-      kubeconfig: { create: kubeconfig },
+      kubeconfig: {
+        create: {
+          user: kubeconfig.user,
+          cluster: kubeconfig.cluster,
+        },
+      },
       zone: { connect: { id: zoneId } },
     },
   })
 }
 
-// ── query: updateCluster ─────────────────────────────────────────────────────────────
 export function updateCluster(
-  prisma: PrismaService,
+  prisma: Prisma.TransactionClient,
   id: Cluster['id'],
-  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId'>>,
-  kubeconfig: Pick<Kubeconfig, 'user' | 'cluster'>,
+  data: Partial<Omit<Cluster, 'id' | 'updatedAt' | 'createdAt' | 'kubeConfigId' | 'zoneId'>>,
+  kubeconfig?: Pick<KubeconfigBody, 'user' | 'cluster'>,
 ) {
   return prisma.cluster.update({
     where: { id },
-    data: {
-      ...data,
-      kubeconfig: {
-        // @ts-ignore
-        update: kubeconfig,
-      },
-    },
+    data: kubeconfig
+      ? {
+          ...data,
+          kubeconfig: {
+            update: {
+              user: kubeconfig.user,
+              cluster: kubeconfig.cluster,
+            },
+          },
+        }
+      : data,
   })
 }
 
-// ── query: linkClusterToProjects ──────────────────────────────────────────────────────
-export function linkClusterToProjects(prisma: PrismaService, id: Cluster['id'], projectIds: Project['id'][]) {
+export function linkClusterToProjects(prisma: Prisma.TransactionClient, id: Cluster['id'], projectIds: Project['id'][]) {
   return prisma.cluster.update({
     where: { id },
     data: {
@@ -162,8 +175,7 @@ export function linkClusterToProjects(prisma: PrismaService, id: Cluster['id'], 
   })
 }
 
-// ── query: linkClusterToStages ────────────────────────────────────────────────────────
-export function linkClusterToStages(prisma: PrismaService, id: Cluster['id'], stageIds: Stage['id'][]) {
+export function linkClusterToStages(prisma: Prisma.TransactionClient, id: Cluster['id'], stageIds: Stage['id'][]) {
   return prisma.cluster.update({
     where: { id },
     data: {
@@ -172,8 +184,7 @@ export function linkClusterToStages(prisma: PrismaService, id: Cluster['id'], st
   })
 }
 
-// ── query: removeClusterFromProject ───────────────────────────────────────────────────
-export function removeClusterFromProject(prisma: PrismaService, id: Cluster['id'], projectId: Project['id']) {
+export function removeClusterFromProject(prisma: Prisma.TransactionClient, id: Cluster['id'], projectId: Project['id']) {
   return prisma.cluster.update({
     where: { id },
     data: {
@@ -182,8 +193,7 @@ export function removeClusterFromProject(prisma: PrismaService, id: Cluster['id'
   })
 }
 
-// ── query: removeClusterFromStage ─────────────────────────────────────────────────────
-export function removeClusterFromStage(prisma: PrismaService, id: Cluster['id'], stageId: Stage['id']) {
+export function removeClusterFromStage(prisma: Prisma.TransactionClient, id: Cluster['id'], stageId: Stage['id']) {
   return prisma.cluster.update({
     where: { id },
     data: {
@@ -192,13 +202,11 @@ export function removeClusterFromStage(prisma: PrismaService, id: Cluster['id'],
   })
 }
 
-// ── query: deleteCluster ─────────────────────────────────────────────────────────────
-export function deleteCluster(prisma: PrismaService, id: Cluster['id']) {
+export function deleteCluster(prisma: Prisma.TransactionClient, id: Cluster['id']) {
   return prisma.cluster.delete({ where: { id } })
 }
 
-// ── query: linkZoneToClusters ────────────────────────────────────────────────────────
-export function linkZoneToClusters(prisma: PrismaService, zoneId: Zone['id'], clusterIds: Cluster['id'][]) {
+export function linkZoneToClusters(prisma: Prisma.TransactionClient, zoneId: Zone['id'], clusterIds: Cluster['id'][]) {
   return prisma.zone.update({
     where: { id: zoneId },
     data: {
@@ -207,8 +215,7 @@ export function linkZoneToClusters(prisma: PrismaService, zoneId: Zone['id'], cl
   })
 }
 
-// ── query: getClusterUsage ───────────────────────────────────────────────────────────
-export async function getClusterUsage(prisma: PrismaService, clusterId: Cluster['id']) {
+export async function getClusterUsage(prisma: Prisma.TransactionClient, clusterId: Cluster['id']) {
   const clusterUsage = await prisma.environment.aggregate({
     _sum: { memory: true, cpu: true, gpu: true },
     where: { clusterId },
