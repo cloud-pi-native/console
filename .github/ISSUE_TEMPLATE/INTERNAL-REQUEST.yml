@@ -43,7 +43,7 @@ body:
     attributes:
       label: Définition du fini
       description: Listez les conditions qui permettront de considérer le sujet terminé.
-      value: |
+      placeholder: |
         - [ ] ...
     validations:
       required: true
