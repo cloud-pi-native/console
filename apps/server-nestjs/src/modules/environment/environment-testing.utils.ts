@@ -55,7 +55,7 @@ export function makeProject(overrides: Partial<Project> = {}): Project {
     locked: false,
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
-    everyonePerms: 896n,
+    everyonePerms: 768n,
     ownerId: faker.string.uuid(),
     slug: faker.string.alphanumeric(8).toLowerCase(),
     limitless: true,

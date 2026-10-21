@@ -24,9 +24,9 @@ Cette cartographie décrit l'état structurel constaté dans `origin/main` à
 | Routé vers NestJS | project, project-bulk, project-hooks, project-secrets, project-roles, project-services | 16 |
 | Bloqué par parité d'événements | project-members | 4 |
 | Routé, conditionnel à confirmer | service-chain | 5 |
-| Enregistré, non routé | version, healthz, system-config, system-settings, log | 7 |
+| Enregistré, non routé | version, healthz, system-config, system-settings, log, service-monitor | 10 |
 | Porté, non enregistré | admin-role | 5 |
-| Legacy seul | admin-token, cluster, environment V1, repository V1, service-monitor, stage, user, user-token, zone | 38 |
+| Legacy seul | admin-token, cluster, environment V1, repository V1, stage, user, user-token, zone | 35 |
 | **Total** | | **75** |
 
 `location ^~ /api/v1/projects` et `location /api/v1/projects-bulk` couvrent les
@@ -50,7 +50,7 @@ le backlog V1.
 | Événement | Émetteur NestJS | Consommateur NestJS | État |
 | --- | --- | --- | --- |
 | `project.upsert`, `project.delete` | `AppEventsService` | Vault, Keycloak, GitLab, Harbor, Nexus, ArgoCD, SonarQube, Observability selon `USE_*` | Consommateurs présents ; activation conditionnelle sauf Keycloak. |
-| `zone.upsert`, `zone.delete` | Aucun émetteur migré | Vault | La zone reste legacy. |
+| `zone.upsert`, `zone.delete` | Aucun émetteur migré | Vault, GitLab | Consommateurs présents ; la zone reste legacy. |
 | `repository.sync` | `RepositoryService` V2 | GitLab | Consommateur présent ; API V2 hors décompte. |
 | `projectMember.upsert`, `projectMember.delete` | `ProjectMembersService` | Aucun | Blocage. |
 | `adminRole.upsert`, `adminRole.delete` | `AdminRoleService` | Aucun | Blocage ; module non enregistré. |

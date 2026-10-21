@@ -11,7 +11,6 @@ import type {
 } from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { VaultRobotSecret } from './registry.utils'
-import { specificallyEnabled } from '@cpn-console/hooks'
 import { daysAgo } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
@@ -25,6 +24,7 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { isVaultNotFound } from '../vault/vault.utils'
 import { RegistryClientService, roAccess, rwAccess } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
+import { RegistryPluginService } from './registry-plugin.service'
 import {
   DEFAULT_PLATFORM_ADMIN_GROUP_PATHS,
   DEFAULT_PLATFORM_GUEST_GROUP_PATHS,
@@ -43,7 +43,6 @@ import {
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
-  REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
   ROBOT_NAME_PROJECT,
   ROBOT_NAME_RO,
@@ -58,6 +57,7 @@ export class RegistryService {
   constructor(
     @Inject(RegistryClientService) private readonly client: RegistryClientService,
     @Inject(RegistryDatastoreService) private readonly datastore: RegistryDatastoreService,
+    @Inject(RegistryPluginService) private readonly registryPlugin: RegistryPluginService,
     @Inject(harborConfigFactory.KEY) private readonly harborConfig: ConfigType<typeof harborConfigFactory>,
     @Inject(baseConfigFactory.KEY) private readonly baseConfig: ConfigType<typeof baseConfigFactory>,
     @Inject(VaultClientService) private readonly vault: VaultClientService,
@@ -300,10 +300,9 @@ export class RegistryService {
     span?.setAttribute('project.slug', project.slug)
     this.logger.log(`Handling project upsert for ${project.slug}`)
     const quotaConfigRaw = getPluginConfig(project, REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT)
-    const publishConfig = getPluginConfig(project, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT)
     const parsedQuota = quotaConfigRaw ? parseBytes(String(quotaConfigRaw)) : undefined
     const storageLimitBytes = parsedQuota ?? -1
-    const publishProjectRobot = specificallyEnabled(publishConfig)
+    const publishProjectRobot = await this.registryPlugin.isProjectRobotEnabled(project)
     await this.ensureProject(project, { storageLimitBytes, publishProjectRobot })
   }
 

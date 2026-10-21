@@ -208,7 +208,7 @@ export function makeProject(overrides: Partial<ProjectWithRelations> = {}): Proj
     locked: false,
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
-    everyonePerms: 896n,
+    everyonePerms: 768n,
     ownerId: faker.string.uuid(),
     slug: faker.helpers.slugify(faker.company.name()),
     limitless: true,
