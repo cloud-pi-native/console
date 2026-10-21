@@ -1,7 +1,7 @@
-import type { clusterContract, CreateClusterBody, DeleteClusterQuery, UpdateClusterBody } from '@cpn-console/shared'
-import type { ClientInferResponseBody } from '@ts-rest/core'
+import type { CleanedCluster, ClusterAssociatedEnvironments, ClusterDetails, ClusterUsage, CreateClusterBody, DeleteClusterQuery, UpdateClusterBody } from '@cpn-console/shared'
 import type { FastifyRequest } from 'fastify'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
+import type { ClusterDetailsRecord } from './cluster-queries.utils'
 import {
   CreateClusterBodySchema,
   DeleteClusterQuerySchema,
@@ -13,10 +13,7 @@ import { RequireAdminPermission } from '../infrastructure/permission/user/user-a
 import { UserGuard } from '../infrastructure/permission/user/user.guard'
 import { ZodValidationPipe } from '../infrastructure/pipe/zod-validation.pipe'
 import { ClusterService } from './cluster.service'
-
-type ClusterList = ClientInferResponseBody<typeof clusterContract.listClusters, 200>
-type ClusterDetails = ClientInferResponseBody<typeof clusterContract.getClusterDetails, 200>
-type ClusterUsage = ClientInferResponseBody<typeof clusterContract.getClusterUsage, 200>
+import { toClusterAssociatedEnvironments, toClusterDetails, toClusters } from './cluster.utils'
 
 @Controller('api/v1/clusters')
 @UseGuards(UserGuard)
@@ -24,18 +21,17 @@ export class ClusterController {
   constructor(@Inject(ClusterService) private readonly clusterService: ClusterService) {}
 
   @Get('')
-  @RequireAdminPermission('ListClusters')
-  list(): Promise<ClusterList> {
-    return this.clusterService.listClusters()
+  async list(@AuthUser() user: UserContext): Promise<CleanedCluster[]> {
+    return toClusters(await this.clusterService.listClustersForUser(user))
   }
 
   @Get(':clusterId')
   @RequireAdminPermission('ListClusters')
-  getDetails(@Param('clusterId') clusterId: string): Promise<ClusterDetails> {
-    return this.clusterService.getClusterDetails(clusterId)
+  async getDetails(@Param('clusterId') clusterId: string): Promise<ClusterDetails> {
+    return toClusterDetails(await this.clusterService.getClusterDetailsRecord(clusterId))
   }
 
-  @Get(':clusterId/usage')
+  @Get('usage/:clusterId')
   @RequireAdminPermission('ListClusters')
   getUsage(@Param('clusterId') clusterId: string): Promise<ClusterUsage> {
     return this.clusterService.getClusterUsage(clusterId)
@@ -43,47 +39,50 @@ export class ClusterController {
 
   @Get(':clusterId/environments')
   @RequireAdminPermission('ListClusters')
-  getEnvironments(@Param('clusterId') clusterId: string): Promise<unknown[]> {
-    return this.clusterService.getClusterAssociatedEnvironments(clusterId)
+  async getEnvironments(@Param('clusterId') clusterId: string): Promise<ClusterAssociatedEnvironments> {
+    return toClusterAssociatedEnvironments(await this.clusterService.getClusterAssociatedEnvironments(clusterId))
   }
 
   @Post('')
   @RequireAdminPermission('ManageClusters')
   @HttpCode(HttpStatus.CREATED)
-  create(
+  async create(
     @Body(new ZodValidationPipe(CreateClusterBodySchema)) data: CreateClusterBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<ClusterDetails> {
-    return this.clusterService.createCluster(data, user.userId, request.id)
+    const record: ClusterDetailsRecord = await this.clusterService.createCluster(data, user.userId, request.id)
+    return toClusterDetails(record)
   }
 
   @Put(':clusterId')
   @RequireAdminPermission('ManageClusters')
   @HttpCode(HttpStatus.OK)
-  update(
+  async update(
     @Param('clusterId') clusterId: string,
     @Body(new ZodValidationPipe(UpdateClusterBodySchema)) data: UpdateClusterBody,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<ClusterDetails> {
-    return this.clusterService.updateCluster(data, clusterId, user.userId, request.id)
+    const record = await this.clusterService.updateCluster(data, clusterId, user.userId, request.id)
+    return toClusterDetails(record)
   }
 
   @Delete(':clusterId')
   @RequireAdminPermission('ManageClusters')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  delete(
+  async delete(
     @Param('clusterId') clusterId: string,
     @Query(new ZodValidationPipe(DeleteClusterQuerySchema)) { force }: DeleteClusterQuery,
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<string | null> {
-    return this.clusterService.deleteCluster({
+    const forcedCount = await this.clusterService.deleteCluster({
       clusterId,
       userId: user.userId,
       requestId: request.id,
       force,
     })
+    if (!forcedCount) return null
+    return `${forcedCount} environnements supprimés de force, n'oubliez pas de reprovisionner les projets concernés`
   }
 }

@@ -1,3 +1,4 @@
+import type { CleanedCluster, ClusterDetails, CreateClusterBody } from '@cpn-console/shared'
 import type { Cluster, Kubeconfig, Stage } from '@prisma/client'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { faker } from '@faker-js/faker'
@@ -76,7 +77,7 @@ export function makeKubeconfig(overrides: Partial<Kubeconfig> = {}): Kubeconfig 
   return {
     id: faker.string.uuid(),
     user: {
-      username: faker.internet.userName(),
+      username: faker.internet.username(),
       token: faker.string.alphanumeric(20),
     },
     cluster: {
@@ -87,4 +88,50 @@ export function makeKubeconfig(overrides: Partial<Kubeconfig> = {}): Kubeconfig 
     updatedAt: faker.date.past(),
     ...overrides,
   } satisfies Kubeconfig
+}
+
+export function makeContractCluster(overrides: Partial<CleanedCluster> = {}): CleanedCluster {
+  return {
+    id: faker.string.uuid(),
+    label: faker.helpers.slugify(faker.word.sample(5)).toLowerCase(),
+    infos: faker.lorem.sentence(),
+    clusterResources: faker.datatype.boolean(),
+    privacy: faker.helpers.arrayElement(['public', 'dedicated'] as const),
+    zoneId: faker.string.uuid(),
+    stageIds: [faker.string.uuid()],
+    cpu: faker.number.int({ min: 0, max: 64 }),
+    gpu: faker.number.int({ min: 0, max: 8 }),
+    memory: faker.number.int({ min: 0, max: 512 }),
+    ...overrides,
+  } satisfies CleanedCluster
+}
+
+export function makeContractClusterDetails(overrides: Partial<ClusterDetails> = {}): ClusterDetails {
+  return {
+    ...makeContractCluster(),
+    projectIds: [faker.string.uuid()],
+    kubeconfig: {
+      user: { username: faker.internet.username() },
+      cluster: { tlsServerName: faker.internet.domainName() },
+    },
+    ...overrides,
+  } satisfies ClusterDetails
+}
+
+export function makeCreateClusterBody(overrides: Partial<CreateClusterBody> = {}): CreateClusterBody {
+  const cluster = makeContractCluster()
+  return {
+    label: cluster.label,
+    infos: cluster.infos,
+    clusterResources: cluster.clusterResources,
+    privacy: cluster.privacy,
+    zoneId: cluster.zoneId,
+    stageIds: cluster.stageIds,
+    cpu: cluster.cpu,
+    gpu: cluster.gpu,
+    memory: cluster.memory,
+    projectIds: [faker.string.uuid()],
+    kubeconfig: { cluster: { tlsServerName: 'example.com' }, user: {} },
+    ...overrides,
+  } satisfies CreateClusterBody
 }

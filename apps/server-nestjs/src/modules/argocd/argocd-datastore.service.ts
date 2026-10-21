@@ -112,6 +112,27 @@ export type ProjectWithDetails = Prisma.ProjectGetPayload<{
   select: typeof projectSelect
 }>
 
+export const clusterSelect = {
+  label: true,
+  clusterResources: true,
+  kubeconfig: {
+    select: {
+      cluster: true,
+      user: true,
+    },
+  },
+  zone: {
+    select: {
+      id: true,
+      slug: true,
+    },
+  },
+} satisfies Prisma.ClusterSelect
+
+export type ClusterWithZone = Prisma.ClusterGetPayload<{
+  select: typeof clusterSelect
+}>
+
 @Injectable()
 export class ArgoCDDatastoreService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -127,5 +148,28 @@ export class ArgoCDDatastoreService {
       select: { slug: true },
     })
     return zones.map(zone => zone.slug)
+  }
+
+  async getCluster(clusterId: string): Promise<ClusterWithZone | null> {
+    return this.prisma.cluster.findUnique({
+      where: { id: clusterId },
+      select: clusterSelect,
+    })
+  }
+
+  async getZoneClusterNames(zoneId: string): Promise<string[]> {
+    const zones = await this.prisma.zone.findUnique({
+      where: { id: zoneId },
+      select: { clusters: { select: { label: true } } },
+    })
+    return zones?.clusters.map(({ label }) => label) ?? []
+  }
+
+  async getZoneSlug(zoneId: string): Promise<string | null> {
+    const zone = await this.prisma.zone.findUnique({
+      where: { id: zoneId },
+      select: { slug: true },
+    })
+    return zone?.slug ?? null
   }
 }
