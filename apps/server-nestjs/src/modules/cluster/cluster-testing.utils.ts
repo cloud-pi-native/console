@@ -1,4 +1,4 @@
-import type { CleanedCluster, ClusterDetails, CreateClusterBody } from '@cpn-console/shared'
+import type { CleanedCluster, CreateClusterBody } from '@cpn-console/shared'
 import type { Cluster, Kubeconfig, Stage } from '@prisma/client'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
 import { faker } from '@faker-js/faker'
@@ -104,18 +104,6 @@ export function makeContractCluster(overrides: Partial<CleanedCluster> = {}): Cl
     memory: faker.number.int({ min: 0, max: 512 }),
     ...overrides,
   } satisfies CleanedCluster
-}
-
-export function makeContractClusterDetails(overrides: Partial<ClusterDetails> = {}): ClusterDetails {
-  return {
-    ...makeContractCluster(),
-    projectIds: [faker.string.uuid()],
-    kubeconfig: {
-      user: { username: faker.internet.username() },
-      cluster: { tlsServerName: faker.internet.domainName() },
-    },
-    ...overrides,
-  } satisfies ClusterDetails
 }
 
 export function makeCreateClusterBody(overrides: Partial<CreateClusterBody> = {}): CreateClusterBody {
