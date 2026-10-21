@@ -5,11 +5,9 @@ import type { EnvironmentWithCluster, EnvironmentWithDeploymentsCount } from './
 import {
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
-import { getFailedPlugins } from '../plugin/plugin.utils'
 import { EnvironmentDatastoreService } from './environment-datastore.service'
 import { EnvironmentValidationService } from './environment-validation.service'
 
@@ -43,7 +41,7 @@ export class EnvironmentService {
       autosync: environmentToCreate.autosync,
     })
 
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Create Environment',
       userId,
@@ -64,7 +62,7 @@ export class EnvironmentService {
       autosync: environmentToUpdate.autosync,
     })
 
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Update Environment',
       userId,
@@ -77,7 +75,7 @@ export class EnvironmentService {
   async deleteEnvironment(projectId: string, environmentId: string, userId: string, requestId: string): Promise<void> {
     await this.getProjectEnvironmentOrThrow(projectId, environmentId)
     await this.environmentDatastoreService.deleteEnvironment(environmentId)
-    await this.reconcileProjectAndThrowOnFailure(
+    await this.reconcileProject(
       projectId,
       'Delete Environment',
       userId,
@@ -101,17 +99,13 @@ export class EnvironmentService {
    * with a success on a project that AppEventsService just marked `failed`. The row
    * change stays committed — the reconciliation is replayable.
    */
-  private async reconcileProjectAndThrowOnFailure(
+  private async reconcileProject(
     projectId: string,
     action: EventLogAction,
     userId: string,
     requestId: string,
     failureMessage: string,
   ): Promise<void> {
-    const results = await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
-
-    if (getFailedPlugins(results).length) {
-      throw new InternalServerErrorException(failureMessage)
-    }
+    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId }, failureMessage)
   }
 }
