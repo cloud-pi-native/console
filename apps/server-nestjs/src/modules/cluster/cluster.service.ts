@@ -6,27 +6,22 @@ import type {
 import type { ClusterEventName, ClusterEventPayload, EventContext } from '../events/app-events.service'
 import type { UserContext } from '../infrastructure/auth/auth-user.decorator'
 import type { ClusterDetailsRecord, ClusterEnvironmentsRecord, ClusterListRecord } from './cluster-queries.utils'
-import { AdminAuthorized, ClusterPrivacySchema } from '@cpn-console/shared'
+import { AdminAuthorized } from '@cpn-console/shared'
 import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
 import {
-  createCluster,
+  createClusterWithLinks,
   deleteCluster,
   generateClusterWhere,
   getClusterById,
   getClusterByLabel,
   getClusterDetails,
   getClusterUsage,
-  linkClusterToProjects,
-  linkClusterToStages,
-  linkZoneToClusters,
   listClusterEnvironments,
   listClusters,
-  syncClusterProjectLinks,
-  syncClusterStageLinks,
-  updateCluster,
+  updateClusterWithLinks,
 } from './cluster-queries.utils'
 
 @Injectable()
@@ -65,23 +60,9 @@ export class ClusterService {
     const isLabelTaken = await getClusterByLabel(this.prisma, data.label)
     if (isLabelTaken) throw new ConflictException('Ce label existe déjà pour un autre cluster')
 
-    const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
+    const clusterCreated = await this.prisma.$transaction(tx => createClusterWithLinks(tx, data))
 
-    const clusterCreated = await this.prisma.$transaction(async (tx) => {
-      const clusterCreated = await createCluster(tx, clusterData, kubeconfig, zoneId)
-
-      if (data.privacy !== ClusterPrivacySchema.enum.public && projectIds?.length) {
-        await linkClusterToProjects(tx, clusterCreated.id, projectIds)
-      }
-
-      if (stageIds?.length) {
-        await linkClusterToStages(tx, clusterCreated.id, stageIds)
-      }
-
-      return clusterCreated
-    })
-
-    await this.emitClusterEventAndThrowOnFailure('cluster.upsert', { clusterId: clusterCreated.id, zoneId }, {
+    await this.emitClusterEventAndThrowOnFailure('cluster.upsert', { clusterId: clusterCreated.id, zoneId: data.zoneId }, {
       action: 'Create Cluster',
       userId,
       requestId,
@@ -99,19 +80,7 @@ export class ClusterService {
     const dbCluster = await getClusterById(this.prisma, clusterId)
     if (!dbCluster) throw new NotFoundException('Cluster not found')
 
-    const { projectIds, stageIds, kubeconfig, zoneId, ...clusterData } = data
-    const publicProjectIds = data.privacy === ClusterPrivacySchema.enum.public ? undefined : projectIds
-
-    await this.prisma.$transaction(async (tx) => {
-      const clusterUpdated = await updateCluster(tx, clusterId, clusterData, kubeconfig)
-
-      if (zoneId) {
-        await linkZoneToClusters(tx, zoneId, [clusterId])
-      }
-
-      await syncClusterProjectLinks(tx, clusterUpdated, clusterId, publicProjectIds)
-      await syncClusterStageLinks(tx, clusterUpdated, clusterId, stageIds)
-    })
+    await this.prisma.$transaction(tx => updateClusterWithLinks(tx, clusterId, data))
 
     await this.emitClusterEventAndThrowOnFailure('cluster.upsert', { clusterId, zoneId: dbCluster.zoneId }, {
       action: 'Update Cluster',
@@ -135,10 +104,9 @@ export class ClusterService {
   }): Promise<number> {
     const environment = await this.prisma.environment.findFirst({ where: { clusterId } })
     if (!force && environment) throw new BadRequestException('Impossible de supprimer le cluster, des environnements en activité y sont déployés')
-    // Legacy criterion: the external cleanup decides success. The cluster row
-    // and its (forced) environments only disappear once every plugin reported
-    // OK — a KO leaves everything replayable instead of a 204 with a dangling
-    // cluster.
+    // The external cleanup decides success: the cluster row and its (forced)
+    // environments only disappear once every plugin reported OK — a KO leaves
+    // everything replayable instead of a 204 with a dangling cluster.
     await this.emitClusterEventAndThrowOnFailure('cluster.delete', { clusterId }, {
       action: 'Delete Cluster',
       userId,

@@ -1,6 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import type { ClusterWithZone } from './argocd-datastore.service'
 import { generateNamespaceName } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
@@ -10,12 +9,12 @@ import { parse, stringify } from 'yaml'
 import { argocdConfigFactory } from '../../config/argocd.config'
 import { baseConfigFactory } from '../../config/base.config'
 import { vaultConfigFactory } from '../../config/vault.config'
-import { makeKubeconfig } from '../cluster/cluster-testing.utils'
 import { GitlabClientService } from '../gitlab/gitlab-client.service'
 import { makeCommitAction, makeProjectSchema, makeRepositoryTreeSchema } from '../gitlab/gitlab-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
+  makeClusterWithZone,
   makeProjectDeployment,
   makeProjectDeploymentSource,
   makeProjectEnvironment,
@@ -26,16 +25,6 @@ import {
 } from './argocd-testing.utils'
 import { ArgoCDService } from './argocd.service'
 import { generateClusterSecretData } from './argocd.utils'
-
-function makeClusterWithZone(overrides: Partial<ClusterWithZone> = {}): ClusterWithZone {
-  return {
-    label: 'review-cluster',
-    clusterResources: true,
-    kubeconfig: makeKubeconfig(),
-    zone: { id: faker.string.uuid(), slug: 'zone-review' },
-    ...overrides,
-  }
-}
 
 describe('argoCDService', () => {
   let service: ArgoCDService
