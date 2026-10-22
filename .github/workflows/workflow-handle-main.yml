@@ -14,7 +14,7 @@ env:
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true
   USE_QEMU: false
-  NODE_VERSION: 26.7.0
+  NODE_VERSION: 26.12.1
 
 jobs:
   expose-vars:
