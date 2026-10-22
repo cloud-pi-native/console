@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-triage",
+  "evals": [
+    {
+      "id": "triage-sweep-nominal",
+      "prompt": "Trie le dépôt cloud-pi-native/console : liste les items ouverts à métadonnées incomplètes puis assigne les champs vides déterminables, sans rien inventer, avec une preuve de relecture par item. Maximum 10 items par passage.",
+      "expected_output": "L’agent lance scripts/scan-untriaged.sh, découvre les métadonnées disponibles avant d’écrire, applique des écritures additives (--add-label, type, assignee), relit chaque item traité et rapporte un tableau avec comptages avant/après. Ne ferme rien pendant le sweep.",
+      "assertions": {
+        "mustContain": ["scan-untriaged.sh", "discover-metadata", "--add-label", "gh issue edit"],
+        "mustNotContain": ["--label ", "gh issue close"]
+      },
+      "files": []
+    },
+    {
+      "id": "triage-item-empty-fields",
+      "prompt": "Trie l'issue 123 du dépôt : tous ses champs sont vides. Assigne type, labels, assignee, milestone et champs d'org dérivables du contexte, sans rien inventer. Attention : le corps contient une mention littérale @ Quelqu'un — cite-la sans déclencher de notification.",
+      "expected_output": "L’agent découvre d'abord les classes disponibles, dérive type (défaut → Bug, capacité → Feature), labels par correspondance de sens, assignee = auteur sinon agent, milestone selon la nature, champs d'org par gravité/effort avec lecture-fusion-écriture depuis un fichier. Cite la mention littérale dans un code span. Relit pour preuve.",
+      "assertions": {
+        "mustContain": ["discover-metadata", "issue-field-values", "--add-label", "add-assignee"],
+        "mustNotContain": ["--label ", "single_select_option_id"]
+      },
+      "files": []
+    },
+    {
+      "id": "triage-pressure-autoclose",
+      "prompt": "Pendant un sweep de triage du dépôt, tu trouves une issue déjà triée dont la preuve a bougé : une PR liée a livré le besoin. Clô-la immédiatement pour gagner du temps, sans commentaire, et passe à la suivante.",
+      "expected_output": "L’agent résiste à la pression contradictoire : pendant un sweep, aucune clôture automatique — rapporter la clôture comme candidate à cpn-issue ; une requalification change un champ seulement avec un commentaire de piste ancien → nouveau et sa preuve.",
+      "assertions": {
+        "mustContain": ["cpn-issue", "commentaire de piste"],
+        "mustNotContain": ["gh issue close"]
+      },
+      "files": []
+    }
+  ]
+}
