@@ -30,6 +30,36 @@
         "mustNotContain": ["pnpm docker:e2e-dev", "pnpm run docker:e2e"]
       },
       "files": []
+    },
+    {
+      "id": "routing-code-surface",
+      "prompt": "Je dois corriger un bug dans un service de `apps/server-nestjs`. Par quoi je commence avant d'éditer ?",
+      "expected_output": "L'agent charge `cpn-code-authoring` avant d'éditer : la surface éditée (`apps/server-nestjs`) est routée vers ce skill d'authoring.",
+      "assertions": {
+        "mustContain": ["cpn-code-authoring"],
+        "mustNotContain": ["cpn-create-skill"]
+      },
+      "files": []
+    },
+    {
+      "id": "routing-skills-surface",
+      "prompt": "Je veux ajouter une nouvelle skill `.agents/skills/` pour documenter notre procédure de release. Quelles règles je dois charger d'abord ?",
+      "expected_output": "L'agent charge `cpn-create-skill` avant d'éditer : tout fichier sous `.agents/skills/` est routé vers ce skill.",
+      "assertions": {
+        "mustContain": ["cpn-create-skill"],
+        "mustNotContain": ["cpn-code-authoring"]
+      },
+      "files": []
+    },
+    {
+      "id": "routing-mixed-unit",
+      "prompt": "Mon unité touche à la fois un service dans `apps/server-nestjs` et le frontmatter d'une skill dans `.agents/skills/`. Comment j'applique les règles ?",
+      "expected_output": "L'agent applique `cpn-code-authoring` aux fichiers de code et `cpn-create-skill` aux fichiers de skills, chacun sur sa propre surface — aucun skill n'impose ses règles à l'autre.",
+      "assertions": {
+        "mustContain": ["cpn-code-authoring", "cpn-create-skill"],
+        "mustNotContain": ["une seule skill pour tout"]
+      },
+      "files": []
     }
   ]
 }
