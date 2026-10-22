@@ -102,6 +102,13 @@ emit('update:description', desc)
 
 Use `defineModel()` for two-way bindings on primitive form values only.
 
+> **Applied in this refactor** — `Project` used to be a class with eight command
+> groups (`Commands`, `Members`, `Environments`, `Repositories`, `Roles`,
+> `Services`, `Logs`, `Deployments`) stored in Pinia. It is now a plain
+> `ProjectState`; every command is an action on `useProjectStore`, addressed by
+> project id. Components no longer receive a mutable object carrying API
+> methods.
+
 **Why** — `ProjectDashboard.vue` currently writes `project.description`
 directly into the store, so a cancelled edit still changes the rendered project
 and the next `refresh()` silently reverts it. This is a real, reproducible bug,
