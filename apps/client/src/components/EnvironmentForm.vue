@@ -167,18 +167,9 @@ watch(localEnvironment.value, () => {
     >
       <code class="fr-text-default--info text-xs">ns kubernetes: {{ generateNamespaceName(localEnvironment.projectId, localEnvironment.id) }}</code>
     </button>
-    <div
-      title="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
-      class="inline"
-      role="note"
-      tabindex="0"
-      aria-label="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
-    >
-      <v-icon
-        name="ri:question-line"
-        aria-hidden="true"
-      />
-    </div>
+    <DsfrTooltip content="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage">
+      <v-icon name="ri:question-line" aria-hidden="true" />
+    </DsfrTooltip>
 
     <DsfrInputGroup
       v-model="localEnvironment.name"

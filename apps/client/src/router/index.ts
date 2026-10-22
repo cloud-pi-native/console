@@ -316,7 +316,7 @@ export function createAppRouter(base?: string) {
     scrollBehavior: (to) => { if (to.hash && !to.hash.startsWith('#state=')) return ({ el: to.hash }) },
     routes,
   })
-  router.afterEach((to, from) => {
+  router.afterEach(async (to, from) => {
     document.title = to.meta.title ? `${to.meta.title} - ${MAIN_TITLE}` : MAIN_TITLE
     announce(routeAnnouncement(to))
 
@@ -324,9 +324,8 @@ export function createAppRouter(base?: string) {
     // navigations move focus. Hash-only changes keep the target in view.
     const isHashOnlyChange = to.path === from.path && to.hash !== from.hash
     if (!from.name || isHashOnlyChange) return
-    void nextTick(() => {
-      document.getElementById('content')?.focus({ preventScroll: true })
-    })
+    await nextTick()
+    document.getElementById('content')?.focus({ preventScroll: true })
   })
   router.beforeEach(async (to, _from, next) => {
     const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger-server', 'Swagger-server-nestjs'])

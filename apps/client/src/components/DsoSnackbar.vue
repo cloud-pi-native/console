@@ -26,7 +26,8 @@ watch(routePath, () => {
     content inserted into an existing region, not a region that appears with
     its content.
   -->
-  <div
+  <output
+    class="block"
     :role="type === 'error' ? 'alert' : 'status'"
     :aria-live="type === 'error' ? 'assertive' : 'polite'"
     aria-atomic="true"
@@ -47,7 +48,7 @@ watch(routePath, () => {
         {{ message }}
       </span>
     </DsfrAlert>
-  </div>
+  </output>
 </template>
 
 <style scoped>

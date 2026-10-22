@@ -77,8 +77,8 @@ onErrorCaptured((error) => {
 })
 
 const serviceStore = useServiceStore()
-onMounted(() => {
-  void serviceStore.startHealthPolling()
+onMounted(async () => {
+  await serviceStore.startHealthPolling()
 })
 onUnmounted(() => {
   serviceStore.stopHealthPolling()
@@ -101,14 +101,13 @@ watch(() => userStore.isLoggedIn, async (loggedIn) => {
   >
     <DsfrSkipLinks :links="skipLinks" />
 
-    <p
-      class="fr-sr-only"
-      role="status"
+    <output
+      class="fr-sr-only block"
       aria-live="polite"
       aria-atomic="true"
     >
       {{ announcement }}
-    </p>
+    </output>
 
     <DsfrHeader
       id="header"

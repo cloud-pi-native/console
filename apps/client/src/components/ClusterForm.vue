@@ -242,25 +242,21 @@ const isConnectionDetailsShown = ref(true)
     >
       {{ isNewCluster ? 'Ajouter un cluster' : `Mettre à jour le cluster ${localCluster.label}` }}
     </h1>
-    <div
-      class="cursor-pointer"
-      role="button"
-      tabindex="0"
+    <button
+      type="button"
+      class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
       :aria-expanded="isConnectionDetailsShown"
       @click="isConnectionDetailsShown = !isConnectionDetailsShown"
-      @keydown.enter.prevent="isConnectionDetailsShown = !isConnectionDetailsShown"
-      @keydown.space.prevent="isConnectionDetailsShown = !isConnectionDetailsShown"
     >
-      <h4
-        class="mb-1 inline-block"
-      >
+      <span class="mb-1 inline-block fr-h4">
         Informations de connexion (kubeconfig)
-      </h4>
+      </span>
       <v-icon
         name="ri:arrow-right-s-line"
         :class="`shrink ml-4 ${isConnectionDetailsShown ? 'rotate-90' : ''}`"
+        aria-hidden="true"
       />
-    </div>
+    </button>
     <template
       v-if="isConnectionDetailsShown"
     >

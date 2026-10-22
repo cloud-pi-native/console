@@ -7,7 +7,7 @@ export type CollectionViewState = 'loading' | 'error' | 'empty' | 'ready'
 
 export function collectionViewState(params: {
   loading: boolean
-  error?: Error | undefined
+  error?: Error
   count: number
 }): CollectionViewState {
   if (params.loading) return 'loading'

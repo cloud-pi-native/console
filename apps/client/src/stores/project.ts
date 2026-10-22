@@ -120,7 +120,7 @@ export const useProjectStore = defineStore('project', () => {
   ): Promise<Project[]> => {
     const response = await apiClient.Projects.listProjects({ query })
     const projectsReceived: ProjectV2[] = extractData(response, 200)
-    await updateStore(projectsReceived)
+    updateStore(projectsReceived)
     return selectFromStore(projectsReceived.map(project => project.slug))
   }
 
@@ -136,7 +136,7 @@ export const useProjectStore = defineStore('project', () => {
       }
     }
 
-    await updateStore(projectsReceived)
+    updateStore(projectsReceived)
     return selectFromStore(projectsReceived.map(project => project.slug))
   }, 200)
 
@@ -488,9 +488,10 @@ export const useProjectStore = defineStore('project', () => {
   }
 
   // Logs --------------------------------------------------------------------
-  const listProjectLogs = async (projectId: ProjectV2['id'], query: GetLogsQuery = { offset: 0, limit: 10 }) => {
+  const listProjectLogs = async (projectId: ProjectV2['id'], query?: GetLogsQuery) => {
     const project = requireProject(projectId)
-    const response = await apiClient.Logs.getLogs({ query: { ...query, projectId: project.id } })
+    const effectiveQuery = query ?? { offset: 0, limit: 10 }
+    const response = await apiClient.Logs.getLogs({ query: { ...effectiveQuery, projectId: project.id } })
     return extractData(response, 200)
   }
 
