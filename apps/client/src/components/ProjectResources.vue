@@ -44,8 +44,8 @@ const branchName = ref<string>(defaultBranchName)
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
 
-const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date']
-const headerRepos = ['Nom', 'Type', 'Source', 'Date']
+const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date', 'Actions']
+const headerRepos = ['Nom', 'Type', 'Source', 'Date', 'Actions']
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
 const syncFormId = 'syncFormId'
@@ -221,19 +221,19 @@ async function copyToClipboard(text: string) {
       >
         <template #header>
           <tr>
-            <td
+            <th
               v-for="header in headerEnvs"
               :key="header"
+              scope="col"
             >
               {{ header }}
-            </td>
+            </th>
           </tr>
         </template>
         <tr
           v-for="env in environments?.sort((e1, e2) => Number(e1.name) - Number(e2.name))"
           :key="env.id"
           :data-testid="`environmentTr-${env.name}`"
-          @click="selectedEnv = env"
         >
           <td>{{ env.name }}</td>
           <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
@@ -256,6 +256,15 @@ async function copyToClipboard(text: string) {
             :title="(new Date(env.createdAt)).toLocaleString()"
           >
             <span>{{ timeAgo.format(new Date(env.createdAt)) }}</span>
+          </td>
+          <td>
+            <DsfrButton
+              label="Configurer"
+              tertiary
+              class="fr-btn--sm"
+              :aria-label="`Configurer l’environnement ${env.name}`"
+              @click="selectedEnv = env"
+            />
           </td>
         </tr>
         <tr
@@ -299,19 +308,19 @@ async function copyToClipboard(text: string) {
     >
       <template #header>
         <tr>
-          <td
+          <th
             v-for="header in headerRepos"
             :key="header"
+            scope="col"
           >
             {{ header }}
-          </td>
+          </th>
         </tr>
       </template>
       <tr
         v-for="repo in repositories?.toSorted((a, b) => a.internalRepoName.localeCompare(b.internalRepoName))"
         :key="repo.id"
         :data-testid="`repoTr-${repo.internalRepoName}`"
-        @click="selectedRepo = repo"
       >
         <td>{{ repo.internalRepoName }}</td>
         <td
@@ -360,6 +369,15 @@ async function copyToClipboard(text: string) {
           :title="(new Date(repo.createdAt)).toLocaleString()"
         >
           {{ timeAgo.format(new Date(repo.createdAt)) }}
+        </td>
+        <td>
+          <DsfrButton
+            label="Configurer"
+            tertiary
+            class="fr-btn--sm"
+            :aria-label="`Configurer le dépôt ${repo.internalRepoName}`"
+            @click="selectedRepo = repo"
+          />
         </td>
       </tr>
       <tr

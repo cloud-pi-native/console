@@ -57,9 +57,9 @@ function closeModal() {
 </script>
 
 <template>
-  <h3>
+  <h1 class="fr-h3">
     Jetons d'API
-  </h3>
+  </h1>
   <div
     class="w-full"
   >
@@ -102,9 +102,12 @@ function closeModal() {
         <td>{{ token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais' }}</td>
         <td>{{ statusWording[token.status] }}</td>
         <td>
-          <div
-            :class="`fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`"
+          <button
+            type="button"
+            :class="`fr-fi-close-line justify-center bg-transparent border-none p-0 ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`"
             title="Supprimer"
+            aria-label="Supprimer le jeton"
+            :disabled="token.status !== 'active'"
             @click="() => { deleteModalOpened = true; deleteTokenId = token.id }"
           />
         </td>

@@ -75,6 +75,7 @@ async function showLogs(index: number) {
         v-if="mode !== 'hide'"
         data-testid="logsDetailsBtn"
         :title="hideLogDetails ? 'Afficher les logs en entier' : 'Masquer les clés non essentielles des logs'"
+        :aria-label="hideLogDetails ? 'Afficher les logs en entier' : 'Masquer les clés non essentielles des logs'"
         secondary
         icon-only
         :icon="hideLogDetails ? 'ri:filter-off-line' : 'ri:filter-line'"
@@ -84,6 +85,7 @@ async function showLogs(index: number) {
         v-if="mode !== 'hide'"
         data-testid="showLogsBtn"
         :title="hideLogs ? 'Afficher les logs' : 'Masquer les logs'"
+        :aria-label="hideLogs ? 'Afficher les logs' : 'Masquer les logs'"
         secondary
         icon-only
         :icon="hideLogs ? 'ri:eye-off-line' : 'ri:eye-line'"
@@ -93,6 +95,7 @@ async function showLogs(index: number) {
         class="shrink h-min"
         data-testid="refreshBtn"
         title="Renouveler l'appel"
+        aria-label="Renouveler l'appel"
         secondary
         icon-only
         :disabled="isUpdating"

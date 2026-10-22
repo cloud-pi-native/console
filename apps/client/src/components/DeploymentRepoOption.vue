@@ -29,7 +29,7 @@ const valueSourceRepoOptions = computed(() => props.options.filter(option => opt
 <template>
   <div class="w-full">
     <div v-if="!($props.cantDelete || $props.disabled)" class="flex w-full justify-end">
-      <DsfrButton icon-only icon="ri:delete-bin-7-line" secondary @click="$emit('delete')" />
+      <DsfrButton icon-only icon="ri:delete-bin-7-line" secondary aria-label="Supprimer ce dépôt" @click="$emit('delete')" />
     </div>
     <DsfrSelect v-model="model.repositoryId" label="Dépôt" :options="$props.options" required :disabled="$props.disabled" :error-message="$props.isDirty && !DeploymentSourceSchema.pick({ repositoryId: true }).safeParse({ repositoryId: model.repositoryId }).success ? 'Le dépôt est requis' : undefined" />
     <DsfrInputGroup

@@ -11,6 +11,7 @@ const adminRoles = computed<string[]>(() => userStore.myAdminRoles.map(({ name }
 </script>
 
 <template>
+  <PageHeading title="Informations personnelles" visually-hidden />
   <div
     v-if="userStore.userProfile"
   >

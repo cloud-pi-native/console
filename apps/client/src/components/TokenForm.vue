@@ -90,12 +90,14 @@ const schema = computed(() => {
       secondary
       data-testid="showNewTokenPassword"
       :icon="showNewTokenPassword ? 'ri:eye-off-line' : 'ri:eye-line'"
+      :aria-label="showNewTokenPassword ? 'Masquer le jeton' : 'Afficher le jeton'"
       @click="showNewTokenPassword = !showNewTokenPassword"
     />
     <DsfrButton
       class="h-min align-bottom"
       label="Copier"
       data-testid="copyNewTokenPassword"
+      aria-label="Copier le jeton"
       icon-only
       secondary
       icon="ri:clipboard-line"

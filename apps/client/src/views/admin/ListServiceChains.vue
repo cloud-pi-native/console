@@ -57,11 +57,13 @@ function clickServiceChain(id: ServiceChain['id']) {
 </script>
 
 <template>
+  <PageHeading title="Liste des chaînes de services" visually-hidden />
   <div class="flex justify-between gap-5 w-max items-end mb-5">
     <div class="flex gap-5 w-max items-end">
       <DsfrInputGroup
         v-model="inputSearchText"
         data-testid="projectsSearchInput"
+        aria-label="Rechercher une chaîne de services par nom"
         common-name-visible
         placeholder="Recherche textuelle (Common Name)"
         common-name="Recherche"
@@ -77,12 +79,24 @@ function clickServiceChain(id: ServiceChain['id']) {
   >
     <template #header>
       <tr>
-        <td>CN (Common Name)</td>
-        <td>PAI</td>
-        <td>Réseau</td>
-        <td>État</td>
-        <td>Créé le</td>
-        <td>Mis à jour le</td>
+        <th scope="col">
+          CN (Common Name)
+        </th>
+        <th scope="col">
+          PAI
+        </th>
+        <th scope="col">
+          Réseau
+        </th>
+        <th scope="col">
+          État
+        </th>
+        <th scope="col">
+          Créé le
+        </th>
+        <th scope="col">
+          Mis à jour le
+        </th>
       </tr>
     </template>
     <tr v-if="isLoading || !serviceChainsFiltered.length">

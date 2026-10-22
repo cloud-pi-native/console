@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import type { ProjectV2 } from '@cpn-console/shared'
 import { ProjectAuthorized } from '@cpn-console/shared'
-import { onBeforeMount, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import OperationPanel from '@/components/OperationPanel.vue'
 import ProjectClustersInfos from '@/components/ProjectClustersInfos.vue'
 import ProjectSettings from '@/components/ProjectSettings.vue'
-import router from '@/router/index.js'
+import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useStageStore } from '@/stores/stage.js'
@@ -30,11 +30,38 @@ const zoneStore = useZoneStore()
 const clusterStore = useClusterStore()
 const userStore = useUserStore()
 const stageStore = useStageStore()
+const router = useRouter()
+const currentRoute = useRoute()
 
 const teamId = ref(getRandomId('team'))
 const stagesReady = ref(false)
 
 const project = computed(() => projectStore.projectsBySlug[props.projectSlug])
+
+const canManageProject = computed(() =>
+  props.asProfile === 'admin'
+  || ProjectAuthorized.Manage({ projectPermissions: project.value?.myPerms ?? 0n }),
+)
+const canReplayHooks = computed(() =>
+  props.asProfile === 'admin'
+  || ProjectAuthorized.ReplayHooks({ projectPermissions: project.value?.myPerms ?? 0n }),
+)
+const canSeeSecrets = computed(() =>
+  props.asProfile === 'admin'
+  || ProjectAuthorized.SeeSecrets({ projectPermissions: project.value?.myPerms ?? 0n }),
+)
+const canManageMembers = computed(() =>
+  props.asProfile === 'admin'
+  || ProjectAuthorized.ManageMembers({ projectPermissions: project.value?.myPerms ?? 0n }),
+)
+const canManageRoles = computed(() =>
+  props.asProfile === 'admin'
+  || ProjectAuthorized.ManageRoles({ projectPermissions: project.value?.myPerms ?? 0n }),
+)
+const canTransferOwnership = computed(() =>
+  props.asProfile === 'admin'
+  || project.value?.ownerId === userStore.userProfile?.id,
+)
 
 function unSelectProject() {
   router.push({ name: props.parentRoute })
@@ -45,7 +72,7 @@ async function archive() {
   projectStore.listMyProjects()
 }
 
-onBeforeMount(async () => {
+onMounted(async () => {
   const stagesLoaded = stageStore.getAllStages().then(() => {
     stagesReady.value = true
   })
@@ -128,17 +155,13 @@ const tabTitles: TabTitle[] = [
 function findTab() {
   return Math.max(
     tabTitles.findIndex(
-      tab => `tab-${router.currentRoute.value.query?.tab}` === tab.tabId,
+      tab => `tab-${currentRoute.query?.tab}` === tab.tabId,
     ),
     0,
   )
 }
 
 const activeTab = ref(findTab())
-const saveProjectState = ref({
-  isProcessing: false,
-})
-const currentRoute = useRoute()
 
 async function refreshMembers() {
   await project.value.Members.list()
@@ -168,27 +191,38 @@ watch(activeTab, (tabIndex) => {
   }
 })
 
-async function saveProject() {
-  saveProjectState.value.isProcessing = true
-  await project.value.Commands.update({
-    description: project.value.description,
-    limitless: project.value.limitless,
-    hprodMemory: project.value.hprodMemory,
-    hprodCpu: project.value.hprodCpu,
-    hprodGpu: project.value.hprodGpu,
-    prodMemory: project.value.prodMemory,
-    prodCpu: project.value.prodCpu,
-    prodGpu: project.value.prodGpu,
-  }).finally(() => project.value.Commands.refresh())
-  saveProjectState.value.isProcessing = false
-}
+const {
+  pending: isSaving,
+  run: saveProject,
+} = useAsyncAction(async (description?: string) => {
+  const current = project.value
+  if (!current) return
+  try {
+    await current.Commands.update({
+      description: description ?? current.description,
+      limitless: current.limitless,
+      hprodMemory: current.hprodMemory,
+      hprodCpu: current.hprodCpu,
+      hprodGpu: current.hprodGpu,
+      prodMemory: current.prodMemory,
+      prodCpu: current.prodCpu,
+      prodGpu: current.prodGpu,
+    })
+  } finally {
+    await current.Commands.refresh()
+  }
+})
 </script>
 
 <template>
+  <h1 v-if="!project" class="fr-sr-only">
+    Projet
+  </h1>
   <div class="w-full flex gap-4 justify-end fr-mb-1w">
     <DsfrButton
       v-if="project"
       title="Revenir à la liste des projets"
+      aria-label="Revenir à la liste des projets"
       data-testid="goBackBtn"
       secondary
       icon-only
@@ -199,35 +233,15 @@ async function saveProject() {
   <template v-if="project">
     <div>
       <ProjectBanner
-        :model-value="project.description"
         :project="project"
-        :can-edit-description="
-          asProfile === 'user'
-            && ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
-        "
-        @update:model-value="
-          (desc: string | undefined) => {
-            project.description = desc;
-          }
-        "
+        :can-edit-description="asProfile === 'user' && canManageProject"
         @save-description="saveProject"
       />
       <ProjectAction
         :project="project"
-        :hide-replay="
-          asProfile === 'user'
-            && !ProjectAuthorized.ReplayHooks({
-              projectPermissions: project.myPerms,
-            })
-        "
-        :hide-archive="
-          asProfile === 'user'
-            && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
-        "
-        :hide-secrets="
-          asProfile === 'user'
-            && !ProjectAuthorized.SeeSecrets({ projectPermissions: project.myPerms })
-        "
+        :hide-replay="!canReplayHooks"
+        :hide-archive="!canManageProject"
+        :hide-secrets="!canSeeSecrets"
         :hide-lock="asProfile === 'user'"
         class="px-4"
         @archive="archive"
@@ -260,10 +274,7 @@ async function saveProject() {
             :project="project"
             :permission-target="asProfile"
             :display-global="asProfile !== 'admin'"
-            :disabled="
-              asProfile === 'user'
-                && !ProjectAuthorized.Manage({ projectPermissions: project.myPerms })
-            "
+            :disabled="asProfile === 'user' && !canManageProject"
           />
         </DsfrTabContent>
 
@@ -273,16 +284,8 @@ async function saveProject() {
             :user-profile="userStore.userProfile"
             :project="project"
             :members="project.members"
-            :can-manage="
-              asProfile === 'admin'
-                || ProjectAuthorized.ManageMembers({
-                  projectPermissions: project.myPerms,
-                })
-            "
-            :can-transfer="
-              asProfile === 'admin'
-                || project.ownerId === userStore.userProfile?.id
-            "
+            :can-manage="canManageMembers"
+            :can-transfer="canTransferOwnership"
             @refresh="refreshMembers"
             @leave="leaveProject"
             @transfer="unSelectProject"
@@ -295,12 +298,7 @@ async function saveProject() {
         >
           <div>
             <template
-              v-if="
-                asProfile === 'admin'
-                  || ProjectAuthorized.ManageRoles({
-                    projectPermissions: project.myPerms,
-                  })
-              "
+              v-if="canManageRoles"
             >
               <ProjectRoles :key="project.id" :project="project" />
             </template>
@@ -333,9 +331,9 @@ async function saveProject() {
             data-testid="saveProjectBtn"
             primary
             class="fr-mt-2w"
-            :disabled="saveProjectState.isProcessing"
+            :disabled="isSaving"
             :icon="
-              saveProjectState.isProcessing
+              isSaving
                 ? { name: 'ri:refresh-line', animation: 'spin' }
                 : 'ri:send-plane-line'
             "

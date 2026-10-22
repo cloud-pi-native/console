@@ -4,14 +4,17 @@ import type {
 } from 'vue-router'
 import { logger } from '@cpn-console/logger/browser'
 import { AdminAuthorized, swaggerUiPath } from '@cpn-console/shared'
+import { nextTick } from 'vue'
 import {
   createRouter,
   createWebHistory,
 } from 'vue-router'
+import { announce, routeAnnouncement } from '@/composables/useAnnouncer.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 
 import { useUserStore } from '@/stores/user.js'
+import { consumePostLoginTarget, rememberPostLoginTarget } from '@/utils/auth-redirect.js'
 import { uuid } from '@/utils/regex.js'
 import DsoHome from '@/views/DsoHome.vue'
 import NotFound from '@/views/NotFound.vue'
@@ -52,6 +55,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/login',
     name: 'Login',
+    meta: { title: 'Connexion' },
     beforeEnter: async (_to, _from) => {
       const userStore = useUserStore()
       await userStore.login()
@@ -61,6 +65,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/logout',
     name: 'Logout',
+    meta: { title: 'Déconnexion' },
     beforeEnter: async (_to, _from) => {
       const userStore = useUserStore()
       await userStore.logout()
@@ -70,21 +75,25 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/',
     name: 'Home',
+    meta: { title: 'Accueil' },
     component: DsoHome,
   },
   {
     path: '/profile',
     name: 'Profile',
+    meta: { title: 'Mon profil' },
     component: ProfileWrapper,
     children: [
       {
         path: 'info',
         name: 'UserInfo',
+        meta: { title: 'Informations personnelles' },
         component: UserInfo,
       },
       {
         path: 'tokens',
         name: 'PersonalAccessTokens',
+        meta: { title: 'Jetons personnels' },
         component: PersonalAccessTokens,
       },
     ],
@@ -92,11 +101,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/maintenance',
     name: 'Maintenance',
+    meta: { title: 'Maintenance' },
     component: Maintenance,
   },
   {
     path: '/services-health',
     name: 'ServicesHealth',
+    meta: { title: 'État des services' },
     component: ServicesHealth,
   },
 
@@ -106,11 +117,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       {
         path: '',
         name: 'Projects',
+        meta: { title: 'Mes projets' },
         component: DsoProjects,
       },
       {
         path: ':slug',
         name: 'Project',
+        meta: { title: 'Projet' },
         component: ProjectDashboard,
         async beforeEnter(to, _from, next) {
           if (typeof to.params.slug !== 'string') {
@@ -139,16 +152,19 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/create-project',
     name: 'CreateProject',
+    meta: { title: 'Créer un projet' },
     component: CreateProject,
   },
   {
     name: 'ParentAdmin',
     path: '/admin',
+    meta: { title: 'Administration' },
     component: DsoAdmin,
     children: [
       {
         path: 'users',
         name: 'ListUser',
+        meta: { title: 'Utilisateurs' },
         component: ListUser,
       },
       {
@@ -157,11 +173,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           {
             path: '',
             name: 'ListProjects',
+            meta: { title: 'Projets' },
             component: ListProjects,
           },
           {
             path: ':slug',
             name: 'AdminProject',
+            meta: { title: 'Projet (administration)' },
             component: ProjectDashboard,
             async beforeEnter(to, _from, next) {
               if (typeof to.params.slug !== 'string') {
@@ -186,11 +204,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           {
             path: '',
             name: 'ListServiceChains',
+            meta: { title: 'Chaînes de services' },
             component: ListServiceChains,
           },
           {
             path: ':id',
             name: 'AdminServiceChain',
+            meta: { title: 'Chaîne de services' },
             component: AdminServiceChain,
             props(to) {
               return {
@@ -203,6 +223,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       {
         path: 'logs',
         name: 'ListLogs',
+        meta: { title: 'Journal' },
         component: ListLogs,
       },
       {
@@ -211,11 +232,13 @@ export const routes: Readonly<RouteRecordRaw[]> = [
           {
             path: '',
             name: 'ListClusters',
+            meta: { title: 'Clusters' },
             component: ListClusters,
           },
           {
             path: ':id',
             name: 'AdminCluster',
+            meta: { title: 'Cluster' },
             component: AdminCluster,
             props(to) {
               return {
@@ -228,31 +251,37 @@ export const routes: Readonly<RouteRecordRaw[]> = [
       {
         path: 'stages',
         name: 'ListStages',
+        meta: { title: 'Types d’environnement' },
         component: ListStages,
       },
       {
         path: 'zones',
         name: 'ListZones',
+        meta: { title: 'Zones' },
         component: ListZones,
       },
       {
         path: 'plugins',
         name: 'ListPlugins',
+        meta: { title: 'Plugins' },
         component: ListPlugins,
       },
       {
         path: 'system-settings',
         name: 'SystemSettings',
+        meta: { title: 'Réglages console' },
         component: SystemSettings,
       },
       {
         path: 'roles',
         name: 'AdminRoles',
+        meta: { title: 'Rôles' },
         component: AdminRoles,
       },
       {
         path: 'tokens',
         name: 'AdminTokens',
+        meta: { title: 'Jetons d’API' },
         component: AdminTokens,
       },
     ],
@@ -260,6 +289,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: `${swaggerUiPath}-server`,
     name: 'Swagger-server',
+    meta: { title: 'API (legacy)' },
     // no component, swagger plugin
     components: {},
     strict: false,
@@ -267,6 +297,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: `${swaggerUiPath}-server-nestjs`,
     name: 'Swagger-server-nestjs',
+    meta: { title: 'API' },
     // no component, swagger plugin
     components: {},
     strict: false,
@@ -274,6 +305,7 @@ export const routes: Readonly<RouteRecordRaw[]> = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
+    meta: { title: 'Page introuvable' },
     component: NotFound,
   },
 ]
@@ -284,9 +316,17 @@ export function createAppRouter(base?: string) {
     scrollBehavior: (to) => { if (to.hash && !to.hash.startsWith('#state=')) return ({ el: to.hash }) },
     routes,
   })
-  router.beforeEach((to) => {
-    const specificTitle = to.meta.title ? `${to.meta.title} - ` : ''
-    document.title = `${specificTitle}${MAIN_TITLE}`
+  router.afterEach((to, from) => {
+    document.title = to.meta.title ? `${to.meta.title} - ${MAIN_TITLE}` : MAIN_TITLE
+    announce(routeAnnouncement(to))
+
+    // The initial load keeps the browser's default focus; only client-side
+    // navigations move focus. Hash-only changes keep the target in view.
+    const isHashOnlyChange = to.path === from.path && to.hash !== from.hash
+    if (!from.name || isHashOnlyChange) return
+    void nextTick(() => {
+      document.getElementById('content')?.focus({ preventScroll: true })
+    })
   })
   router.beforeEach(async (to, _from, next) => {
     const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger-server', 'Swagger-server-nestjs'])
@@ -297,10 +337,11 @@ export function createAppRouter(base?: string) {
       !validPath.has(to.name?.toString() ?? '')
       && !userStore.isLoggedIn
     ) {
+      rememberPostLoginTarget(to.fullPath)
       return next('/login')
     }
     if (to.name === 'Login' && userStore.isLoggedIn) {
-      return next('/')
+      return next(consumePostLoginTarget() ?? '/')
     }
     if (
       !validPath.has(to.name?.toString() ?? '')

@@ -19,6 +19,7 @@ function setWindowLocation(to: string) {
 </script>
 
 <template>
+  <PageHeading title="Maintenance" visually-hidden />
   <DsfrCallout
     title="Maintenance"
     content="La console Cloud π Native est actuellement en maintenance. À très vite !"

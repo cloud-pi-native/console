@@ -16,6 +16,7 @@ const redirectButtons = [
 </script>
 
 <template>
+  <PageHeading title="Page introuvable" visually-hidden />
   <DsfrErrorPage
     :buttons="redirectButtons"
   />

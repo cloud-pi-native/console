@@ -128,13 +128,16 @@ async function transferOwnerShip() {
         :key="member.userId"
       >
         <td>
-          <code
-            text="id"
+          <button
+            type="button"
             title="Copier l'id"
             :data-testid="member.userId"
-            class="fr-text-default--info text-xs truncate cursor-pointer"
+            aria-label="Copier l’identifiant du membre"
+            class="bg-transparent border-none p-0 cursor-pointer"
             @click="() => copyContent(member.userId)"
-          >{{ member.userId }}</code>
+          >
+            <code class="fr-text-default--info text-xs truncate">{{ member.userId }}</code>
+          </button>
         </td>
         <td>{{ member.email }}</td>
         <td>{{ project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds) }}</td>
@@ -144,16 +147,20 @@ async function transferOwnerShip() {
           >
             -
           </div>
-          <div
+          <button
             v-else-if="member.userId === userStore.userProfile?.id"
-            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            type="button"
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning bg-transparent border-none p-0"
             title="Quitter le projet"
+            aria-label="Quitter le projet"
             @click="() => removeUserFromProject(member.userId)"
           />
-          <div
+          <button
             v-else
-            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            type="button"
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning bg-transparent border-none p-0"
             :title="`Retirer ${member.email} du projet`"
+            :aria-label="`Retirer ${member.email} du projet`"
             @click="() => removeUserFromProject(member.userId)"
           />
         </td>

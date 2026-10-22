@@ -116,7 +116,12 @@ const groups: Group[] = [
   >
     <div
       class="cursor-pointer"
+      role="button"
+      tabindex="0"
+      :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
+      @keydown.enter.prevent="isWrapped = !isWrapped"
+      @keydown.space.prevent="isWrapped = !isWrapped"
     >
       <h6
         v-if="props.label"
@@ -215,11 +220,15 @@ const groups: Group[] = [
   <div
     v-else
     :id="props.id"
-    @click="isWrapped = false"
   >
     <div
       class="cursor-pointer"
+      role="button"
+      tabindex="0"
+      :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
+      @keydown.enter.prevent="isWrapped = !isWrapped"
+      @keydown.space.prevent="isWrapped = !isWrapped"
     >
       <h6 class="mb-1 inline-block fr-label">
         {{ props.label }}
@@ -242,19 +251,21 @@ const groups: Group[] = [
         @click="isWrapped = false"
       />
     </div>
-    <div
+    <button
       v-if="options.selected.value.length === 0"
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
         class="cursor-pointer"
         :label="`Aucune sélection, ${props.options.length} choix disponibles`"
       />
-    </div>
-    <div
+    </button>
+    <button
       v-if="options.selected.value.length > 3"
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
@@ -262,16 +273,17 @@ const groups: Group[] = [
         :label="`et ${options.selected.value.length - 3} de +`"
         :title="`${options.selected.value.slice(3, 10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length > 10 ? '\n...' : ''}`"
       />
-    </div>
-    <div
+    </button>
+    <button
       v-else
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
         class="cursor-pointer"
         label="Modifier"
       />
-    </div>
+    </button>
   </div>
 </template>

@@ -21,6 +21,8 @@ export const alertTypeMapper: Record<MonitorStatus, DsfrAlertType | undefined> =
   [MonitorStatus.UNKNOW]: undefined,
 }
 
+export const HEALTH_POLL_INTERVAL_MS = 5 * 60 * 1000
+
 const serviceHealthOptions = {
   fetching: {
     message: 'Vérification de l\'état des services...',
@@ -55,13 +57,13 @@ const serviceHealthOptions = {
 } as const satisfies Record<string, ServiceHealthOption>
 
 export const useServiceStore = defineStore('serviceMonitor', () => {
-  const callStastus = ref<'ok' | 'fetching' | 'error'>('fetching')
+  const callStatus = ref<'ok' | 'fetching' | 'error'>('fetching')
 
   const displayCause = ref(false)
   const services = ref<ServiceBody>([])
 
   const serviceHealthIndex = computed<keyof typeof serviceHealthOptions>(() => {
-    if (callStastus.value === 'fetching') {
+    if (callStatus.value === 'fetching') {
       return 'fetching'
     }
     if (services.value.some(({ status }) => status === 'Dégradé')) {
@@ -77,20 +79,24 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
   })
 
   const servicesHealth = computed<ServicesHealth>(() => serviceHealthOptions[serviceHealthIndex.value])
-  let interval: NodeJS.Timeout
+  let interval: ReturnType<typeof setInterval> | undefined
 
-  const clear = () => interval && clearInterval(interval)
+  const clear = () => {
+    if (!interval) return
+    clearInterval(interval)
+    interval = undefined
+  }
 
   const checkServicesHealth = async () => {
-    callStastus.value = 'fetching'
+    callStatus.value = 'fetching'
     try {
       services.value = await (displayCause.value
         ? apiClient.Services.getCompleteServiceHealth()
         : apiClient.Services.getServiceHealth())
         .then((res: any) => extractData(res, 200))
-      callStastus.value = 'ok'
+      callStatus.value = 'ok'
     } catch {
-      callStastus.value = 'error'
+      callStatus.value = 'error'
     }
   }
 
@@ -101,11 +107,15 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
   }
 
   const startHealthPolling = async () => {
-    if (!interval) return
-
     clear()
     await checkServicesHealth()
-    interval = setInterval(checkServicesHealth, 300_000_000)
+    interval = setInterval(() => {
+      void checkServicesHealth()
+    }, HEALTH_POLL_INTERVAL_MS)
+  }
+
+  const stopHealthPolling = () => {
+    clear()
   }
 
   async function toggleDisplayCause() {
@@ -121,5 +131,6 @@ export const useServiceStore = defineStore('serviceMonitor', () => {
     refreshServicesHealth,
     toggleDisplayCause,
     startHealthPolling,
+    stopHealthPolling,
   }
 })

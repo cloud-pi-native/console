@@ -66,6 +66,7 @@ const pathHint = computed(() => model.value.type === 'external'
           tertiary
           no-outline
           title="Monter"
+          aria-label="Monter"
           :disabled="!props.canMoveUp"
           @click="$emit('moveUp')"
         />
@@ -76,6 +77,7 @@ const pathHint = computed(() => model.value.type === 'external'
           tertiary
           no-outline
           title="Descendre"
+          aria-label="Descendre"
           :disabled="!props.canMoveDown"
           @click="$emit('moveDown')"
         />
@@ -85,6 +87,7 @@ const pathHint = computed(() => model.value.type === 'external'
           size="sm"
           secondary
           title="Supprimer"
+          aria-label="Supprimer"
           :disabled="!props.canDelete"
           @click="$emit('delete')"
         />

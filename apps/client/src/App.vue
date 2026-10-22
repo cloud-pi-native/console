@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { logger } from '@cpn-console/logger/browser'
 import { swaggerUiPath } from '@cpn-console/shared'
+import { useAnnouncer } from '@/composables/useAnnouncer.js'
 import { useServiceStore } from '@/stores/services-monitor.js'
 import ReloadPrompt from './components/ReloadPrompt.vue'
 import { useAdminRoleStore } from './stores/admin-role.js'
@@ -17,6 +18,7 @@ const systemStore = useSystemSettingsStore()
 const projectStore = useProjectStore()
 const userStore = useUserStore()
 const adminRoleStore = useAdminRoleStore()
+const { announcement } = useAnnouncer()
 
 const isLoggedIn = ref<boolean | undefined>(keycloak.authenticated)
 
@@ -69,18 +71,20 @@ onErrorCaptured((error) => {
 })
 
 const serviceStore = useServiceStore()
-onBeforeMount(async () => {
-  serviceStore.startHealthPolling()
-  serviceStore.checkServicesHealth()
+onMounted(() => {
+  void serviceStore.startHealthPolling()
 })
-watch(userStore, async () => {
-  if (userStore.isLoggedIn) {
-    if (!adminRoleStore.roles.length) {
-      await adminRoleStore.listRoles()
-    }
-    if (!projectStore.projects.length) {
-      await projectStore.listMyProjects()
-    }
+onUnmounted(() => {
+  serviceStore.stopHealthPolling()
+})
+
+watch(() => userStore.isLoggedIn, async (loggedIn) => {
+  if (!loggedIn) return
+  if (!adminRoleStore.roles.length) {
+    await adminRoleStore.listRoles()
+  }
+  if (!projectStore.projects.length) {
+    await projectStore.listMyProjects()
   }
 })
 </script>
@@ -89,7 +93,23 @@ watch(userStore, async () => {
   <div
     class="min-h-screen min-w-screen flex flex-col"
   >
+    <div class="fr-skip-links">
+      <a class="fr-link" href="#content">Accéder au contenu</a>
+      <a class="fr-link" href="#mainMenu">Accéder au menu</a>
+      <a class="fr-link" href="#footer">Accéder au pied de page</a>
+    </div>
+
+    <p
+      class="fr-sr-only"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {{ announcement }}
+    </p>
+
     <DsfrHeader
+      id="header"
       service-title="Console Cloud π Native"
       :logo-text="['Ministère', 'de l’intérieur', 'et des outre-mer']"
       :quick-links="quickLinks"
@@ -101,14 +121,19 @@ watch(userStore, async () => {
     />
     <div class="flex flex-row <md:flex-col grow">
       <SideMenu class="md:w-max min-w-80" />
-      <div class="grow fr-py-4w fr-pr-4w">
+      <main
+        id="content"
+        tabindex="-1"
+        class="grow fr-py-4w fr-pr-4w"
+      >
         <router-view />
-      </div>
+      </main>
       <DsoSnackbar class="w-full fixed flex justify-center" />
       <SelectProject class="block <dsfrmenu:hidden" />
     </div>
 
     <DsfrFooter
+      id="footer"
       class="dso-footer"
       a11y-compliance="partiellement conforme"
       :mandatory-links="[]"
