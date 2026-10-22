@@ -189,4 +189,19 @@ describe('vaultService', () => {
       },
     })
   })
+
+  it('should destroy the mirror secrets of repositories removed from the project on upsert', async () => {
+    const project = makeProjectWithDetails({
+      repositories: [
+        { id: 'r2', internalRepoName: 'repo-2' },
+      ],
+    })
+    client.listKvMetadata.mockResolvedValue(['repo-1-mirror', 'repo-2-mirror', 'SONAR'])
+
+    await service.handleUpsert(project)
+
+    expect(client.listKvMetadata).toHaveBeenCalledWith('forge-dso', `forge/${project.slug}`)
+    expect(client.deleteGitlabMirrorCreds).toHaveBeenCalledTimes(1)
+    expect(client.deleteGitlabMirrorCreds).toHaveBeenCalledWith(project.slug, 'repo-1')
+  })
 })
