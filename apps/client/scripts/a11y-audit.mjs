@@ -256,6 +256,7 @@ if (writeReport) {
     findings,
   }
   writeFileSync(join(reportDir, 'a11y-report.json'), `${JSON.stringify(payload, null, 2)}\n`)
+  const escapedPipe = String.raw`\|`
   const lines = [
     '# Rapport d’audit accessibilité statique',
     '',
@@ -275,7 +276,7 @@ if (writeReport) {
     '| Fichier | Ligne | Règle | Extrait |',
     '| --- | --- | --- | --- |',
     ...findings.map(finding =>
-      `| \`${finding.file}\` | ${finding.line} | \`${finding.rule}\` | \`${finding.snippet.replaceAll('|', '\\|')}\` |`,
+      `| \`${finding.file}\` | ${finding.line} | \`${finding.rule}\` | \`${finding.snippet.replaceAll('|', escapedPipe)}\` |`,
     ),
     '',
   ]

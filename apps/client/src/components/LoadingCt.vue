@@ -13,9 +13,8 @@ withDefaults(defineProps<{
     class="absolute  top-0  bottom-0  left-0  right-0  bg-dark  opacity-80 blur"
     aria-hidden="true"
   />
-  <div
+  <output
     class="z-1 absolute  top-0  bottom-0  left-0  right-0  flex  justify-center  items-center gap-2 backdrop-blur-2"
-    role="status"
     aria-live="polite"
     aria-busy="true"
   >
@@ -29,5 +28,5 @@ withDefaults(defineProps<{
     <span>
       {{ description }}
     </span>
-  </div>
+  </output>
 </template>

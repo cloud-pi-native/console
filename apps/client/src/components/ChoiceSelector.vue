@@ -114,27 +114,25 @@ const groups: Group[] = [
     class="fr-select-group"
     :disabled="props.disabled"
   >
-    <div
-      class="cursor-pointer"
-      role="button"
-      tabindex="0"
+    <button
+      type="button"
+      class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
       :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
-      @keydown.enter.prevent="isWrapped = !isWrapped"
-      @keydown.space.prevent="isWrapped = !isWrapped"
     >
-      <h6
+      <span
         v-if="props.label"
         :data-testid="`choice-selector-title-${props.id}`"
         class="mb-1 inline-block fr-label"
       >
         {{ props.label }}
-      </h6>
+      </span>
       <v-icon
         name="ri:arrow-right-s-line"
         class="shrink ml-4 rotate-90"
+        aria-hidden="true"
       />
-    </div>
+    </button>
     <p
       v-if="props.description"
       :data-testid="`choice-selector-description-${props.id}`"
@@ -221,23 +219,21 @@ const groups: Group[] = [
     v-else
     :id="props.id"
   >
-    <div
-      class="cursor-pointer"
-      role="button"
-      tabindex="0"
+    <button
+      type="button"
+      class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
       :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
-      @keydown.enter.prevent="isWrapped = !isWrapped"
-      @keydown.space.prevent="isWrapped = !isWrapped"
     >
-      <h6 class="mb-1 inline-block fr-label">
+      <span class="mb-1 inline-block fr-label">
         {{ props.label }}
-      </h6>
+      </span>
       <v-icon
         class="ml-4"
         name="ri:arrow-right-s-line"
+        aria-hidden="true"
       />
-    </div>
+    </button>
     <div
       v-for="option in options.selected.value.slice(0, 3)"
       :key="option[props.valueKey]"

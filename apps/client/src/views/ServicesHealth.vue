@@ -42,22 +42,30 @@ const lastUpdateLabel = computed(() => {
   return `Dernière vérification : ${latest}`
 })
 
+const STATUS_BUCKETS = [
+  { status: 'En échec', label: 'en échec', plural: false },
+  { status: 'Dégradé', label: 'dégradé', plural: true },
+  { status: 'OK', label: 'opérationnel', plural: true },
+  { status: 'Inconnu', label: 'inconnu', plural: true },
+] as const
+
+function formatStatusCount(count: number, label: string, plural: boolean): string {
+  if (!count) return ''
+  return `${count} ${label}${plural && count > 1 ? 's' : ''}`
+}
+
 const healthSummary = computed(() => {
-  if (!serviceStore.services.length) return 'Aucun service à afficher'
-  const counts = { error: 0, warning: 0, ok: 0, unknown: 0 }
-  for (const service of serviceStore.services) {
-    if (service.status === 'En échec') counts.error += 1
-    else if (service.status === 'Dégradé') counts.warning += 1
-    else if (service.status === 'OK') counts.ok += 1
-    else counts.unknown += 1
-  }
-  const details = [
-    counts.error ? `${counts.error} en échec` : '',
-    counts.warning ? `${counts.warning} dégradé${counts.warning > 1 ? 's' : ''}` : '',
-    counts.ok ? `${counts.ok} opérationnel${counts.ok > 1 ? 's' : ''}` : '',
-    counts.unknown ? `${counts.unknown} inconnu${counts.unknown > 1 ? 's' : ''}` : '',
-  ].filter(Boolean)
   const total = serviceStore.services.length
+  if (!total) return 'Aucun service à afficher'
+
+  const details = STATUS_BUCKETS
+    .map(bucket => formatStatusCount(
+      serviceStore.services.filter(service => service.status === bucket.status).length,
+      bucket.label,
+      bucket.plural,
+    ))
+    .filter(Boolean)
+
   return `${total} service${total > 1 ? 's' : ''} : ${details.join(', ')}`
 })
 

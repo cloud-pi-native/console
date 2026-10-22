@@ -149,18 +149,9 @@ function saveDescription() {
         >
           <code class="fr-text-default--info text-sm">slug:&nbsp;{{ project.slug }}</code>
         </button>
-        <div
-          title="Slug du projet, nom technique garantissant l'unicité"
-          class="ml-2 inline"
-          role="note"
-          tabindex="0"
-          aria-label="Slug du projet, nom technique garantissant l'unicité"
-        >
-          <v-icon
-            name="ri:question-line"
-            aria-hidden="true"
-          />
-        </div>
+        <DsfrTooltip content="Slug du projet, nom technique garantissant l'unicité">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
       <div class="flex flex-row">
         <button
@@ -173,18 +164,9 @@ function saveDescription() {
         >
           <code class="fr-text-default--info text-sm">Id:&nbsp;...{{ project.id.slice(-5) }}</code>
         </button>
-        <div
-          title="Id du projet, uuid"
-          class="ml-2 inline"
-          role="note"
-          tabindex="0"
-          aria-label="Id du projet, uuid"
-        >
-          <v-icon
-            name="ri:question-line"
-            aria-hidden="true"
-          />
-        </div>
+        <DsfrTooltip content="Id du projet, uuid">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
       <div
         v-if="project.lastSuccessProvisionningVersion"
@@ -198,18 +180,9 @@ function saveDescription() {
         >
           <code class="fr-text-default--info text-sm">Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}</code>
         </button>
-        <div
-          title="Version de la console lors du dernier provisionnement réussi du projet"
-          class="ml-2 inline"
-          role="note"
-          tabindex="0"
-          aria-label="Version de la console lors du dernier provisionnement réussi du projet"
-        >
-          <v-icon
-            name="ri:question-line"
-            aria-hidden="true"
-          />
-        </div>
+        <DsfrTooltip content="Version de la console lors du dernier provisionnement réussi du projet">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
     </div>
   </div>
