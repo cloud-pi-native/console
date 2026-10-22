@@ -18,7 +18,7 @@ function initialDarkScheme(): boolean {
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
   if (stored === 'dark') return true
   if (stored === 'light') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  return globalThis.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
 const isDarkScheme = ref<boolean>(initialDarkScheme())
