@@ -8,6 +8,8 @@ Dans un workspace local, créer `iteration-<n>/<scenario>/eval-metadata.json` av
 
 ## Comparer
 
+Installer le skill candidat pour l’exécution évaluée : le recopier dans le contexte ne remplace pas l’installation — sans ses fichiers (`scripts/`, `references/`), l’agent improvise et produit des sorties que le skill installé écarterait. L’exécution sans le skill reste au sec : aucun fichier du candidat accessible, sinon la comparaison ne mesure rien.
+
 Pour chaque scénario, exécuter le même prompt dans des contextes isolés, avec le même modèle et les mêmes outils lorsque c’est possible :
 
 - nouveau skill : une exécution sans le skill ;
