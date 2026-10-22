@@ -45,6 +45,12 @@ gh api repos/cloud-pi-native/console/issues/N \
 bash .agents/skills/cpn-triage/scripts/scan-untriaged.sh cloud-pi-native/console
 ```
 
+Les scripts vivent dans ce skill : s'ils sont absents du dépôt courant, le
+passage est bloqué — le signaler, jamais improviser une énumération
+équivalente (compter à la main les items ouverts produit des baselines
+fausses, sweep tronqué ou vide).
+
+
 - **CAP** : 10 items par passage au maximum ; au-delà, traiter le CAP et
   rapporter le reste. Un sweep ne grandit jamais avec le backlog.
 
