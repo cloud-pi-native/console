@@ -207,18 +207,24 @@ Mapping of deferred findings to the project:
 
 ---
 
-## 6 bis. Preview deployment gap (operational)
+## 6 bis. Preview provisioning (operational)
 
-The `preview` label drives a workflow that POSTs a sync to the central ArgoCD
-application `cpin-hp-cpn-console-preview-pr-<n>`. On 2026-10-22 the request
-returned **HTTP 403**, and an inspection of the `cpin-hp` cluster found neither
-the preview namespace (`dso-console-pr-2903`) nor a matching ArgoCD
-Application. The label was removed so the pull request's code checks can be
-evaluated on their own; the preview application must be provisioned on the
-central ArgoCD before it can serve as a review environment.
+The `preview` label drives two things: a workflow that POSTs a sync to the
+central ArgoCD application `cpin-hp-cpn-console-preview-pr-<n>`, and a
+controller that provisions the preview namespace.
 
-This is an infrastructure gap, not a client defect. It is recorded here so a
-future reviewer does not mistake the missing preview for a failed build.
+On the first attempts the sync returned **HTTP 403** and an inspection of
+`cpin-hp` found no `dso-console-pr-2903` namespace and no matching ArgoCD
+Application. The label was briefly removed while diagnosing.
+
+Re-applying the label triggered the provisioning controller: the namespace
+`dso-console-pr-2903` was created, the four deployments started from
+`ghcr.io/cloud-pi-native/console/*:pr-2903`, and the preview answered
+**HTTP 200** with `/api/v1/version` returning `{"version":"pr-2903"}`.
+
+Draft status is **not** part of the workflow condition; the 403 was a
+provisioning race on the central ArgoCD, not a consequence of the PR being a
+draft. The label is now present so later pushes exercise the preview job again.
 
 ---
 
