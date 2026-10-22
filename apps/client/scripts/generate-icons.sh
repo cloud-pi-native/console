@@ -5,6 +5,7 @@ set -e
 echo "Create temporary file"
 # Portable across GNU and BSD mktemp: BSD has no --suffix option.
 FILE="$(mktemp ./cpn-icons.XXXXXX).js"
+trap 'rm -f "$FILE"' EXIT INT TERM
 
 echo "Add header"
 tee -a ${FILE} << EOF
