@@ -53,11 +53,11 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 
 ## Environment config
 
-- Files: `.env`, `.env.docker`, `.env.integ` in `apps/client/`, `apps/server/`, `apps/server-nestjs/`
-- Templates: `*-example` suffix (not `.example`; git-tracked), active files gitignored
-- Override chain (weakest to strongest): `.env` < `.env.docker` (if DOCKER=true) < `.env.integ` (if INTEGRATION=true) < explicit env vars
-- Server loading: `apps/server/src/utils/env.ts` | Client: `apps/client/vite.config.ts`
-- `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
+- `mise` owns tool versions, supported tasks and public configuration; `fnox` resolves secrets for child processes only.
+- `apps/client/` and `apps/server-nestjs/` must not use `.env*` files or dotenv loaders.
+- `apps/server/` is a frozen exception: its `.env*`, loaders and Compose `env_file` remain until its removal.
+- `ci/scripts/init-env.sh` initializes that legacy exception only and must be deleted with it.
+- The variable classification and profiles are in `docs/environment-variables.md`.
 
 ## Testing
 

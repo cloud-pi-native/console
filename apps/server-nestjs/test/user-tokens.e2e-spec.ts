@@ -13,7 +13,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { UserTokensModule } from '../src/modules/user-tokens/user-tokens.module'
 import { UserTokensService } from '../src/modules/user-tokens/user-tokens.service'
 import { hashToken } from '../src/utils/crypto.utils'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunUserTokensE2E = Boolean(process.env.E2E)
 
@@ -31,7 +30,7 @@ describeWithUserTokens('UserTokensService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, LoggerModule, PermissionModule, UserTokensModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, LoggerModule, PermissionModule, UserTokensModule],
     }).compile()
 
     await moduleRef.init()

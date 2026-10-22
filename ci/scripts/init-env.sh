@@ -12,7 +12,8 @@ i=1
 PROJECT_DIR="$(git rev-parse --show-toplevel)"
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to copy .env-example files into .env files at project initialization.
+TEXT_HELPER="\nTemporary bridge for the frozen apps/server legacy: copies its .env-example files into .env files.
+Remove this script when apps/server is removed from the repository.
 Following flags are available:
 
   -h    Print script help\n\n"
@@ -32,12 +33,14 @@ do
 done
 
 
-find $PROJECT_DIR -type f -name ".env*-example" -or -name "*-example.yaml" | while read f; do
-  if [ ! -f "${f/-example/}" ]; then
-    printf "\n${red}Copy${no_color}: '$f' 
-    ${red}to${no_color}: '${f/-example/}'\n"
-    cp "$f" "${f/-example/}"
+# Temporary bridge for the frozen Fastify legacy only.
+# Remove this script when apps/server is removed from the repository.
+find "$PROJECT_DIR/apps/server" -type f -name ".env*-example" -print0 | while IFS= read -r -d '' file; do
+  target="${file/-example/}"
+  if [ ! -f "$target" ]; then
+    printf "\n${red}Copy${no_color}: '%s'\n${red}to${no_color}: '%s'\n" "$file" "$target"
+    cp "$file" "$target"
   else
-    printf "\nFile '${f/-example/}' already exists\n"
+    printf "\nFile '%s' already exists\n" "$target"
   fi
 done

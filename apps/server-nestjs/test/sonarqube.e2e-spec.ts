@@ -23,7 +23,6 @@ import { SonarqubeModule } from '../src/modules/sonarqube/sonarqube.module'
 import { SonarqubeService } from '../src/modules/sonarqube/sonarqube.service'
 import { VaultClientService } from '../src/modules/vault/vault-client.service'
 import { VaultModule } from '../src/modules/vault/vault.module'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { getAll } from '../src/utils/iterable.utils'
 import { SONARQUBE_PROJECT_TIMEOUT } from './constants'
 
@@ -49,7 +48,7 @@ describeWithSonarqube('SonarqubeService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [SonarqubeModule, GitlabModule, VaultModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory, gitlabConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [SonarqubeModule, GitlabModule, VaultModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory, gitlabConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

@@ -17,7 +17,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
 import { ProjectMembersModule } from '../src/modules/project-members/project-members.module'
 import { ProjectMembersService } from '../src/modules/project-members/project-members.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectMembersE2E = Boolean(process.env.E2E)
 
@@ -38,7 +37,7 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
     keycloakClient.getUserByEmail.mockResolvedValue(undefined)
 
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectMembersModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectMembersModule],
       providers: [
         { provide: KeycloakClientService, useValue: keycloakClient },
       ],

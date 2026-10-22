@@ -13,7 +13,6 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { ProjectBulkModule } from '../src/modules/project-bulk/project-bulk.module'
 import { ProjectBulkService } from '../src/modules/project-bulk/project-bulk.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectBulkE2E = Boolean(process.env.E2E)
 
@@ -31,7 +30,7 @@ describeWithProjectBulk('ProjectBulkService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectBulkModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectBulkModule],
     }).compile()
 
     await moduleRef.init()

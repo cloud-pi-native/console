@@ -14,7 +14,6 @@ import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
 import { ProjectRolesModule } from '../src/modules/project-roles/project-roles.module'
 import { ProjectRolesService } from '../src/modules/project-roles/project-roles.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunProjectRolesE2E = Boolean(process.env.E2E)
 
@@ -32,7 +31,7 @@ describeWithProjectRoles('ProjectRolesService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectRolesModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule, ProjectRolesModule],
     }).compile()
 
     await moduleRef.init()

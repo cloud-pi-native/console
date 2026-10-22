@@ -14,7 +14,6 @@ env:
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true
   USE_QEMU: false
-  NODE_VERSION: 26.7.0
 
 jobs:
   expose-vars:
@@ -24,7 +23,6 @@ jobs:
       NAMESPACE: ${{ env.NAMESPACE }}
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
       USE_QEMU: ${{ env.USE_QEMU }}
-      NODE_VERSION: ${{ env.NODE_VERSION }}
     steps:
       - name: Exposing env vars
         run: echo "Exposing env vars"
@@ -37,10 +35,10 @@ jobs:
       REGISTRY: ${{ needs.expose-vars.outputs.REGISTRY }}
       NAMESPACE: ${{ needs.expose-vars.outputs.NAMESPACE }}
       RELEASE_CREATED: false
-      TAG: ''
-      MAJOR_TAG: ''
-      MINOR_TAG: ''
-      PATCH_TAG: ''
+      TAG: ""
+      MAJOR_TAG: ""
+      MINOR_TAG: ""
+      PATCH_TAG: ""
       BUILD_AMD64: ${{ needs.expose-vars.outputs.BUILD_AMD64 == 'true' }}
       BUILD_ARM64: false
       USE_QEMU: ${{ needs.expose-vars.outputs.USE_QEMU == 'true' }}

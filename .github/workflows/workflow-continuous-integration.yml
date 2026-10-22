@@ -19,7 +19,6 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: 26.7.0
   REGISTRY: ghcr.io
   NAMESPACE: "${{ github.repository }}"
   BUILD_AMD64: true
@@ -56,7 +55,6 @@ jobs:
   expose-vars:
     runs-on: ubuntu-latest
     outputs:
-      NODE_VERSION: ${{ env.NODE_VERSION }}
       REGISTRY: ${{ env.REGISTRY }}
       NAMESPACE: ${{ env.NAMESPACE }}
       BUILD_AMD64: ${{ env.BUILD_AMD64 }}
@@ -70,8 +68,6 @@ jobs:
     uses: ./.github/workflows/job-lint.yml
     needs:
       - expose-vars
-    with:
-      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
 
   unit-tests:
     uses: ./.github/workflows/job-tests-unit.yml
@@ -79,8 +75,6 @@ jobs:
     needs:
       - path-filter
       - expose-vars
-    with:
-      NODE_VERSION: ${{ needs.expose-vars.outputs.NODE_VERSION }}
     secrets:
       SONAR_HOST_URL: "${{ secrets.SONAR_HOST_URL }}"
       SONAR_TOKEN: "${{ secrets.SONAR_TOKEN }}"

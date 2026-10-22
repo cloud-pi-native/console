@@ -30,12 +30,10 @@ import { UserTokensModule } from './modules/user-tokens/user-tokens.module'
 import { UserModule } from './modules/user/user.module'
 import { VersionModule } from './modules/version/version.module'
 import { ZoneModule } from './modules/zone/zone.module'
-import { getDotenvPaths } from './utils/dotenv.utils'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: getDotenvPaths(),
       isGlobal: true,
       load: [baseConfigFactory],
     }),

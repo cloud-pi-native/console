@@ -8,7 +8,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AdminTokenModule } from '../src/modules/admin-token/admin-token.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunAdminTokenE2E
   = Boolean(process.env.E2E)
@@ -23,7 +22,7 @@ describeWithAdminToken('AdminToken HTTP (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AdminTokenModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AdminTokenModule],
     }).compile()
 
     await moduleRef.init()

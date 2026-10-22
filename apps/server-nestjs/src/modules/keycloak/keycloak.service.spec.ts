@@ -8,7 +8,6 @@ import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
   makeGroupRepresentation,
-  makeProjectEnvironment,
   makeProjectMember,
   makeProjectRole,
   makeProjectUser,

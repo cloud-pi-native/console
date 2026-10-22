@@ -1,12 +1,12 @@
 import type { Cluster, Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { Zone } from './zone-queries.utils'
 import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mock, mockDeep } from 'vitest-mock-extended'
 import { AppEventsService } from '../events/app-events.service'
 import { PrismaService } from '../infrastructure/database/prisma.service'
-import type { Zone } from './zone-queries.utils'
 import { makeZone } from './zone-testing.utils'
 import { ZoneService } from './zone.service'
 

@@ -17,7 +17,6 @@ import { PermissionModule } from '../src/modules/infrastructure/permission/permi
 import { KEYCLOAK_ADMIN_CLIENT, KeycloakClientService } from '../src/modules/keycloak/keycloak-client.service'
 import { projectSelect } from '../src/modules/keycloak/keycloak-datastore.service'
 import { KeycloakModule } from '../src/modules/keycloak/keycloak.module'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 import { KEYCLOAK_GROUP_SYNC_TIMEOUT } from './constants'
 
 const canRunKeycloakE2E
@@ -40,7 +39,7 @@ describeWithKeycloak('KeycloakService (e2e)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [KeycloakModule, ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
+      imports: [KeycloakModule, ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AuthModule, DatabaseModule, EventsModule, LoggerModule, PermissionModule],
     }).compile()
 
     await moduleRef.init()

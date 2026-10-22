@@ -6,18 +6,11 @@ permissions:
 on:
   workflow_call:
     inputs:
-      NODE_VERSION:
-        required: true
-        type: string
       TAG:
         required: true
         type: string
   workflow_dispatch:
     inputs:
-      NODE_VERSION:
-        description: Nodejs version used to run tests
-        required: true
-        type: string
       TAG:
         description: Container images version to use for console client and server/server-nestjs
         required: true
@@ -37,6 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Set up mise tools
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          version: 2026.5.15
+          install: true
+          cache: true
+
       - name: Ensure Playwright browsers
         run: pnpm --dir playwright exec playwright install chromium firefox
 
@@ -49,24 +49,25 @@ jobs:
             docker pull "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
             docker tag  "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}" "dso-console/${img}:ci"
           done
-          docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
+          mise -E ci exec -- fnox exec -- docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       # See https://playwright.dev/docs/test-sharding for how Playwright handles test sharding
       - name: Run Playwright tests
-        run: pnpm --dir playwright exec playwright test --grep @e2e --shard=${{ matrix.shard }}/4 --reporter=blob
+        run: mise -E ci run playwright:test -- --shard=${{ matrix.shard }}/4 --reporter=blob
 
       - name: Dump docker compose state on failure
         if: ${{ failure() }}
         run: |
-          docker compose -f ./docker/docker-compose.ci.yml ps -a
+          mise -E ci exec -- fnox exec -- docker compose -f ./docker/docker-compose.ci.yml ps -a
           for service in keycloak postgres server server-nestjs client nginx-strangler opencds-mockoon; do
             echo -e "\nInspecting ${service}..."
-            docker compose -f ./docker/docker-compose.ci.yml logs --no-color ${service}
+            mise -E ci exec -- fnox exec -- docker compose -f ./docker/docker-compose.ci.yml logs --no-color ${service}
             docker inspect dso-console_${service} --format '{{json .State}}'
           done
 
       - name: Clean up docker resources (containers, volumes)
-        run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
+        if: ${{ always() }}
+        run: mise -E ci exec -- fnox exec -- docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         if: ${{ !cancelled() }}

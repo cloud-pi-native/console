@@ -8,7 +8,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { baseConfigFactory } from '../src/config/base.config'
 import { AdminRoleModule } from '../src/modules/admin-role/admin-role.module'
 import { PrismaService } from '../src/modules/infrastructure/database/prisma.service'
-import { getDotenvPaths } from '../src/utils/dotenv.utils'
 
 const canRunAdminRoleE2E
   = Boolean(process.env.E2E)
@@ -25,7 +24,7 @@ describeWithAdminRole('AdminRole HTTP (e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ envFilePath: getDotenvPaths(), isGlobal: true, load: [baseConfigFactory] }), AdminRoleModule],
+      imports: [ConfigModule.forRoot({ isGlobal: true, load: [baseConfigFactory] }), AdminRoleModule],
     }).compile()
 
     await moduleRef.init()
