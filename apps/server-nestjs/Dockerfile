@@ -1,5 +1,5 @@
 # Base / dev stage ----------------------------------------------------------------
-FROM docker.io/node:26.7.0-bullseye-slim AS dev
+FROM docker.io/node:26.12.1-trixie-slim AS dev
 
 RUN mkdir /app && chown -R node:node /app
 
@@ -83,7 +83,7 @@ RUN pnpm --filter @cpn-console/server-nestjs run build
 RUN pnpm --filter @cpn-console/server-nestjs --prod deploy build
 
 # Prod stage -----------------------------------------------------------------------
-FROM docker.io/node:26.7.0-bullseye-slim AS prod
+FROM docker.io/node:26.12.1-trixie-slim AS prod
 
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
