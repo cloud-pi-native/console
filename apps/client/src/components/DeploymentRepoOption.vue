@@ -16,10 +16,10 @@ defineEmits<{ delete: [] }>()
 
 const model = defineModel<DeploymentSourceDraft>(
   {
-    default: {
+    default: () => ({
       type: 'git',
       valueSources: [],
-    },
+    }),
   },
 )
 
