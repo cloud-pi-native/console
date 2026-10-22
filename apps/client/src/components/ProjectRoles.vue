@@ -123,6 +123,7 @@ watch(props.project, reload, { immediate: true })
         <button
           v-for="role in roleList"
           :key="role.id"
+          type="button"
           :data-testid="`${role.id}-tab`"
           :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate  w-full ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary' : 'fr-btn--tertiary'}`"
           @click="selectedId = selectedId === role.id ? undefined : role.id"

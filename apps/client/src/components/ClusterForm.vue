@@ -229,6 +229,7 @@ const isConnectionDetailsShown = ref(true)
     >
       <DsfrButton
         title="Revenir à la liste des clusters"
+        aria-label="Revenir à la liste des clusters"
         data-testid="goBackBtn"
         secondary
         icon-only
@@ -243,11 +244,15 @@ const isConnectionDetailsShown = ref(true)
     </h1>
     <div
       class="cursor-pointer"
+      role="button"
+      tabindex="0"
+      :aria-expanded="isConnectionDetailsShown"
       @click="isConnectionDetailsShown = !isConnectionDetailsShown"
+      @keydown.enter.prevent="isConnectionDetailsShown = !isConnectionDetailsShown"
+      @keydown.space.prevent="isConnectionDetailsShown = !isConnectionDetailsShown"
     >
       <h4
         class="mb-1 inline-block"
-        :aria-expanded="isConnectionDetailsShown"
       >
         Informations de connexion (kubeconfig)
       </h4>

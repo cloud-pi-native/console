@@ -78,13 +78,17 @@ function closeModal(e?: MouseEvent | TouchEvent) {
         <tr
           v-for="secret in Object.values(secrets)"
           :key="secret"
-          @click="copyContent(secret)"
         >
           <td>
-            <pre
+            <button
+              type="button"
               title="Copier la valeur"
-              class="fr-text-default--info text-xs cursor-pointer m-1"
-            >{{ secret }}</pre>
+              aria-label="Copier la valeur du secret"
+              class="fr-text-default--info text-xs cursor-pointer m-1 bg-transparent border-none p-0 text-left whitespace-pre-wrap"
+              @click="copyContent(secret)"
+            >
+              <code>{{ secret }}</code>
+            </button>
           </td>
         </tr>
       </DsfrTable>

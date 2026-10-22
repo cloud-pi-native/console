@@ -97,6 +97,7 @@ watch(zones, async () => {
 </script>
 
 <template>
+  <PageHeading title="Liste des zones" visually-hidden />
   <div
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
@@ -116,6 +117,7 @@ watch(zones, async () => {
     >
       <DsfrButton
         title="Revenir à la liste des zones"
+        aria-label="Revenir à la liste des zones"
         data-testid="goBackBtn"
         secondary
         icon-only

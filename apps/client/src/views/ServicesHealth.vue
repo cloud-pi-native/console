@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { AdminAuthorized } from '@cpn-console/shared'
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
-import { onBeforeMount, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { alertTypeMapper, useServiceStore } from '@/stores/services-monitor.js'
 import { useUserStore } from '@/stores/user.js'
 
@@ -16,6 +16,31 @@ TimeAgo.addLocale(fr)
 
 // Create relative date/time formatter.
 const timeAgo = new TimeAgo('fr-FR', { })
+
+const severityOrder: Record<string, number> = {
+  'En échec': 0,
+  Dégradé: 1,
+  Inconnu: 2,
+  OK: 3,
+}
+
+const sortedServices = computed(() =>
+  [...serviceStore.services].sort(
+    (first, second) => (severityOrder[first.status] ?? 4) - (severityOrder[second.status] ?? 4),
+  ),
+)
+
+const lastUpdateLabel = computed(() => {
+  const timestamps = serviceStore.services
+    .map(service => service.lastUpdateTimestamp)
+    .filter(timestamp => timestamp > 0)
+  if (!timestamps.length) return 'Aucune vérification effectuée'
+  const latest = new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'short',
+    timeStyle: 'medium',
+  }).format(new Date(Math.max(...timestamps)))
+  return `Dernière vérification : ${latest}`
+})
 
 async function checkServicesHealth() {
   isUpdating.value = true
@@ -31,7 +56,7 @@ async function refreshServicesHealth() {
   })
 }
 
-onBeforeMount(async () => {
+onMounted(async () => {
   await checkServicesHealth()
 })
 </script>
@@ -40,7 +65,7 @@ onBeforeMount(async () => {
   <h1
     class="fr-h3"
   >
-    Status des services de la plateforme DSO
+    État des services de la plateforme DSO
   </h1>
   <div class="flex justify-between">
     <DsfrBadge
@@ -53,6 +78,7 @@ onBeforeMount(async () => {
         v-if="AdminAuthorized.ListSystem(userStore.adminPerms)"
         data-testid="serviceCauseBtn"
         :title="!serviceStore.displayCause ? 'Afficher les messages d\'erreur' : 'Masquer les messages d\'erreur'"
+        :aria-label="!serviceStore.displayCause ? 'Afficher les messages d\'erreur' : 'Masquer les messages d\'erreur'"
         secondary
         icon-only
         :icon="!serviceStore.displayCause ? 'ri:filter-off-line' : 'ri:filter-line'"
@@ -61,6 +87,7 @@ onBeforeMount(async () => {
       <DsfrButton
         data-testid="check-btn"
         title="Renouveler l'appel"
+        aria-label="Renouveler l'appel"
         secondary
         icon-only
         icon="ri:refresh-line"
@@ -77,12 +104,15 @@ onBeforeMount(async () => {
       />
     </div>
   </div>
+  <p class="fr-text--sm fr-mb-2w" data-testid="services-health-last-update">
+    {{ lastUpdateLabel }}
+  </p>
   <div
     class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
     data-testid="box-info"
   >
     <DsfrAlert
-      v-for="service in serviceStore.services"
+      v-for="service in sortedServices"
       :key="service.name"
       :data-testid="`${service.name}-info`"
       :title="service.name"
@@ -92,15 +122,13 @@ onBeforeMount(async () => {
       <div class="inline">
         {{ service.message }}
       </div>
-      <div
+      <p
         v-if="serviceStore.displayCause && service.cause"
-        :title="service.cause"
-        class="ml-2 inline"
+        class="fr-text--sm fr-mt-1w fr-mb-0"
+        style="white-space: pre-wrap;"
       >
-        <v-icon
-          name="ri:question-line"
-        />
-      </div>
+        <strong>Cause :</strong> {{ service.cause }}
+      </p>
       <div>{{ timeAgo.format(new Date(service.lastUpdateTimestamp), 'round') }}</div>
     </DsfrAlert>
   </div>

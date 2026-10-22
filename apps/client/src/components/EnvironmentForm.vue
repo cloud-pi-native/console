@@ -158,19 +158,25 @@ watch(localEnvironment.value, () => {
     :hint="props.isEditable ? 'Les champs munis d\'une astérisque (*) sont requis' : undefined"
     data-testid="environmentFieldset"
   >
-    <code
+    <button
       v-if="localEnvironment.id && localEnvironment.projectId"
-      class="fr-text-default--info text-xs cursor-pointer"
+      type="button"
+      class="bg-transparent border-none p-0 cursor-pointer text-left"
+      aria-label="Copier le nom du namespace Kubernetes"
       @click="copyContent(generateNamespaceName(localEnvironment.projectId, localEnvironment.id))"
     >
-      ns kubernetes: {{ generateNamespaceName(localEnvironment.projectId, localEnvironment.id) }}
-    </code>
+      <code class="fr-text-default--info text-xs">ns kubernetes: {{ generateNamespaceName(localEnvironment.projectId, localEnvironment.id) }}</code>
+    </button>
     <div
       title="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
       class="inline"
+      role="note"
+      tabindex="0"
+      aria-label="Namespace kubernetes, les environnements créés en version <=8.22.1 utilisent l'ancien système de nommage"
     >
       <v-icon
         name="ri:question-line"
+        aria-hidden="true"
       />
     </div>
 

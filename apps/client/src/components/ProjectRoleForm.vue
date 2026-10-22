@@ -85,6 +85,7 @@ function updateChecked(checked: boolean, value: bigint) {
       <DsfrInput
         v-model="role.name"
         data-testid="roleNameInput"
+        aria-label="Nom du rôle"
         label-visible
         class="mb-5"
         :disabled="role.isEveryone || isSystem"

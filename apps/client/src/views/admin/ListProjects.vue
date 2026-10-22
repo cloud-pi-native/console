@@ -38,8 +38,8 @@ const bulkActions: Array<{
   value: BulkActionProjectBody['action']
 }> = [
   { text: 'Reprovisionner', value: 'replay' },
-  { text: 'Vérrouiller', value: 'lock' },
-  { text: 'Dévérouiller', value: 'unlock' },
+  { text: 'Verrouiller', value: 'lock' },
+  { text: 'Déverrouiller', value: 'unlock' },
   { text: 'Archiver', value: 'archive' },
 ] as const
 type BulkActions = (typeof bulkActions)[number]['value']
@@ -142,6 +142,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
 </script>
 
 <template>
+  <PageHeading title="Liste des projets" visually-hidden />
   <div
     class="relative"
   >
@@ -182,6 +183,7 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         <DsfrButton
           data-testid="download-btn"
           title="Exporter les données de tous les projets"
+          aria-label="Exporter les données de tous les projets"
           secondary
           icon-only
           icon="ri:file-download-line"
@@ -205,20 +207,32 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
     >
       <template #header>
         <tr>
-          <td>
+          <th scope="col">
             <input
               type="checkbox"
               data-testid="select-all-cbx"
               :checked="!!projectWithSelection.length && isAllSelected"
               @click="selectAll"
             >
-          </td>
-          <td>Slug</td>
-          <td>Nom</td>
-          <td>Souscripteur</td>
-          <td>Status</td>
-          <td>Version</td>
-          <td>Date de création</td>
+          </th>
+          <th scope="col">
+            Slug
+          </th>
+          <th scope="col">
+            Nom
+          </th>
+          <th scope="col">
+            Souscripteur
+          </th>
+          <th scope="col">
+            Status
+          </th>
+          <th scope="col">
+            Version
+          </th>
+          <th scope="col">
+            Date de création
+          </th>
         </tr>
       </template>
       <tr
