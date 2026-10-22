@@ -28,7 +28,8 @@ function findRepoRoot(start) {
 }
 
 const repoRoot = findRepoRoot(clientDir)
-const baselinePath = join(repoRoot, 'docs/client/a11y-baseline.json')
+// Kept inside apps/client so the baseline is present in the Docker build context.
+const baselinePath = join(clientDir, 'a11y-baseline.json')
 const reportDir = join(repoRoot, 'docs/client')
 const args = new Set(process.argv.slice(2))
 const updateBaseline = args.has('--update-baseline')
