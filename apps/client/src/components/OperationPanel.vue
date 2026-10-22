@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
 
 defineProps<{
   project?: Project
@@ -9,8 +9,7 @@ defineProps<{
 <template>
   <div
     v-if="
-      (project?.operationsInProgress as unknown as ProjectOperations[])
-        .length || project?.needReplay
+      project?.operationsInProgress.length || project?.needReplay
     "
     class="fixed bottom-5 right-5 z-999 shadow-lg background-default-grey"
   >
@@ -21,12 +20,11 @@ defineProps<{
       type="warning"
     />
     <DsfrAlert
-      v-else-if="(project?.operationsInProgress as unknown as ProjectOperations[]).length"
+      v-else-if="project?.operationsInProgress.length"
       data-testid="operationInProgressAlert"
       title="Opération en cours..."
       :description="
-        (project?.operationsInProgress as unknown as ProjectOperations[])
-          .length === 2
+        project?.operationsInProgress.length === 2
           ? 'Une ou plusieurs tâches en attente'
           : ''
       "

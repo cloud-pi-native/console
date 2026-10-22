@@ -62,7 +62,7 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
   if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
-  usersToAdd.value = await projectStore.projectsBySlug[props.project.slug].Members.getCandidateUsers(letters)
+  usersToAdd.value = await projectStore.getCandidateUsers(props.project.id, letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
     lettersNotMatching.value = letters
@@ -85,7 +85,7 @@ async function addUserToProject() {
   if (!newUserEmail.value) return
   if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
-  await props.project.Members.create(newUserEmail.value)
+  await projectStore.addMember(props.project.id, newUserEmail.value)
     .finally(() => emit('refresh'))
 
   newUserEmail.value = ''
@@ -94,7 +94,7 @@ async function addUserToProject() {
 }
 
 async function removeUserFromProject(userId: string) {
-  await props.project.Members.delete(userId)
+  await projectStore.removeMember(props.project.id, userId)
     .finally(() => {
       emit('refresh')
       if (userStore.userProfile?.id === userId) {
@@ -105,7 +105,7 @@ async function removeUserFromProject(userId: string) {
 
 async function transferOwnerShip() {
   if (nextOwnerId.value && props.project.members.some(member => member.userId === nextOwnerId.value)) {
-    await props.project.Commands.update({ ownerId: nextOwnerId.value })
+    await projectStore.updateProject(props.project.id, { ownerId: nextOwnerId.value })
       .then(() => emit('transfer'))
       .catch(() => emit('refresh'))
   }

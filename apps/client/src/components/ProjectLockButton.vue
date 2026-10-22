@@ -1,12 +1,15 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
+import { useProjectStore } from '@/stores/project.js'
 
 const props = defineProps<{
   project: Project
 }>()
 
+const projectStore = useProjectStore()
+
 async function handleProjectLocking() {
-  await props.project.Commands.update({ locked: !props.project.locked })
+  await projectStore.updateProject(props.project.id, { locked: !props.project.locked })
 }
 </script>
 
@@ -15,7 +18,7 @@ async function handleProjectLocking() {
     data-testid="handleProjectLockingBtn"
     :label="`${project.locked ? 'Déverrouiller' : 'Verrouiller'} le projet`"
     :icon="
-      (project.operationsInProgress as unknown as ProjectOperations[]).includes(
+      project.operationsInProgress.includes(
         'lockHandling',
       )
         ? { name: 'ri:refresh-line', animation: 'spin' }
@@ -24,7 +27,7 @@ async function handleProjectLocking() {
           : 'ri:lock-line'
     "
     :disabled="
-      (project.operationsInProgress as unknown as ProjectOperations[]).includes('lockHandling')
+      project.operationsInProgress.includes('lockHandling')
         || project.status === 'archived'
     "
     @click="handleProjectLocking"

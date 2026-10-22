@@ -3,6 +3,7 @@ import type { PermissionTarget, PluginConfigItem, PluginsUpdateBody, ProjectServ
 import type { Project } from '@/utils/project-utils.js'
 import { servicePluginOrder } from '@cpn-console/shared'
 import { computed, ref } from 'vue'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = withDefaults(defineProps<{
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<{
 })
 
 const snackbarStore = useSnackbarStore()
+const projectStore = useProjectStore()
 const services = ref<ProjectService[]>([])
 
 interface ManifestGrouped {
@@ -87,7 +89,7 @@ const servicesWrapableLength = computed(() => servicesWithRef.value.filter(({ wr
 
 async function save() {
   try {
-    await props.project.Services.update(updated.value)
+    await projectStore.updateProjectServices(props.project.id, updated.value)
     snackbarStore.setMessage('Paramètres sauvegardés', 'success')
   } catch {
     snackbarStore.setMessage('Erreur lors de la sauvegarde', 'error')
@@ -96,7 +98,7 @@ async function save() {
   updated.value = {}
 }
 async function reload() {
-  const resServices = await props.project.Services.list(props.permissionTarget)
+  const resServices = await projectStore.listProjectServices(props.project.id, props.permissionTarget)
   services.value = []
   await nextTick()
   services.value = resServices
