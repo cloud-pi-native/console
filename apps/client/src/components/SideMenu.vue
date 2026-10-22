@@ -91,6 +91,7 @@ function toggleScheme() {
           type="button"
           data-testid="themeToggle"
           class="fr-sidemenu__link flex flex-row gap-2 w-full"
+          :title="isDarkScheme ? 'Activer le thème clair' : 'Activer le thème sombre'"
           :aria-pressed="isDarkScheme"
           @click="toggleScheme"
         >

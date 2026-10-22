@@ -43,6 +43,7 @@ const lastUpdateLabel = computed(() => {
 })
 
 const healthSummary = computed(() => {
+  if (!serviceStore.services.length) return 'Aucun service à afficher'
   const counts = { error: 0, warning: 0, ok: 0, unknown: 0 }
   for (const service of serviceStore.services) {
     if (service.status === 'En échec') counts.error += 1
