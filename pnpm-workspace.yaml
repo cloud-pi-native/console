@@ -1,9 +1,3 @@
-packages:
-  - packages/**
-  - plugins/**
-  - apps/**
-  - "!apps/server/src/plugins/external/**"
-  - playwright/**
 allowBuilds:
   "@nestjs/core": true
   "@prisma/client": true
@@ -17,49 +11,15 @@ allowBuilds:
 allowUnusedPatches: true
 autoInstallPeers: true
 injectWorkspacePackages: true
+syncInjectedDepsAfterScripts:
+  - build
+catalogMode: strict
+cleanupUnusedCatalogs: true
 # minimum number of minutes that must pass after a version is published before
 # pnpm will install it. This applies to all dependencies, including transitive ones.
 minimumReleaseAge: 1440 # 1 day
-catalogMode: strict
-cleanupUnusedCatalogs: true
 shellEmulator: true
 trustPolicy: no-downgrade
-overrides:
-  "@grpc/grpc-js@1.14.3": ">=1.14.4 <2"
-  "@opentelemetry/core@2.5.1": ">=2.8.0 <3"
-  "@opentelemetry/core@2.6.0": ">=2.8.0 <3"
-  "@opentelemetry/core@2.7.1": ">=2.8.0 <3"
-  "@opentelemetry/exporter-prometheus@0.212.0": ">=0.217.0 <1"
-  "@opentelemetry/propagator-jaeger@2.5.1": ">=2.9.0 <3"
-  "@opentelemetry/propagator-jaeger@2.7.1": ">=2.9.0 <3"
-  "ajv@8.17.1": ">=8.18.0 <9"
-  "brace-expansion@1.1.12": ">=1.1.17 <2"
-  "brace-expansion@2.1.1": ">=2.1.3 <3"
-  "brace-expansion@5.0.6": ">=5.0.7 <6"
-  "defu@6.1.4": ">=6.1.5 <7"
-  "deepmerge-ts@7.1.5": ">=8.0.2 <9"
-  "dompurify@3.3.2": ">=3.4.12 <4"
-  "effect@3.18.4": ">=3.20.0 <4"
-  "fast-uri@3.1.2": ">=3.1.5 <4"
-  "file-type@21.3.0": ">=21.3.2 <22"
-  "find-my-way@9.6.0": ">=9.7.0 <10"
-  "lodash@4.17.23": ">=4.18.1 <5"
-  "multer@2.1.1": ">=2.2.0 <3"
-  "path-to-regexp@8.3.0": ">=8.4.2 <9"
-  "picomatch@4.0.2": ">=4.0.4 <5"
-  "postcss@8.5.15": ">=8.5.18 <9"
-  "protobufjs@7.6.4": ">=7.6.5 <8"
-  "protobufjs@8.0.0": ">=8.6.6 <9"
-  "protobufjs@8.0.1": ">=8.6.6 <9"
-  "nanoid@3.3.17": ">=3.3.18 <4"
-  "vite@8.0.11": ">=8.0.16 <9"
-  "js-yaml": ">=4.3.1 <5"
-  "@fastify/static@9.1.3": ">=10.1.2 <11"
-  "esbuild@0.27.3": ">=0.28.1 <1"
-  "fast-jwt@5.0.6": ">=6.2.4 <7"
-  "serialize-javascript@6.0.2": ">=7.0.5 <8"
-  "uuid@8.3.2": ">=11.1.1 <12"
-  "uuid@9.0.1": ">=11.1.1 <12"
 # Check these after each update. This list should be empty !
 trustPolicyExclude:
   - rollup@2.80.0
@@ -68,68 +28,53 @@ trustPolicyExclude:
   - pino@9.14.0
   - typescript-transform-paths@3.5.6
   - undici-types@6.21.0
+packages:
+  - packages/**
+  - plugins/**
+  - apps/**
+  - "!apps/server/src/plugins/external/**"
+  - playwright/**
+overrides:
+  "@fastify/static@9.1.3": ">=10.1.2 <11"
+  "@grpc/grpc-js@1.14.3": ">=1.14.4 <2"
+  # Nest pins Fastify below the security fixes available on the same major.
+  "@nestjs/platform-fastify@11>fastify": ">=5.12.5 <6"
+  "@opentelemetry/core@2.5.1": ">=2.8.0 <3"
+  "@opentelemetry/core@2.6.0": ">=2.8.0 <3"
+  "@opentelemetry/core@2.7.1": ">=2.8.0 <3"
+  "@opentelemetry/exporter-prometheus@0.212.0": ">=0.217.0 <1"
+  "@opentelemetry/propagator-jaeger@2.5.1": ">=2.9.0 <3"
+  "@opentelemetry/propagator-jaeger@2.7.1": ">=2.9.0 <3"
+  ajv@8.17.1: ">=8.18.0 <9"
+  brace-expansion@1.1.12: ">=1.1.17 <2"
+  brace-expansion@2.1.1: ">=2.1.3 <3"
+  brace-expansion@5.0.6: ">=5.0.7 <6"
+  deepmerge-ts@7.1.5: ">=8.0.2 <9"
+  defu@6.1.4: ">=6.1.5 <7"
+  dompurify@3.3.2: ">=3.4.12 <4"
+  effect@3.18.4: ">=3.20.0 <4"
+  esbuild@0.27.3: ">=0.28.1 <1"
+  fast-jwt@5.0.6: ">=6.2.4 <7"
+  fast-uri@3.1.2: ">=3.1.5 <4"
+  file-type@21.3.0: ">=21.3.2 <22"
+  find-my-way@9.6.0: ">=9.7.0 <10"
+  js-yaml: ">=4.3.1 <5"
+  lodash@4.17.23: ">=4.18.1 <5"
+  multer@2.1.1: ">=2.2.0 <3"
+  nanoid@3.3.17: ">=3.3.18 <4"
+  path-to-regexp@8.3.0: ">=8.4.2 <9"
+  picomatch@4.0.2: ">=4.0.4 <5"
+  # Keep the HTML parser on the known-good PostCSS patch for inline Vue styles.
+  postcss-html>postcss: 8.5.26
+  postcss@8.5.15: ">=8.5.18 <9"
+  protobufjs@7.6.4: ">=7.6.5 <8"
+  protobufjs@8.0.0: ">=8.6.6 <9"
+  protobufjs@8.0.1: ">=8.6.6 <9"
+  serialize-javascript@6.0.2: ">=7.0.5 <8"
+  uuid@8.3.2: ">=11.1.1 <12"
+  uuid@9.0.1: ">=11.1.1 <12"
+  vite@8.0.11: ">=8.0.16 <9"
 catalogs:
-  runtime:
-    "@gitbeaker/core": ^40.6.0
-    "@gitbeaker/requester-utils": ^40.6.0
-    "@gitbeaker/rest": ^40.6.0
-    "@gouvfr/dsfr": ^1.14.4
-    "@gouvminint/vue-dsfr": ^8.19.0
-    "@himenon/argocd-typescript-openapi": ^1.2.2
-    "@iconify-json/ri": ^1.2.10
-    "@iconify/vue": ^4.3.0
-    "@keycloak/keycloak-admin-client": ^26.5.5
-    "@kubernetes-models/argo-cd": ^2.7.2
-    "@nestjs/cache-manager": ^3.1.2
-    "@nestjs/common": ^11.1.16
-    "@nestjs/config": ^4.0.3
-    "@nestjs/core": ^11.1.18
-    "@nestjs/event-emitter": ^3.0.1
-    "@nestjs/jwt": ^11.0.2
-    "@nestjs/platform-fastify": ^11.1.16
-    "@nestjs/schedule": ^6.1.1
-    "@nestjs/swagger": ^11.4.1
-    "@nestjs/terminus": ^11.1.1
-    "@prisma/client": ^6.19.2
-    "@ts-rest/core": ^3.52.1
-    "@ts-rest/fastify": ^3.52.1
-    "@ts-rest/open-api": ^3.52.1
-    axios: ^1.18.0
-    cache-manager: ^7.2.8
-    date-fns: ^4.1.0
-    fastify: ^5.8.5
-    fastify-keycloak-adapter: ^3.0.0
-    javascript-time-ago: ^2.6.4
-    json-2-csv: ^5.5.11
-    json-schema: ^0.4.0
-    jszip: ^3.10.1
-    keycloak-js: ^26.2.3
-    mustache: ^4.2.0
-    nanoid: 5.1.16
-    nestjs-pino: ^4.6.0
-    p-debounce: ^4.0.0
-    pinia: ^2.3.1
-    prisma: ^6.19.2
-    reflect-metadata: ^0.2.2
-    rxjs: ^7.8.2
-    short-uuid: ^5.2.0
-    undici: ^7.29.0
-    vitest-mock-extended: ^2.0.2
-    vue: ^3.5.30
-    vue-router: ^4.6.4
-    vue3-json-viewer: ^2.4.1
-    xbytes: ^1.9.1
-    yaml: ^2.7.1
-    zod: ^3.25.76
-    zod-validation-error: ^3.5.4
-    "@fastify/cookie": ^11.0.2
-    "@fastify/helmet": ^13.0.2
-    "@fastify/otel": ^0.18.1
-    "@fastify/session": ^11.1.1
-    "@fastify/swagger": ^9.7.0
-    "@fastify/swagger-ui": ^5.2.6
-    bytes: ^3.1.2
-    cron-validator: ^1.4.0
   build:
     "@iconify/types": ^2.0.0
     "@nestjs/cli": ^11.0.16
@@ -146,27 +91,11 @@ catalogs:
     unocss: ^66.6.6
     unplugin-auto-import: ^0.18.6
     unplugin-vue-components: ^0.27.5
-    vite: ^7.3.5
+    vite: ^7.3.7
     vite-node: ^6.0.0
     vite-plugin-pwa: ^1.2.0
     vue-tsc: ^2.2.12
     workbox-window: ^7.4.0
-  test:
-    # Ensure Playwright version is the same as the one in this Dockerfile:
-    # https://github.com/cloud-pi-native/Dockerfile/tree/main/docker/actions-runner-pw/Dockerfile
-    # Because this is the image used by our Github Self-Hosted Runner that handles Playwright tests
-    "@playwright/test": ^1.59.1
-    "@faker-js/faker": ^9.9.0
-    "@vitest/coverage-v8": ^4.1.5
-    globals: ^16.5.0
-    jsdom: ^25.0.1
-    msw: ^2.12.10
-    vitest: ^4.1.5
-  types:
-    "@types/jsdom": ^21.1.7
-    "@types/json-schema": ^7.0.15
-    "@types/node": ^26.1.2
-    undici-types: ^7.16.0
   otel:
     "@opentelemetry/api": ^1.9.0
     "@opentelemetry/auto-instrumentations-node": ^0.79.0
@@ -176,6 +105,78 @@ catalogs:
     "@opentelemetry/instrumentation-pino": ^0.59.0
     "@opentelemetry/sdk-metrics": ^2.5.1
     "@opentelemetry/sdk-node": ^0.217.0
+  runtime:
+    "@fastify/cookie": ^11.0.2
+    "@fastify/helmet": ^13.0.2
+    "@fastify/otel": ^0.18.1
+    "@fastify/session": ^11.1.1
+    "@fastify/swagger": ^9.7.0
+    "@fastify/swagger-ui": ^5.2.6
+    "@gitbeaker/core": ^40.6.0
+    "@gitbeaker/requester-utils": ^40.6.0
+    "@gitbeaker/rest": ^40.6.0
+    "@gouvfr/dsfr": ^1.14.4
+    "@gouvminint/vue-dsfr": ^8.19.0
+    "@himenon/argocd-typescript-openapi": ^1.2.2
+    "@iconify-json/ri": ^1.2.10
+    "@iconify/vue": ^4.3.0
+    "@keycloak/keycloak-admin-client": ^26.5.5
+    "@kubernetes-models/argo-cd": ^2.7.2
+    "@nestjs/cache-manager": ^3.1.2
+    "@nestjs/common": ^11.1.16
+    "@nestjs/config": ^4.0.3
+    "@nestjs/core": ^11.1.18
+    "@nestjs/event-emitter": ^3.0.1
+    "@nestjs/jwt": ^11.0.2
+    "@nestjs/platform-fastify": ^11.2.4
+    "@nestjs/schedule": ^6.1.1
+    "@nestjs/swagger": ^11.4.1
+    "@nestjs/terminus": ^11.1.1
+    "@prisma/client": ^6.19.2
+    "@ts-rest/core": ^3.52.1
+    "@ts-rest/fastify": ^3.52.1
+    "@ts-rest/open-api": ^3.52.1
+    axios: ^1.20.0
+    bytes: ^3.1.2
+    cache-manager: ^7.2.8
+    cron-validator: ^1.4.0
+    date-fns: ^4.1.0
+    fastify: ^5.12.5
+    fastify-keycloak-adapter: ^3.0.0
+    javascript-time-ago: ^2.6.4
+    json-2-csv: ^5.5.11
+    json-schema: ^0.4.0
+    jszip: ^3.10.1
+    keycloak-js: ^26.2.3
+    mustache: ^4.2.0
+    nanoid: 5.1.16
+    nestjs-pino: ^4.6.0
+    p-debounce: ^4.0.0
+    pinia: ^2.3.1
+    prisma: ^6.19.2
+    reflect-metadata: ^0.2.2
+    rxjs: ^7.8.2
+    short-uuid: ^5.2.0
+    undici: ^7.29.1
+    vitest-mock-extended: ^2.0.2
+    vue: ^3.5.42
+    vue-router: ^4.6.4
+    vue3-json-viewer: ^2.4.1
+    xbytes: ^1.9.1
+    yaml: ^2.7.1
+    zod: ^3.25.76
+    zod-validation-error: ^3.5.4
+  test:
+    "@faker-js/faker": ^10.5.0
+    # Ensure Playwright version is the same as the one in this Dockerfile:
+    # https://github.com/cloud-pi-native/Dockerfile/tree/main/docker/actions-runner-pw/Dockerfile
+    # Because this is the image used by our Github Self-Hosted Runner that handles Playwright tests
+    "@playwright/test": ^1.59.1
+    "@vitest/coverage-v8": ^4.1.12
+    globals: ^16.5.0
+    jsdom: ^25.0.1
+    msw: ^2.12.10
+    vitest: ^4.1.12
   tools:
     "@antfu/eslint-config": ^8.2.0
     "@commitlint/cli": ^20.5.3
@@ -187,7 +188,7 @@ catalogs:
     eslint: ^10.5.0
     eslint-plugin-vue: ^10.8.0
     husky: ^9.1.7
-    js-yaml: ^4.3.0
+    js-yaml: ^4.3.2
     lint-staged: ^16.4.0
     nodemon: ^3.1.14
     pino: ^9.14.0
@@ -199,3 +200,8 @@ catalogs:
     stylelint-config-standard: ^40.0.0
     typescript-eslint: ^8.57.0
     vue-eslint-parser: ^10.4.0
+  types:
+    "@types/jsdom": ^21.1.7
+    "@types/json-schema": ^7.0.15
+    "@types/node": ^26.1.2
+    undici-types: ^7.16.0
