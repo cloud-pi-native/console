@@ -472,7 +472,7 @@ tests.
 
 1. **New and touched code** follows the full standard immediately.
 2. **Counters may not increase.** `a11y:audit` fails on regression against the
-   committed baseline (`docs/client/a11y-baseline.json`).
+   committed baseline (`apps/client/a11y-baseline.json`).
 3. Existing store-coupled components are migrated when their feature is next
    modified (`VUE-02` migration note).
 4. Every removed `any`/`@ts-ignore` is progress; adding one requires an explicit

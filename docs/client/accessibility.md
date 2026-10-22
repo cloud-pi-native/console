@@ -54,7 +54,7 @@ Rules: icon-only names, image alt, click handlers on non-interactive elements,
 positive `tabindex`, view heading, duplicate `h1`, native button `type`, input
 labels, application landmarks, `html[lang]`.
 
-Output is a ratchet against `docs/client/a11y-baseline.json`. The baseline is
+Output is a ratchet against `apps/client/a11y-baseline.json`. The baseline is
 currently **0 violations**. Any new violation fails the command, and the
 command runs inside `pnpm build`.
 
