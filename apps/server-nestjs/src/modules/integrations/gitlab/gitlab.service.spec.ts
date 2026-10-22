@@ -141,7 +141,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectGroupRepoSettings.mockResolvedValue(makeProjectSchema({ id: 1 }))
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureInfraGroupRepoPublicUrl.mockResolvedValue('https://gitlab.internal/repo')
@@ -152,7 +152,7 @@ describe('gitlabService', () => {
 
       expect(gitlab.ensureProjectSubGroup).toHaveBeenCalledWith(project.slug)
       expect(gitlab.getGroupMembers).toHaveBeenCalledWith(group)
-      expect(gitlab.getRepos).toHaveBeenCalledWith(project.slug)
+      expect(gitlab.getGroupRepos).toHaveBeenCalledWith(group.id)
     })
 
     it('should remove orphan member if purge enabled', async () => {
@@ -163,7 +163,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 999, username: 'orphan' })])
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -180,7 +180,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 888, username: 'group_123_bot' })])
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -195,7 +195,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 999, username: 'orphan' })])
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -215,7 +215,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockImplementation(() => (async function* () {
+      gitlab.getGroupRepos.mockImplementation(() => (async function* () {
         yield orphanRepo
         yield unmanagedRepo
       })())
@@ -241,7 +241,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockImplementation(() => (async function* () {
+      gitlab.getGroupRepos.mockImplementation(() => (async function* () {
         yield orphanRepo
       })())
       gitlab.deleteProjectGroupRepo.mockResolvedValue(undefined)
@@ -263,7 +263,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockImplementation(() => (async function* () {
+      gitlab.getGroupRepos.mockImplementation(() => (async function* () {
         yield infraApps
         yield mirror
         yield userRepo
@@ -288,7 +288,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockImplementation(() => (async function* () {
+      gitlab.getGroupRepos.mockImplementation(() => (async function* () {
         yield observabilityRepo
         yield userRepo
       })())
@@ -313,7 +313,7 @@ describe('gitlabService', () => {
 
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockImplementation(() => (async function* () {
+      gitlab.getGroupRepos.mockImplementation(() => (async function* () {
         yield orphanRepoWithoutTopic
       })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
@@ -341,7 +341,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -397,7 +397,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -432,7 +432,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -463,7 +463,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -489,7 +489,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -529,7 +529,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -574,7 +574,7 @@ describe('gitlabService', () => {
           name: user.name,
         })
       })
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
@@ -615,7 +615,7 @@ describe('gitlabService', () => {
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue(undefined)
-      gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { yield gitlabRepo })())
       gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
       vault.readTechnReadOnlyCreds.mockResolvedValue(null)
@@ -672,7 +672,7 @@ describe('gitlabService', () => {
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
-      gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { yield gitlabRepo })())
       gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
@@ -718,7 +718,7 @@ describe('gitlabService', () => {
       gitlab.getGroupMembers.mockResolvedValue([])
       gitlab.getProjectGroup.mockResolvedValue(group)
       gitlab.getProjectToken.mockResolvedValue({ name: accessToken.name, id: 11 })
-      gitlab.getRepos.mockReturnValue((async function* () { yield gitlabRepo })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { yield gitlabRepo })())
       gitlab.ensureProjectGroupInternalRepoUrl.mockResolvedValue('https://gitlab.internal/group/repo-1.git')
       gitlab.createMirrorAccessToken.mockResolvedValue(accessToken)
       gitlab.revokeProjectToken.mockResolvedValue(undefined)
@@ -771,7 +771,7 @@ describe('gitlabService', () => {
       const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
       gitlab.ensureProjectSubGroup.mockResolvedValue(group)
       gitlab.getGroupMembers.mockResolvedValue([])
-      gitlab.getRepos.mockReturnValue((async function* () { })())
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
