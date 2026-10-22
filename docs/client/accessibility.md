@@ -28,7 +28,7 @@ output still require a manual audit with real assistive technology (§6).
 
 | Rule | Before | After | Evidence |
 | --- | --- | --- | --- |
-| Skip link + landmarks | none | `.fr-skip-links` → `#content`, `#mainMenu`, `#footer`; `<main id="content" tabindex="-1">` | `src/App.vue`, audit rule `page-shell-missing-landmarks` |
+| Skip link + landmarks | none | `DsfrSkipLinks` → `#content`, `#mainMenu`, `#footer`; `<main id="content" tabindex="-1">` | `src/App.vue`, audit rule `page-shell-missing-landmarks` |
 | Page heading | 13 views without `h1` | every view has one (`PageHeading`, visually hidden when a DSFR table already shows the title) | audit rule `view-without-h1` |
 | Accessible names | 24 unnamed icon-only buttons | `aria-label` on every one | audit rule `icon-only-without-name` = 0 |
 | Route announcement | none | polite live region + focus moved to `#content` after each client-side navigation | `src/composables/useAnnouncer.ts`, `src/router/index.ts` |

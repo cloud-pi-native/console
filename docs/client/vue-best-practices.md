@@ -180,6 +180,37 @@ call chain. Multi-branch permission logic, formatting, and filtering belong in
 of the form `asProfile === 'user' && !ProjectAuthorized.X(...)` in attributes,
 which is unreadable and untestable.
 
+### VUE-23 — DSFR first, utility classes second, custom CSS last
+
+The console is a French public-service application built on the DSFR. The design
+system is not a suggestion: re-implementing its patterns is how a console starts
+looking like a different product.
+
+- **MUST** use the `vue-dsfr` component when one exists (`DsfrSkipLinks`,
+  `DsfrAlert`, `DsfrTable`, `DsfrButton`, `DsfrTabs`, `DsfrModal`…).
+- **MUST** use component props rather than DSFR modifier classes:
+  `size="sm"`, not `class="fr-btn--sm"`; `type="error"`, not a custom colour.
+- **MUST** use DSFR layout and typography utilities for structure:
+  `fr-grid-row` / `fr-col-12 fr-col-md-6`, `fr-h3`, `fr-text--sm`, `fr-sr-only`.
+  Those utilities already carry the responsive behaviour and the spacing scale.
+- **MUST NOT** rebuild a DSFR pattern with raw `div`s and UnoCSS when the
+  design system already provides it.
+- Custom CSS is allowed only for a gap the DSFR does not cover (for example a
+  fixed toast position). It **MUST** be scoped, use DSFR tokens
+  (`var(--background-default-grey)`), and carry a comment naming the component
+  it extends.
+- Global DSFR overrides **MUST** stay in `src/main.css`, next to a comment
+  naming the DSFR component they override.
+
+**Why** — this refactor replaced three hand-written DSFR patterns: the skip
+links became `DsfrSkipLinks`, two `fr-btn--sm` classes became `size="sm"`, and
+the services-health page's custom three-column grid became
+`fr-grid-row`/`fr-col-*`, which also fixed its mobile layout (AR-17).
+
+**Enforced by** — review + the static audit for structural rules. There is no
+lint rule that can tell "DSFR component exists but was re-implemented"; that
+remains a reviewer responsibility.
+
 ---
 
 ## 3. Reactivity, lifecycle and async work

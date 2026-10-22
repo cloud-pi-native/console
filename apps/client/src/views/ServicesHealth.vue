@@ -42,6 +42,24 @@ const lastUpdateLabel = computed(() => {
   return `Dernière vérification : ${latest}`
 })
 
+const healthSummary = computed(() => {
+  const counts = { error: 0, warning: 0, ok: 0, unknown: 0 }
+  for (const service of serviceStore.services) {
+    if (service.status === 'En échec') counts.error += 1
+    else if (service.status === 'Dégradé') counts.warning += 1
+    else if (service.status === 'OK') counts.ok += 1
+    else counts.unknown += 1
+  }
+  const details = [
+    counts.error ? `${counts.error} en échec` : '',
+    counts.warning ? `${counts.warning} dégradé${counts.warning > 1 ? 's' : ''}` : '',
+    counts.ok ? `${counts.ok} opérationnel${counts.ok > 1 ? 's' : ''}` : '',
+    counts.unknown ? `${counts.unknown} inconnu${counts.unknown > 1 ? 's' : ''}` : '',
+  ].filter(Boolean)
+  const total = serviceStore.services.length
+  return `${total} service${total > 1 ? 's' : ''} : ${details.join(', ')}`
+})
+
 async function checkServicesHealth() {
   isUpdating.value = true
   await serviceStore.checkServicesHealth().finally(() => {
@@ -107,29 +125,36 @@ onMounted(async () => {
   <p class="fr-text--sm fr-mb-2w" data-testid="services-health-last-update">
     {{ lastUpdateLabel }}
   </p>
+  <p class="fr-text--sm fr-mb-2w" data-testid="services-health-summary">
+    {{ healthSummary }}
+  </p>
   <div
-    class="md:grid md:grid-cols-3 md:gap-3 items-center justify-between"
+    class="fr-grid-row fr-grid-row--gutters"
     data-testid="box-info"
   >
-    <DsfrAlert
+    <div
       v-for="service in sortedServices"
       :key="service.name"
-      :data-testid="`${service.name}-info`"
-      :title="service.name"
-      class="pb-5 fr-mt-2w"
-      :type="alertTypeMapper[service.status]"
+      class="fr-col-12 fr-col-md-6 fr-col-lg-4"
     >
-      <div class="inline">
-        {{ service.message }}
-      </div>
-      <p
-        v-if="serviceStore.displayCause && service.cause"
-        class="fr-text--sm fr-mt-1w fr-mb-0"
-        style="white-space: pre-wrap;"
+      <DsfrAlert
+        :data-testid="`${service.name}-info`"
+        :title="service.name"
+        class="fr-mt-2w"
+        :type="alertTypeMapper[service.status]"
       >
-        <strong>Cause :</strong> {{ service.cause }}
-      </p>
-      <div>{{ timeAgo.format(new Date(service.lastUpdateTimestamp), 'round') }}</div>
-    </DsfrAlert>
+        <div class="inline">
+          {{ service.message }}
+        </div>
+        <p
+          v-if="serviceStore.displayCause && service.cause"
+          class="fr-text--sm fr-mt-1w fr-mb-0"
+          style="white-space: pre-wrap;"
+        >
+          <strong>Cause :</strong> {{ service.cause }}
+        </p>
+        <div>{{ timeAgo.format(new Date(service.lastUpdateTimestamp), 'round') }}</div>
+      </DsfrAlert>
+    </div>
   </div>
 </template>

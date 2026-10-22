@@ -52,6 +52,12 @@ function appVersionUrlFor(version: string | undefined): string {
 const appVersion = appVersionLabel(rawAppVersion)
 const appVersionUrl = appVersionUrlFor(rawAppVersion)
 
+const skipLinks = [
+  { id: 'content', text: 'Accéder au contenu' },
+  { id: 'mainMenu', text: 'Accéder au menu' },
+  { id: 'footer', text: 'Accéder au pied de page' },
+]
+
 const quickLinks = computed(() => [{
   label: isLoggedIn.value ? 'Se déconnecter' : 'Se connecter',
   to: isLoggedIn.value ? '/logout' : '/login',
@@ -93,11 +99,7 @@ watch(() => userStore.isLoggedIn, async (loggedIn) => {
   <div
     class="min-h-screen min-w-screen flex flex-col"
   >
-    <div class="fr-skip-links">
-      <a class="fr-link" href="#content">Accéder au contenu</a>
-      <a class="fr-link" href="#mainMenu">Accéder au menu</a>
-      <a class="fr-link" href="#footer">Accéder au pied de page</a>
-    </div>
+    <DsfrSkipLinks :links="skipLinks" />
 
     <p
       class="fr-sr-only"

@@ -163,7 +163,9 @@ const rules = [
       const relativePath = relative(clientDir, file).replaceAll('\\', '/')
       if (relativePath !== 'src/App.vue') return []
       const findings = []
-      if (!/href="#content"/.test(source)) findings.push({ line: 1, snippet: 'lien d’évitement #content absent' })
+      const hasSkipLink = /href="#content"/.test(source)
+        || (/<DsfrSkipLinks\b/.test(source) && /id:\s*['"]content['"]/.test(source))
+      if (!hasSkipLink) findings.push({ line: 1, snippet: 'lien d’évitement #content absent' })
       if (!/<main\s[^>]*id="content"/.test(source)) findings.push({ line: 1, snippet: '<main id="content"> absent' })
       if (!/<DsfrFooter\s[^>]*id="footer"/.test(source)) findings.push({ line: 1, snippet: '<DsfrFooter id="footer"> absent' })
       return findings

@@ -261,7 +261,7 @@ async function copyToClipboard(text: string) {
             <DsfrButton
               label="Configurer"
               tertiary
-              class="fr-btn--sm"
+              size="sm"
               :aria-label="`Configurer l’environnement ${env.name}`"
               @click="selectedEnv = env"
             />
@@ -374,7 +374,7 @@ async function copyToClipboard(text: string) {
           <DsfrButton
             label="Configurer"
             tertiary
-            class="fr-btn--sm"
+            size="sm"
             :aria-label="`Configurer le dépôt ${repo.internalRepoName}`"
             @click="selectedRepo = repo"
           />
