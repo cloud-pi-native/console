@@ -13,3 +13,31 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     ...overrides,
   } satisfies ProjectWithDetails
 }
+
+export function makeRepoName() {
+  return faker.string.alphanumeric(8).toLowerCase()
+}
+
+export function makeRoleId() {
+  return faker.string.alphanumeric(12).toLowerCase()
+}
+
+export function makeUserId() {
+  return faker.string.alphanumeric(10).toLowerCase()
+}
+
+export function makePrivilegeName() {
+  return faker.string.alphanumeric(12).toLowerCase()
+}
+
+export function makeNexusUser() {
+  return {
+    userId: faker.internet.username(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    emailAddress: faker.internet.email(),
+    password: faker.internet.password(),
+    status: 'active',
+    roles: [],
+  }
+}
