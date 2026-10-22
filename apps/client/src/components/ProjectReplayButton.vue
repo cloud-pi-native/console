@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 
 const props = defineProps<{
@@ -7,17 +8,18 @@ const props = defineProps<{
 }>()
 
 const snackbarStore = useSnackbarStore()
+const projectStore = useProjectStore()
 const isReplaying = computed(
   () =>
-    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('update')),
+    props.project.operationsInProgress.some(ope => ope.startsWith('update')),
 )
 const isDeleting = computed(
   () =>
-    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('delete')),
+    props.project.operationsInProgress.some(ope => ope.startsWith('delete')),
 )
 
 async function replayHooks() {
-  await props.project.Commands.replay()
+  await projectStore.replayProjectHooks(props.project.id)
   switch (props.project.status) {
     case 'created':
       snackbarStore.setMessage(

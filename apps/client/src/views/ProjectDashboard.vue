@@ -164,7 +164,7 @@ function findTab() {
 const activeTab = ref(findTab())
 
 async function refreshMembers() {
-  await project.value.Members.list()
+  await projectStore.listMembers(project.value.id)
   teamId.value = getRandomId('team')
 }
 
@@ -198,7 +198,7 @@ const {
   const current = project.value
   if (!current) return
   try {
-    await current.Commands.update({
+    await projectStore.updateProject(current.id, {
       description: description ?? current.description,
       limitless: current.limitless,
       hprodMemory: current.hprodMemory,
@@ -209,7 +209,7 @@ const {
       prodGpu: current.prodGpu,
     })
   } finally {
-    await current.Commands.refresh()
+    await projectStore.refreshProject(current.id)
   }
 })
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
 import { bts, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 
@@ -93,10 +93,10 @@ function saveDescription() {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
+            :icon="project.operationsInProgress.includes('update')
               ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')"
+            :disabled="project.operationsInProgress.includes('update')"
             @click="saveDescription"
           />
           <DsfrButton
