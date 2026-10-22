@@ -9,7 +9,7 @@ defineProps<{
   isDirty: boolean
 }>()
 
-const depots = defineModel<DeploymentSourceDraft[]>({ default: [] })
+const depots = defineModel<DeploymentSourceDraft[]>({ default: () => [] })
 
 if (depots.value.length === 0) {
   addDepot()
