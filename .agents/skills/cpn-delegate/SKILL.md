@@ -3,8 +3,9 @@ name: cpn-delegate
 description:
   "Use when isolating one unit of work in a fresh git worktree — the default
   working surface for every implementation unit."
-version: 1.0.0
 license: Apache-2.0
+metadata:
+  version: 1.0.0
 ---
 
 # Console work isolation

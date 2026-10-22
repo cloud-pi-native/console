@@ -3,8 +3,9 @@ name: cpn-issue
 description:
   "Use when opening, triaging, or closing an issue in this repo: French
   templates, acceptance ledger, additive triage."
-version: 1.0.0
 license: Apache-2.0
+metadata:
+  version: 1.0.0
 ---
 
 # Console issues

@@ -3,8 +3,9 @@ name: cpn-review
 description:
   "Use when reviewing a PR or reconciling its review threads in this repo:
   severity-tagged French inline findings, DoD ledger, never merge."
-version: 1.1.0
 license: Apache-2.0
+metadata:
+  version: 1.1.0
 ---
 
 # Console PR review & reconciliation
