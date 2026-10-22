@@ -42,3 +42,11 @@ export function makeVaultSecretMetadata(overrides: Partial<VaultSecret['metadata
     ...overrides,
   }
 }
+
+export function makeProjectSlug() {
+  return faker.string.alphanumeric(10).toLowerCase()
+}
+
+export function makeRepoName() {
+  return faker.string.alphanumeric(8).toLowerCase()
+}
