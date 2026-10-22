@@ -3,8 +3,9 @@ name: cpn-merge
 description:
   "Use when merging a reviewed PR in this repo: DoD ledger, threads, CI, and
   human approval gates, then squash-merge."
-version: 1.1.0
 license: Apache-2.0
+metadata:
+  version: 1.1.0
 ---
 
 # Console PR landing
