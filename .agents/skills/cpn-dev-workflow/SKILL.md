@@ -5,7 +5,7 @@ description:
   isolation, quality gates, PR workflow, or local Playwright E2E testing."
 license: Apache-2.0
 metadata:
-  version: '1.1.0'
+  version: '1.2.0'
 ---
 
 # Console dev workflow
@@ -50,6 +50,19 @@ behind it; no bare-request implementation.
 
 Written artifacts — issues, PR bodies, comments — stay terse: one statement
 per fact, no rephrasing, no filler. Inflation buries signal.
+
+## Authoring-skill routing (write phase)
+
+When a unit writes, first identify the authoring skill that owns the files
+being edited and load it before editing:
+
+| Edited surface                                              | Skill              |
+| ----------------------------------------------------------- | ------------------ |
+| `apps/server-nestjs`, `packages/shared`, nginx routing      | `cpn-code-authoring` |
+| Any file under `.agents/skills/`                            | `cpn-create-skill` |
+
+A unit that mixes both surfaces (code and skills) applies the two rule sets
+on their own files — no skill applies another's rules.
 
 Details live in the `cpn-issue`, `cpn-commit`, `cpn-pr`, `cpn-review`,
 `cpn-merge`, and `cpn-delegate` skills.

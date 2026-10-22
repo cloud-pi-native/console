@@ -3,8 +3,9 @@ name: cpn-pr
 description:
   "Use when opening or triaging a PR in this repo: French body from the
   template, draft-first, origin-only, review-gated."
-version: 1.1.0
 license: Apache-2.0
+metadata:
+  version: 1.1.0
 ---
 
 # Console pull requests

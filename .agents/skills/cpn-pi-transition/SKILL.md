@@ -1,6 +1,9 @@
 ---
 name: cpn-pi-transition
 description: Use when auditing or moving GitHub Project issues between Product Increment iterations, reconciling PI and release milestones, or preparing an end-of-PI release-management review in cloud-pi-native/console.
+license: Apache-2.0
+metadata:
+  version: 1.0.0
 ---
 
 # Transition de PI

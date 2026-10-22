@@ -3,8 +3,9 @@ name: cpn-release-patch
 description:
   "Use when cutting a patch hotfix in this repo: the milestone's merged PRs
   are the backport set, duplicated onto the base tag with plain git."
-version: 1.1.0
 license: Apache-2.0
+metadata:
+  version: 1.1.0
 ---
 
 # Console hotfix backport
