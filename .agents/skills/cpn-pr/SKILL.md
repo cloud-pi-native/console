@@ -5,7 +5,7 @@ description:
   template, draft-first, origin-only, review-gated."
 license: Apache-2.0
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Console pull requests
@@ -79,6 +79,9 @@ Set each empty, determinable field, additively (`--add-label` /
 
 - Keep it draft until review passes; a human approving review from another
   collaborator is required — never self-merge.
+- **Flip to ready only at the gate:** CI green on the pushed head, body
+  reconciled with the diff, then `gh pr ready <N> --repo cloud-pi-native/console`.
+  Verify with `gh pr view <N> --json isDraft` → `false`.
 - CI includes the SonarQube Quality Gate. When all checks are green but
   `mergeStateStatus` is `BLOCKED`, enqueue:
 

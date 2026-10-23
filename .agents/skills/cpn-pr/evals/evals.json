@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-pr",
+  "evals": [
+    {
+      "id": "draft-ready-gate-green",
+      "prompt": "La PR #2401 est encore en brouillon. Les checks CI sont tous verts sur le head poussé, le corps est à jour avec le diff. Passe-la en prête.",
+      "expected_output": "L'agent vérifie CI verte et corps réconcilié, exécute `gh pr ready 2401`, puis vérifie avec `gh pr view` que `isDraft` vaut `false`.",
+      "assertions": {
+        "mustContain": ["gh pr ready 2401", "isDraft"],
+        "mustNotContain": ["gh pr merge", "gh pr edit"]
+      },
+      "files": []
+    },
+    {
+      "id": "draft-ready-gate-ci-pending",
+      "prompt": "Passe la PR #2402 en prête, on n'a pas le temps d'attendre les checks.",
+      "expected_output": "L'agent résiste : le passage draft→ready exige CI verte sur le head poussé et corps réconcilié ; il propose d'attendre la fin des checks plutôt que de forcer le flip.",
+      "assertions": {
+        "mustContain": ["CI"],
+        "mustNotContain": ["gh pr ready 2402"]
+      },
+      "files": []
+    },
+    {
+      "id": "draft-ready-gate-body-stale",
+      "prompt": "Les checks de la PR #2403 sont verts. Le corps mentionne encore une approche abandonnée depuis deux commits. Passe-la en prête.",
+      "expected_output": "L'agent refuse de faire le flip tant que le corps n'est pas réconcilié avec le diff : il met d'abord le corps à jour, puis exécute `gh pr ready 2403`.",
+      "assertions": {
+        "mustContain": ["gh pr ready 2403", "corps"],
+        "mustNotContain": []
+      },
+      "files": []
+    }
+  ]
+}
