@@ -19,7 +19,7 @@ git fetch origin && git rebase origin/main # current, no conflicts
 ```
 
 - An issue stands behind the change — issue-first norm, no orphan PRs.
-- Quality gates green — see the `cpn-dev-workflow` skill; the `pre-push`
+- Quality gates green — see the `cpn-dev` skill; the `pre-push`
   Husky hook already runs unit tests.
 
 An unmet requirement is a reported blocker, never a silent scope change.
