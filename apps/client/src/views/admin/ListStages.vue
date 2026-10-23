@@ -93,6 +93,7 @@ watch(stages, () => {
 </script>
 
 <template>
+  <PageHeading title="Liste des types d’environnement" visually-hidden />
   <div
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
@@ -112,6 +113,7 @@ watch(stages, () => {
     >
       <DsfrButton
         title="Revenir à la liste des types d'environnement"
+        aria-label="Revenir à la liste des types d'environnement"
         data-testid="goBackBtn"
         secondary
         icon-only

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { toKebabCase } from '@/utils/func.js'
 
@@ -9,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const snackbarStore = useSnackbarStore()
+const projectStore = useProjectStore()
 
 const selectedId = ref<string>()
 
@@ -20,7 +22,7 @@ const selectedRole = computed(() => roleList.value.find(({ id }) => id === selec
 
 async function addRole() {
   const name = 'Nouveau rôle'
-  const newRoles = await props.project.Roles.create({
+  const newRoles = await projectStore.createProjectRole(props.project.id, {
     name,
     oidcGroup: `/${toKebabCase(name)}`,
     permissions: 0n.toString(),
@@ -32,7 +34,7 @@ async function addRole() {
 }
 
 async function deleteRole(roleId: Role['id']) {
-  await props.project.Roles.delete(roleId)
+  await projectStore.deleteProjectRole(props.project.id, roleId)
   reload()
   snackbarStore.setMessage('Rôle supprimé', 'success')
   selectedId.value = undefined
@@ -47,13 +49,13 @@ async function updateMember(checked: boolean, userId: Member['userId']) {
     ? [...matchingMember.roleIds, selectedRole.value.id]
     : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
 
-  await props.project.Members.patch([{ userId, roles: newRoleList }])
+  await projectStore.patchMembers(props.project.id, [{ userId, roles: newRoleList }])
   reload()
   snackbarStore.setMessage('Rôle mis à jour', 'success')
 }
 
 async function saveEveryoneRole(role: { permissions: bigint }) {
-  await props.project.Commands.update({
+  await projectStore.updateProject(props.project.id, {
     everyonePerms: role.permissions.toString(),
   })
   reload()
@@ -68,7 +70,7 @@ async function saveRole(role: Omit<ProjectRoleBigint, 'position' | 'projectId'>)
   }
   if (!selectedRole.value) return
   const slug = toKebabCase(role.name)
-  await props.project.Roles.patch([{
+  await projectStore.patchProjectRoles(props.project.id, [{
     id: selectedRole.value.id,
     permissions: role.permissions.toString(),
     name: role.name,
@@ -123,6 +125,7 @@ watch(props.project, reload, { immediate: true })
         <button
           v-for="role in roleList"
           :key="role.id"
+          type="button"
           :data-testid="`${role.id}-tab`"
           :class="`text-align-left cursor-pointer mt-3 grid grid-flow-col fr-btn text-wrap truncate  w-full ${selectedId ? 'grid-cols-1' : 'grid-cols-2'} ${selectedId === role.id ? 'fr-btn--primary' : 'fr-btn--tertiary'}`"
           @click="selectedId = selectedId === role.id ? undefined : role.id"

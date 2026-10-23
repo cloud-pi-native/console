@@ -286,21 +286,33 @@ values-<env>/custom.yaml"
                     @click="checkEditToken"
                   />
                 </div>
-                <v-icon
-                  :name="isPassword ? 'ri:eye-line' : 'ri:eye-off-line'"
+                <button
+                  type="button"
                   data-testid="toggleTokenDisplayButton"
-                  class="-ml-8 mb-2 z-1 cursor-pointer"
+                  class="-ml-8 mb-2 z-1 cursor-pointer bg-transparent border-none p-0"
                   :title="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
+                  :aria-label="isPassword ? 'Afficher le token en clair' : 'Masquer le token'"
                   @click="toggleTokenInputType"
-                />
-                <v-icon
+                >
+                  <v-icon
+                    :name="isPassword ? 'ri:eye-line' : 'ri:eye-off-line'"
+                    aria-hidden="true"
+                  />
+                </button>
+                <button
                   v-if="isExistingAndPrivate && localRepo.externalToken !== initialToken"
+                  type="button"
                   data-testid="resetTokenButton"
-                  name="ri:restart-line"
                   title="Annuler la modification"
-                  class="-ml-12 mb-2 z-1 cursor-pointer"
+                  aria-label="Annuler la modification du token"
+                  class="-ml-12 mb-2 z-1 cursor-pointer bg-transparent border-none p-0"
                   @click="resetToken"
-                />
+                >
+                  <v-icon
+                    name="ri:restart-line"
+                    aria-hidden="true"
+                  />
+                </button>
               </div>
             </DsfrInputGroup>
           </div>

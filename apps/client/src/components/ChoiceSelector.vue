@@ -114,22 +114,25 @@ const groups: Group[] = [
     class="fr-select-group"
     :disabled="props.disabled"
   >
-    <div
-      class="cursor-pointer"
+    <button
+      type="button"
+      class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
+      :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
     >
-      <h6
+      <span
         v-if="props.label"
         :data-testid="`choice-selector-title-${props.id}`"
         class="mb-1 inline-block fr-label"
       >
         {{ props.label }}
-      </h6>
+      </span>
       <v-icon
         name="ri:arrow-right-s-line"
         class="shrink ml-4 rotate-90"
+        aria-hidden="true"
       />
-    </div>
+    </button>
     <p
       v-if="props.description"
       :data-testid="`choice-selector-description-${props.id}`"
@@ -215,20 +218,22 @@ const groups: Group[] = [
   <div
     v-else
     :id="props.id"
-    @click="isWrapped = false"
   >
-    <div
-      class="cursor-pointer"
+    <button
+      type="button"
+      class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
+      :aria-expanded="isWrapped"
       @click="isWrapped = !isWrapped"
     >
-      <h6 class="mb-1 inline-block fr-label">
+      <span class="mb-1 inline-block fr-label">
         {{ props.label }}
-      </h6>
+      </span>
       <v-icon
         class="ml-4"
         name="ri:arrow-right-s-line"
+        aria-hidden="true"
       />
-    </div>
+    </button>
     <div
       v-for="option in options.selected.value.slice(0, 3)"
       :key="option[props.valueKey]"
@@ -242,19 +247,21 @@ const groups: Group[] = [
         @click="isWrapped = false"
       />
     </div>
-    <div
+    <button
       v-if="options.selected.value.length === 0"
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
         class="cursor-pointer"
         :label="`Aucune sélection, ${props.options.length} choix disponibles`"
       />
-    </div>
-    <div
+    </button>
+    <button
       v-if="options.selected.value.length > 3"
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
@@ -262,16 +269,17 @@ const groups: Group[] = [
         :label="`et ${options.selected.value.length - 3} de +`"
         :title="`${options.selected.value.slice(3, 10).map(option => option[props.labelKey]).join('\n')}${options.selected.value.length > 10 ? '\n...' : ''}`"
       />
-    </div>
-    <div
+    </button>
+    <button
       v-else
-      class="inline-block"
+      type="button"
+      class="inline-block bg-transparent border-none p-0"
       @click="isWrapped = false"
     >
       <DsfrTag
         class="cursor-pointer"
         label="Modifier"
       />
-    </div>
+    </button>
   </div>
 </template>

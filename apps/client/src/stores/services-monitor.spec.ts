@@ -1,8 +1,8 @@
 import type { ServiceBody } from '@cpn-console/shared'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '../api/xhr-client.js'
-import { useServiceStore } from './services-monitor.js'
+import { HEALTH_POLL_INTERVAL_MS, useServiceStore } from './services-monitor.js'
 
 const apiClientGet = vi.spyOn(apiClient.Services, 'getServiceHealth')
 
@@ -56,5 +56,34 @@ describe('service Store', () => {
       status: undefined,
     })
     expect(serviceStore.services).toMatchObject(data)
+  })
+
+  describe('health polling', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('checks immediately, then on every interval until it is stopped', async () => {
+      const data: ServiceBody = [
+        { interval: HEALTH_POLL_INTERVAL_MS, lastUpdateTimestamp: Date.now(), message: 'OK', name: 'Keycloak', status: 'OK' },
+      ]
+      apiClientGet.mockResolvedValue({ status: 200, body: data })
+
+      const serviceStore = useServiceStore()
+      await serviceStore.startHealthPolling()
+
+      expect(apiClientGet).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(HEALTH_POLL_INTERVAL_MS)
+      expect(apiClientGet).toHaveBeenCalledTimes(2)
+
+      serviceStore.stopHealthPolling()
+      await vi.advanceTimersByTimeAsync(HEALTH_POLL_INTERVAL_MS * 2)
+      expect(apiClientGet).toHaveBeenCalledTimes(2)
+    })
   })
 })

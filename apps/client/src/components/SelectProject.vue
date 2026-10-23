@@ -73,6 +73,7 @@ function selectProject(slug: string) {
       type="buttonType"
       secondary
       icon="ri:add-line"
+      aria-label="Créer un nouveau projet"
       :icon-only="!!projectStore.myProjects.length"
       :label="!projectStore.myProjects.length ? 'Créer un nouveau projet' : ''"
       small

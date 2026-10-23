@@ -62,7 +62,7 @@ const retrieveUsersToAdd = pDebounce(async (letters: LettersQuery['letters']) =>
   if (letters.length < 3) return
   // Ne pas relancer de requête à chaque lettre ajoutée si aucun user ne correspond aux premières lettres données
   if (lettersNotMatching.value && letters.includes(lettersNotMatching.value) && !usersToAdd.value?.length) return
-  usersToAdd.value = await projectStore.projectsBySlug[props.project.slug].Members.getCandidateUsers(letters)
+  usersToAdd.value = await projectStore.getCandidateUsers(props.project.id, letters)
   // Stockage des lettres qui ne renvoient aucun résultat
   if (!usersToAdd.value?.length) {
     lettersNotMatching.value = letters
@@ -85,7 +85,7 @@ async function addUserToProject() {
   if (!newUserEmail.value) return
   if (isUserAlreadyInTeam.value) return snackbarStore.setMessage('L\'utilisateur semble déjà faire partie du projet')
 
-  await props.project.Members.create(newUserEmail.value)
+  await projectStore.addMember(props.project.id, newUserEmail.value)
     .finally(() => emit('refresh'))
 
   newUserEmail.value = ''
@@ -94,7 +94,7 @@ async function addUserToProject() {
 }
 
 async function removeUserFromProject(userId: string) {
-  await props.project.Members.delete(userId)
+  await projectStore.removeMember(props.project.id, userId)
     .finally(() => {
       emit('refresh')
       if (userStore.userProfile?.id === userId) {
@@ -105,7 +105,7 @@ async function removeUserFromProject(userId: string) {
 
 async function transferOwnerShip() {
   if (nextOwnerId.value && props.project.members.some(member => member.userId === nextOwnerId.value)) {
-    await props.project.Commands.update({ ownerId: nextOwnerId.value })
+    await projectStore.updateProject(props.project.id, { ownerId: nextOwnerId.value })
       .then(() => emit('transfer'))
       .catch(() => emit('refresh'))
   }
@@ -128,13 +128,16 @@ async function transferOwnerShip() {
         :key="member.userId"
       >
         <td>
-          <code
-            text="id"
+          <button
+            type="button"
             title="Copier l'id"
             :data-testid="member.userId"
-            class="fr-text-default--info text-xs truncate cursor-pointer"
+            aria-label="Copier l’identifiant du membre"
+            class="bg-transparent border-none p-0 cursor-pointer"
             @click="() => copyContent(member.userId)"
-          >{{ member.userId }}</code>
+          >
+            <code class="fr-text-default--info text-xs truncate">{{ member.userId }}</code>
+          </button>
         </td>
         <td>{{ member.email }}</td>
         <td>{{ project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds) }}</td>
@@ -144,16 +147,20 @@ async function transferOwnerShip() {
           >
             -
           </div>
-          <div
+          <button
             v-else-if="member.userId === userStore.userProfile?.id"
-            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            type="button"
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning bg-transparent border-none p-0"
             title="Quitter le projet"
+            aria-label="Quitter le projet"
             @click="() => removeUserFromProject(member.userId)"
           />
-          <div
+          <button
             v-else
-            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning"
+            type="button"
+            class="fr-fi-close-line !flex justify-center cursor-pointer fr-text-default--warning bg-transparent border-none p-0"
             :title="`Retirer ${member.email} du projet`"
+            :aria-label="`Retirer ${member.email} du projet`"
             @click="() => removeUserFromProject(member.userId)"
           />
         </td>

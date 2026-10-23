@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
 import { bts, descriptionMaxLength, projectIsLockedInfo } from '@cpn-console/shared'
 import { copyContent } from '@/utils/func.js'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   project: Project
   canEditDescription?: boolean
 }>(), {
@@ -11,8 +11,7 @@ withDefaults(defineProps<{
 })
 
 const emits = defineEmits<{
-  (e: 'update:model-value'): [value: string]
-  (e: 'saveDescription'): void
+  saveDescription: [description: string]
 }>()
 
 const isEditingDescription = ref(false)
@@ -22,10 +21,18 @@ function getDynamicTitle(locked?: Project['locked'], description?: Project['desc
   if (description) return 'Editer la description'
   return 'Ajouter une description'
 }
-const modelValue = defineModel<string>()
+
+// Local draft: the project entity belongs to the store, so this component
+// never writes to it. The parent persists the value on `saveDescription`.
+const descriptionDraft = ref(props.project.description ?? '')
+
+watch(() => props.project.description, (description) => {
+  if (isEditingDescription.value) return
+  descriptionDraft.value = description ?? ''
+})
 
 function saveDescription() {
-  emits('saveDescription')
+  emits('saveDescription', descriptionDraft.value)
   isEditingDescription.value = false
 }
 </script>
@@ -70,7 +77,7 @@ function saveDescription() {
         v-if="isEditingDescription"
       >
         <DsfrInput
-          v-model="modelValue"
+          v-model="descriptionDraft"
           data-testid="descriptionInput"
           :is-textarea="true"
           :maxlength="descriptionMaxLength"
@@ -86,10 +93,10 @@ function saveDescription() {
             data-testid="saveDescriptionBtn"
             label="Enregistrer la description"
             secondary
-            :icon="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')
+            :icon="project.operationsInProgress.includes('update')
               ? { name: 'ri:refresh-line', animation: 'spin' }
               : 'ri:send-plane-line'"
-            :disabled="(project.operationsInProgress as unknown as ProjectOperations[]).includes('update')"
+            :disabled="project.operationsInProgress.includes('update')"
             @click="saveDescription"
           />
           <DsfrButton
@@ -122,6 +129,7 @@ function saveDescription() {
           icon="ri:pencil-line"
           data-testid="setDescriptionBtn"
           :title="getDynamicTitle(project.locked, project.description)"
+          aria-label="Modifier la description du projet"
           icon-only
           secondary
           @click="isEditingDescription = true"
@@ -132,53 +140,49 @@ function saveDescription() {
     <!-- Section technique -->
     <div class="flex flex-col gap-2 items-end">
       <div class="flex flex-row">
-        <code
-          class="fr-text-default--info text-sm"
+        <button
+          type="button"
+          class="bg-transparent border-none p-0 cursor-pointer"
           data-testid="project-slug"
+          aria-label="Copier le slug du projet"
           @click="copyContent(project.slug)"
-        >slug:&nbsp;{{ project.slug }}</code>
-        <div
-          title="Slug du projet, nom technique garantissant l'unicité"
-          class="ml-2 inline"
         >
-          <v-icon
-            name="ri:question-line"
-          />
-        </div>
+          <code class="fr-text-default--info text-sm">slug:&nbsp;{{ project.slug }}</code>
+        </button>
+        <DsfrTooltip content="Slug du projet, nom technique garantissant l'unicité">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
       <div class="flex flex-row">
-        <code
-          class="fr-text-default--info text-sm"
+        <button
+          type="button"
+          class="bg-transparent border-none p-0 cursor-pointer"
           :title="project.id"
           data-testid="project-id"
+          aria-label="Copier l’identifiant du projet"
           @click="copyContent(project.id)"
-        >Id:&nbsp;...{{ project.id.slice(-5) }}</code>
-        <div
-          title="Id du projet, uuid"
-          class="ml-2 inline"
         >
-          <v-icon
-            name="ri:question-line"
-          />
-        </div>
+          <code class="fr-text-default--info text-sm">Id:&nbsp;...{{ project.id.slice(-5) }}</code>
+        </button>
+        <DsfrTooltip content="Id du projet, uuid">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
       <div
         v-if="project.lastSuccessProvisionningVersion"
         class="flex flex-row"
       >
-        <code
-          class="fr-text-default--info text-sm"
+        <button
+          type="button"
+          class="bg-transparent border-none p-0 cursor-pointer"
+          aria-label="Copier la version de provisionnement"
           @click="copyContent(project.lastSuccessProvisionningVersion)"
-        >Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}
-        </code>
-        <div
-          title="Version de la console lors du dernier provisionnement réussi du projet"
-          class="ml-2 inline"
         >
-          <v-icon
-            name="ri:question-line"
-          />
-        </div>
+          <code class="fr-text-default--info text-sm">Version:&nbsp;{{ project.lastSuccessProvisionningVersion }}</code>
+        </button>
+        <DsfrTooltip content="Version de la console lors du dernier provisionnement réussi du projet">
+          <v-icon name="ri:question-line" aria-hidden="true" />
+        </DsfrTooltip>
       </div>
     </div>
   </div>

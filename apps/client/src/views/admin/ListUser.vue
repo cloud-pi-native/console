@@ -122,6 +122,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
+  <PageHeading title="Liste des utilisateurs" visually-hidden />
   <div class="relative">
     <h2>Liste des utilisateurs</h2>
     <div class="flex <xl:flex-col flex-row gap-2 w-full gap-5">

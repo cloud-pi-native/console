@@ -21,11 +21,22 @@ watch(routePath, () => {
 </script>
 
 <template>
-  <div>
+  <!--
+    The live region is always mounted: assistive technologies only announce
+    content inserted into an existing region, not a region that appears with
+    its content.
+  -->
+  <output
+    class="block"
+    :role="type === 'error' ? 'alert' : 'status'"
+    :aria-live="type === 'error' ? 'assertive' : 'polite'"
+    aria-atomic="true"
+    data-testid="snackbar-region"
+  >
     <DsfrAlert
+      v-if="isOpen"
       data-testid="snackbar"
       :type="type"
-      :closed="!isOpen"
       class="dso-snackbar max-w-300"
       small
       closeable
@@ -37,7 +48,7 @@ watch(routePath, () => {
         {{ message }}
       </span>
     </DsfrAlert>
-  </div>
+  </output>
 </template>
 
 <style scoped>
