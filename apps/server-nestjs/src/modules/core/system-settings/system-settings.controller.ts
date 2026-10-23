@@ -12,9 +12,9 @@ export class SystemSettingsController {
 
   @Get()
   async list(
-    @Query() query: string,
+    @Query('key') key?: string,
   ) {
-    return this.service.list(query)
+    return this.service.list(key)
   }
 
   @Post()
