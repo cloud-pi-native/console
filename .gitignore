@@ -66,6 +66,7 @@ charts/
 **/env/kind-values.yml
 
 # tmp dev files
+.eslintcache
 ci/kind/configs/rendered
 
 external-plugins
