@@ -53,7 +53,7 @@ git fetch --prune
 - Basing on local `main` — rebase onto `origin/main` before pushing
   (`cpn-pr`).
 - Two units in one worktree — out-of-scope fixes become follow-up issues
-  (`cpn-dev-workflow`).
+  (`cpn-dev`).
 
 ## Verify
 
@@ -64,5 +64,5 @@ git status --porcelain # clean before switching units
 
 ## See also
 
-`cpn-dev-workflow` (lifecycle, quality gates) · `cpn-commit` · `cpn-pr` ·
+`cpn-dev` (lifecycle, quality gates) · `cpn-commit` · `cpn-pr` ·
 `cpn-merge` (landing, cleanup).
