@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-issue",
+  "evals": [
+    {
+      "id": "requalification-trail",
+      "prompt": "L'issue #2401 a été triée avec le label `enhancement`, mais depuis, un commentaire du référent produit établit que c'est en fait un bug de régression. Le corps a été édité après le triage. Que fais-tu ?",
+      "expected_output": "L'agent re-derive les champs dont la dérivation a changé (label bug, milestone), ne touche pas les autres, et publie sur l'issue un commentaire de piste : champ, ancienne valeur → nouvelle valeur, l'élément de preuve qui l'a forcée. Aucune édition silencieuse.",
+      "assertions": {
+        "mustContain": ["→", "preuve"],
+        "mustNotContain": []
+      },
+      "files": []
+    },
+    {
+      "id": "milestone-close-sweep",
+      "prompt": "On ferme la milestone de la 9.12. Je lance `gh api -X PATCH .../milestones/12 -f state=closed` ?",
+      "expected_output": "L'agent balaie d'abord les issues restantes ouvertes de la milestone avant de la fermer : une milestone fermée laisse ses items ouverts avec la milestone grisée.",
+      "assertions": {
+        "mustContain": ["milestone"],
+        "mustNotContain": ["-X PATCH"]
+      },
+      "files": []
+    },
+    {
+      "id": "milestone-create-duedate",
+      "prompt": "Crée la milestone de la 9.13 pour le 1er janvier 2030.",
+      "expected_output": "L'agent crée la milestone avec `due_on` en ISO complet avec timezone (`2030-01-01T00:00:00Z`) — une date nue est rejetée — et refuse d'inventer une date hors calendrier de release.",
+      "assertions": {
+        "mustContain": ["due_on"],
+        "mustNotContain": ["--due-on 2030-01-01"]
+      },
+      "files": []
+    }
+  ]
+}
