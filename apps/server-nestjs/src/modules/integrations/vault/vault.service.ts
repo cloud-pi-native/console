@@ -345,6 +345,9 @@ export class VaultService {
       this.ensureIdentityGroup(CONSOLE_ADMIN_GROUP_NAME, [PLATFORM_ADMIN_POLICY_NAME], adminGroupPath),
       this.ensureIdentityGroup(CONSOLE_READONLY_GROUP_NAME, [PLATFORM_READONLY_POLICY_NAME], auditorGroupPath),
       this.ensureIdentityGroup(CONSOLE_SECURITY_GROUP_NAME, [PLATFORM_SECURITY_POLICY_NAME], securityGroupPath),
+      // The owner group is a second alias on the admin identity group: both
+      // memberships grant the same app policy, keeping owner distinct from
+      // admin at the SSO layer without a duplicate Vault group.
       ...projectAdminGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'admin'), [appPolicyName], groupPath)),
       ...projectDevopsGroupPaths.map(groupPath =>
