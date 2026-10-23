@@ -4,9 +4,9 @@ import { faker } from '@faker-js/faker'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { makeProject } from '../../core/project/project-testing.utils'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { NexusDatastoreService, projectSelect } from './nexus-datastore.service'
-import { makeProject } from '../../core/project/project-testing.utils'
 
 describe('nexusDatastoreService', () => {
   let service: NexusDatastoreService
@@ -49,9 +49,9 @@ describe('nexusDatastoreService', () => {
       const project = makeProject()
       prisma.project.findUnique.mockResolvedValue(project)
 
-      await expect(service.getProject(faker.string.uuid())).resolves.toEqual(project)
+      await expect(service.getProject(project.id)).resolves.toEqual(project)
       expect(prisma.project.findUnique).toHaveBeenCalledWith({
-        where: { id: expect.any(String) },
+        where: { id: project.id },
         select: projectSelect,
       })
     })
