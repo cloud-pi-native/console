@@ -20,8 +20,8 @@
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
     "dev": "nodemon --watch src --ext .ts --exec 'pnpm run build'",
-    "format": "eslint ./ --fix",
-    "lint": "eslint ./",
+    "format": "eslint ./ --fix --cache",
+    "lint": "eslint ./ --cache",
     "swagger:generate": "node ./scripts/generate-api.mjs"
   },
   "dependencies": {

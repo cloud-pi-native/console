@@ -18,9 +18,9 @@
   "scripts": {
     "build": "tsc",
     "build:clean": "rimraf ./dist ./types ./tsconfig.tsbuildinfo",
-    "format": "eslint ./ --fix",
+    "format": "eslint ./ --fix --cache",
     "kube:e2e-ci": "echo 'check cache'",
-    "lint": "eslint ./",
+    "lint": "eslint ./ --cache",
     "test:e2e-ci": "echo 'check cache'"
   },
   "dependencies": {

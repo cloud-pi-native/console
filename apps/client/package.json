@@ -13,7 +13,7 @@
     "build-only": "vite --mode=production build",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "dev": "vite --mode=development",
-    "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix",
+    "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix --cache",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "icons": "./scripts/generate-icons.sh",
     "integ": "vite --mode=integration",
