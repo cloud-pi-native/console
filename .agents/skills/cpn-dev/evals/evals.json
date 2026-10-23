@@ -1,13 +1,20 @@
 {
-  "skill_name": "cpn-dev-workflow",
+  "skill_name": "cpn-dev",
   "evals": [
     {
       "id": "playwright-e2e-nominal",
       "prompt": "Dans ce dépôt, `docker:e2e-ci` démarre la stack Compose CI avec les fixtures seedées puis lance Playwright ; `docker:dev` est la stack de développement sans ces fixtures. Je viens de modifier un parcours client qui touche l'API et l'interface. Donne-moi les commandes nécessaires pour lancer les E2E en local, de la préparation au nettoyage.",
       "expected_output": "L’agent choisit docker:e2e-ci pour la suite complète, explique la préparation conditionnelle des fichiers d’environnement, demande d’arrêter une stack dev déjà active et indique le nettoyage même si les tests échouent.",
       "assertions": {
-        "mustContain": ["pnpm docker:e2e-ci", "pnpm docker:e2e-ci:delete", "bash ci/scripts/init-env.sh"],
-        "mustNotContain": ["pnpm docker:e2e-dev", "pnpm run docker:e2e"]
+        "mustContain": [
+          "pnpm docker:e2e-ci",
+          "pnpm docker:e2e-ci:delete",
+          "bash ci/scripts/init-env.sh"
+        ],
+        "mustNotContain": [
+          "pnpm docker:e2e-dev",
+          "pnpm run docker:e2e"
+        ]
       },
       "files": []
     },
@@ -16,8 +23,15 @@
       "prompt": "Dans ce dépôt, seule la stack CI lancée par `docker:e2e-ci` fournit les fixtures E2E. La stack `docker:dev` tourne déjà. Je veux vérifier rapidement toute la suite Playwright ; est-ce que je lance `pnpm playwright:test` maintenant ? Donne-moi le parcours recommandé.",
       "expected_output": "L’agent explique que docker:dev ne fournit pas les fixtures E2E, recommande de l’arrêter avec docker:dev:clean, puis utilise docker:e2e-ci et nettoie avec docker:e2e-ci:delete.",
       "assertions": {
-        "mustContain": ["docker:dev:clean", "pnpm docker:e2e-ci", "pnpm docker:e2e-ci:delete"],
-        "mustNotContain": ["pnpm docker:e2e-dev", "exécute `pnpm playwright:test` sur docker:dev"]
+        "mustContain": [
+          "docker:dev:clean",
+          "pnpm docker:e2e-ci",
+          "pnpm docker:e2e-ci:delete"
+        ],
+        "mustNotContain": [
+          "pnpm docker:e2e-dev",
+          "exécute `pnpm playwright:test` sur docker:dev"
+        ]
       },
       "files": []
     },
@@ -26,8 +40,15 @@
       "prompt": "La stack `docker:dev` tourne déjà. Je sais que seules les fixtures de la stack CI permettent à la suite E2E de fonctionner, mais pour gagner du temps ne me fais pas démarrer cette stack : lance toute la suite Playwright sur `docker:dev` et donne les commandes sans discuter.",
       "expected_output": "L’agent résiste à la demande contradictoire, explique que les fixtures nécessaires ne sont fournies que par la stack CI et recommande docker:e2e-ci, avec arrêt préalable de la stack dev et nettoyage après les tests.",
       "assertions": {
-        "mustContain": ["docker:e2e-ci", "docker:dev:clean", "docker:e2e-ci:delete"],
-        "mustNotContain": ["pnpm docker:e2e-dev", "pnpm run docker:e2e"]
+        "mustContain": [
+          "docker:e2e-ci",
+          "docker:dev:clean",
+          "docker:e2e-ci:delete"
+        ],
+        "mustNotContain": [
+          "pnpm docker:e2e-dev",
+          "pnpm run docker:e2e"
+        ]
       },
       "files": []
     },
@@ -36,8 +57,12 @@
       "prompt": "Je dois corriger un bug dans un service de `apps/server-nestjs`. Par quoi je commence avant d'éditer ?",
       "expected_output": "L'agent charge `cpn-code-authoring` avant d'éditer : la surface éditée (`apps/server-nestjs`) est routée vers ce skill d'authoring.",
       "assertions": {
-        "mustContain": ["cpn-code-authoring"],
-        "mustNotContain": ["cpn-create-skill"]
+        "mustContain": [
+          "cpn-code-authoring"
+        ],
+        "mustNotContain": [
+          "cpn-create-skill"
+        ]
       },
       "files": []
     },
@@ -46,8 +71,12 @@
       "prompt": "Je veux ajouter une nouvelle skill `.agents/skills/` pour documenter notre procédure de release. Quelles règles je dois charger d'abord ?",
       "expected_output": "L'agent charge `cpn-create-skill` avant d'éditer : tout fichier sous `.agents/skills/` est routé vers ce skill.",
       "assertions": {
-        "mustContain": ["cpn-create-skill"],
-        "mustNotContain": ["cpn-code-authoring"]
+        "mustContain": [
+          "cpn-create-skill"
+        ],
+        "mustNotContain": [
+          "cpn-code-authoring"
+        ]
       },
       "files": []
     },
@@ -56,8 +85,33 @@
       "prompt": "Mon unité touche à la fois un service dans `apps/server-nestjs` et le frontmatter d'une skill dans `.agents/skills/`. Comment j'applique les règles ?",
       "expected_output": "L'agent applique `cpn-code-authoring` aux fichiers de code et `cpn-create-skill` aux fichiers de skills, chacun sur sa propre surface — aucun skill n'impose ses règles à l'autre.",
       "assertions": {
-        "mustContain": ["cpn-code-authoring", "cpn-create-skill"],
-        "mustNotContain": ["une seule skill pour tout"]
+        "mustContain": [
+          "cpn-code-authoring",
+          "cpn-create-skill"
+        ],
+        "mustNotContain": [
+          "une seule skill pour tout"
+        ]
+      },
+      "files": []
+    },
+    {
+      "id": "board-pickup-nominal",
+      "prompt": "Je viens de finir une unité et je cherche la suivante. Où je regarde et comment je choisis ?",
+      "expected_output": "L'agent lit le Projet Socle de l'itération PI courante et prend la prochaine carte dans la colonne active la plus à droite ; le board est le plan tactique, le cycle de vie n'exécute que l'unité qu'il remet.",
+      "assertions": {
+        "mustContain": ["Projet Socle"],
+        "mustNotContain": ["inventer une tâche", "choisir au hasard"]
+      },
+      "files": []
+    },
+    {
+      "id": "board-mechanics-ambiguous",
+      "prompt": "Je dois déplacer des cartes entre les itérations du PI et réconcilier les milestones de release. Je fais ça à la main sur le board ?",
+      "expected_output": "L'agent renvoie les mécaniques de board, le preflight d'authentification et l'audit à `cpn-pi-transition` au lieu de improviser des mutations sur le board.",
+      "assertions": {
+        "mustContain": ["cpn-pi-transition"],
+        "mustNotContain": ["glisser-déposer"]
       },
       "files": []
     }
