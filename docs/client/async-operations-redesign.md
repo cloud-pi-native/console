@@ -1,9 +1,19 @@
-# Async Operations & Notification-Centered Client — Redesign Plan
+# Async Operations & Journal-Centered Client — Redesign Plan
 
-Status: **proposal** (2026-10-23)
+Status: **proposal v2 — decisions applied** (2026-10-23)
 Scope: `apps/client`, `apps/server-nestjs`, `packages/shared`
-Supersedes: the client-only operation tracking described in
-`vue-best-practices.md` (VUE-11, VUE-16).
+Supersedes: the client-only operation tracking in `vue-best-practices.md`
+(VUE-11, VUE-16).
+
+Decision log:
+
+1. **No cancellation** for now. Operations run to a terminal state; a retry is a
+   new operation.
+2. **Inbox like a cloud provider, backed by the existing journal.** No separate
+   notification store: `Log` is the durable journal and the inbox reads from it.
+3. **No external escalation** (no email, webhook or push).
+4. **Every handler must be idempotent.** Async enablement is gated on a
+   double-execution test per kind.
 
 ---
 
@@ -21,15 +31,17 @@ state:
 3. **Push first, poll as fallback.** The client subscribes to a user-scoped SSE
    stream (`/api/v1/events`), resumes with `Last-Event-ID`, and falls back to
    incremental polling when the stream is unavailable.
-4. **Notifications are a first-class surface.** A global Activity Center shows
-   running and finished operations, keeps failures until they are read, and
-   exposes per-project badges. Toasts become a secondary channel.
+4. **The journal is the inbox.** Terminal operations write a `Log` row; the
+   Activity Center is a live lens over active operations plus the existing
+   journal. No parallel notification table, no second history.
 5. **The UI stops blocking.** Forms submit, close, and let the resource show a
-   pending state driven by server events. No modal stays open for a
-   multi-minute provisioning.
+   pending state driven by server events.
+6. **No cancellation.** The state machine has no `cancelled` state, no cancel
+   endpoint, no cancel button. Retrying a failed operation creates a new one.
 
 This is a backend-heavy redesign. The client changes are only safe once the
-operation contract exists; phases below make that ordering explicit.
+operation contract and the idempotency guarantees exist; phases below make that
+ordering explicit.
 
 ---
 
@@ -44,13 +56,14 @@ operation contract exists; phases below make that ordering explicit.
 | Replay blocks the HTTP request | `ProjectHooksService.replay()` awaits `appEvents.emitProjectEvent()`, which awaits every plugin listener (`apps/server-nestjs/src/modules/core/project-hooks/project-hooks.service.ts`) |
 | Events are in-process only | `AppEventsService` uses `EventEmitter2`; nothing is exposed to the client |
 | No job model | Prisma has `Project`, `Log`, `Deployment`, `Environment`, `Repository`, roles and tokens — no `Operation`/`Job` table |
+| The journal already exists | `Log` (`action`, `data`, `userId`, `projectId`, `requestId`) is written by `AppEventsService` and exposed by the logs API |
 | Health is polled every 5 minutes | `apps/client/src/stores/services-monitor.ts`, `HEALTH_POLL_INTERVAL_MS` |
 | Feedback is ephemeral | `useSnackbarStore` clears non-error messages after 6 s; no history |
 | Errors are not durable | A failed operation leaves no trace once the toast disappears |
 
-The result is a console that looks synchronous even when the platform is doing
-work for minutes, and that forgets what it was doing as soon as the user
-reloads or opens a second tab.
+The result is a console that looks synchronous while the platform works for
+minutes, and that forgets what it was doing as soon as the user reloads or opens
+a second tab.
 
 ---
 
@@ -60,16 +73,18 @@ reloads or opens a second tab.
    the server; it never invents progress.
 2. **At-least-once delivery, idempotent application.** Events may repeat; the
    reducer is keyed by a monotonic sequence and tolerates duplicates.
-3. **Durable inbox, ephemeral transport.** SSE carries events; Postgres keeps
-   them. A lost connection costs latency, never correctness.
-4. **Progressive enhancement.** Polling alone must be a usable product; SSE
-   makes it fast.
-5. **No focus stealing.** Completion is announced politely; failures are
+3. **Durable operation, durable journal, ephemeral transport.** SSE carries
+   events; Postgres keeps operations and journal rows. A lost connection costs
+   latency, never correctness.
+4. **One history.** The journal is the audit trail and the inbox. Do not create
+   a parallel notification database that will drift from it.
+5. **Progressive enhancement.** Polling alone must be usable; SSE makes it fast.
+6. **No focus stealing.** Completion is announced politely; failures are
    assertive but never move focus.
-6. **Multi-tab by default.** Two tabs converge on the same state through
-   `BroadcastChannel` and the same server snapshot.
-7. **Compatibility is a flag, not a branch.** Legacy synchronous endpoints stay
-   available behind a feature flag until the new path is proven.
+7. **Multi-tab by default.** Two tabs converge through `BroadcastChannel` and
+   the same server snapshot.
+8. **Idempotency is a precondition, not a phase 6 concern.** A handler that
+   cannot be replayed safely cannot be enabled asynchronously.
 
 ---
 
@@ -85,7 +100,6 @@ enum OperationStatus {
   running
   succeeded
   failed
-  cancelled
 }
 
 enum OperationKind {
@@ -118,12 +132,14 @@ model Operation {
   projectId      String?         @db.Uuid
   requestedById  String?         @db.Uuid
   idempotencyKey String?
+  retryOfId      String?         @db.Uuid
   progress       Int             @default(0) // 0..100
   currentStep    String?
   steps          Json            @default("[]")
   params         Json?
   result         Json?
   error          Json?
+  logId          String?         @db.Uuid
   createdAt      DateTime        @default(now())
   startedAt      DateTime?
   finishedAt     DateTime?
@@ -132,6 +148,7 @@ model Operation {
   project        Project?        @relation(fields: [projectId], references: [id])
   requestedBy    User?           @relation(fields: [requestedById], references: [id])
   events         OperationEvent[]
+  reads          OperationRead[]
 
   @@unique([requestedById, idempotencyKey])
   @@index([projectId, status])
@@ -151,60 +168,101 @@ model OperationEvent {
   @@index([createdAt])
 }
 
-model Notification {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String   @db.Uuid
-  operationId String?  @db.Uuid
-  level       String   // info | success | warning | error
-  title       String
-  body        String?
-  readAt      DateTime?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+/**
+ * Per-user read marker for the journal-backed inbox.
+ * The journal itself stays in Log; this table only stores what the user has seen.
+ */
+model OperationRead {
+  userId      String    @db.Uuid
+  operationId String    @db.Uuid
+  readAt      DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  operation   Operation @relation(fields: [operationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, operationId])
+  @@index([userId, readAt])
+}
+```
+
+Additions to the existing `Log` model:
+
+```prisma
+model Log {
+  // ...existing fields
+  operationId String? @db.Uuid
   operation   Operation? @relation(fields: [operationId], references: [id])
 
-  @@index([userId, readAt, createdAt])
+  @@index([operationId])
+  @@index([projectId, createdAt])
 }
 ```
 
 Notes:
 
+- **No `Notification` table.** Terminal operations write one `Log` row through
+  the existing log service, with `operationId` set. The journal page and the
+  Activity Center both read that row.
+- `OperationRead` is the only new per-user state: it marks a terminal operation
+  as read. Unread count is `terminal operations for accessible projects minus
+  reads`.
 - `OperationEvent.id` is the SSE event id (`Last-Event-ID`), monotonic across the
   table, not per operation. Consumers ignore ids `<= lastSeen`.
-- `steps` is an array of `{ key, label, status, startedAt, finishedAt }` so the
-  UI can render a stepper without a second endpoint.
+- `steps` is an array of `{ key, label, status, startedAt, finishedAt }`.
 - `params` stores the sanitized request (no secrets); `result` stores resource
   ids or URLs.
-- Retention: 90 days for finished operations; a nightly purge job. `Log`
-  remains the audit record and is not replaced.
+- Retention: terminal operations and their journal rows follow the existing log
+  retention (align with `Log`); active rows are never purged.
 
 ### 4.2 State machine
 
 ```
 queued ──claim──> running ──ok──> succeeded
    │                 │
-   │                 ├──error──> failed
-   │                 └──cancel─> cancelled
-   └──cancel────────> cancelled
+   │                 └──error──> failed
+   └──(lease expiry)──> queued (retry)
 ```
 
+- No `cancelled` state. No cancel endpoint. No stop button.
 - `queued → running` is a lease claim (`FOR UPDATE SKIP LOCKED`).
-- `heartbeatAt` is refreshed every 15 s; a stale lease (> 2 min) is reclaimed
-  and the operation moves back to `queued` with an attempt counter.
-- Terminal states are immutable. Retrying creates a new operation linked by
-  `retryOfId` (add if needed).
+- `heartbeatAt` is refreshed every 15 s; a stale lease (> 2 min) returns the
+  operation to `queued` for another attempt.
+- A user-triggered retry creates a **new** operation with `retryOfId` pointing
+  to the failed one. The failed operation is immutable history.
 
-### 4.3 API contract (`packages/shared`, ts-rest)
+### 4.3 Idempotency contract
+
+Every handler must satisfy:
+
+1. **Stable identity.** The operation id is the idempotency key passed to the
+   plugin layer. External resources use deterministic names derived from
+   project + kind + target, or are looked up before creation.
+2. **Replay-safe writes.** Prefer upsert/ensure semantics. A second execution
+   must produce the same end state, not a duplicate resource.
+3. **No blind side effects.** “Send notification”, “create token”, “append
+   member” must check or dedupe by a natural key.
+4. **Project-level lock.** One active operation per `(projectId, kind)` and
+   target prevents concurrent conflicting runs.
+5. **Double-execution test.** For each kind, a test runs the handler twice with
+   the same operation id and asserts a single external effect.
+6. **Resume, not restart, where possible.** Steps record completion so a stale
+   lease resumes after the last successful step.
+
+A kind cannot be enabled asynchronously until its double-execution test is
+green. This gate is part of phase 1, not a later hardening phase.
+
+### 4.4 API contract (`packages/shared`, ts-rest)
 
 | Method | Path | Result |
 | --- | --- | --- |
 | `POST` | `/api/v1/projects/:projectId/operations` | `202 { id, status, kind, links }` |
 | `GET` | `/api/v1/operations/:operationId` | snapshot (`OperationSchema`) |
-| `GET` | `/api/v1/operations?projectId=&status=&updatedSince=` | list, cursor paginated |
+| `GET` | `/api/v1/operations?projectId=&status=&updatedSince=&unread=` | list, cursor paginated |
 | `GET` | `/api/v1/events` (SSE) | `text/event-stream` |
-| `POST` | `/api/v1/operations/:operationId/cancel` | `202` or `409` |
-| `GET` | `/api/v1/notifications?unread=` | inbox |
-| `POST` | `/api/v1/notifications/:id/read` | `204` |
+| `POST` | `/api/v1/operations/:operationId/read` | `204` |
+| `POST` | `/api/v1/operations/read` | `204` (batch) |
+| `GET` | `/api/v1/logs?projectId=&operationId=&…` | existing journal, extended filter |
+
+No cancel route. No notification routes: the journal is the inbox.
 
 Submission example:
 
@@ -224,9 +282,8 @@ Rules:
 - Permission checks happen at submission, not only at execution.
 - The response includes `Location: /api/v1/operations/:id`.
 - Synchronous endpoints remain for fast operations (reads, small updates).
-  Only the kinds listed in §4.1 become asynchronous.
 
-### 4.4 SSE envelope
+### 4.5 SSE envelope
 
 ```
 id: 1042
@@ -234,16 +291,14 @@ event: operation.updated
 data: {"operationId":"...","status":"running","progress":40,"currentStep":"gitlab","projectId":"..."}
 ```
 
-Events: `operation.updated`, `operation.log`, `notification.created`,
+Events: `operation.updated`, `operation.log`, `operation.finished`,
 `heartbeat` (every 15 s, no id).
 
 Server requirements:
 
 - `Cache-Control: no-cache`, `X-Accel-Buffering: no`.
-- One stream per browser tab; server fan-out through an in-process hub plus
-  Redis pub/sub when replicas > 1.
-- Authorization on connect: only operations/notifications for projects the user
-  can see.
+- One stream per browser tab; in-process hub, Redis pub/sub when replicas > 1.
+- Authorization on connect: only operations/logs for projects the user can see.
 - Replay from `Last-Event-ID` using `OperationEvent`.
 
 ---
@@ -255,8 +310,9 @@ Server requirements:
 | Store | Responsibility |
 | --- | --- |
 | `operationStore` | `byId`, `activeByProject`, `lastEventId`, snapshot reconciliation |
-| `notificationStore` | inbox, unread count, read state, cross-tab sync |
+| `activityStore` | journal-backed inbox: terminal operations, unread count, read markers |
 | `connectionStore` | SSE state (`connecting`, `live`, `polling`, `offline`), last event time |
+| `logStore` | existing journal data; gains `operationId` filtering |
 
 `projectStore` stops owning `operationsInProgress` and `needReplay`; it keeps
 resource data and exposes selectors that join with `operationStore`.
@@ -268,7 +324,7 @@ resource data and exposes selectors that join with `operationStore`.
 1. Connect with `EventSource` to `/api/v1/events` (cookie/session auth).
 2. Append `Last-Event-ID` from `operationStore`.
 3. On `open`, reconcile the snapshot (`GET /operations?status=active` plus
-   unread notifications) to cover events missed while offline.
+   unread terminal operations) to cover events missed while offline.
 4. On error, exponential backoff (1 s → 30 s, jitter), then switch to polling
    every 5 s. Never spin.
 5. On `visibilitychange`, pause when hidden and reconcile on return.
@@ -279,12 +335,27 @@ resource data and exposes selectors that join with `operationStore`.
 
 **Global Activity Center** (header, bell + unread badge):
 
-- Tabs: *En cours* / *Historique*.
-- Row: kind label, project, progress bar, current step, elapsed time.
-- Terminal rows: success (dismissable), failure (persistent until read), with
-  *Voir les journaux* and *Réessayer*.
-- Empty state: "Aucune opération en cours".
-- Keyboard: opens with `g a`, closes with `Escape`, focus returns to the bell.
+- Tabs: *En cours* (live operations) and *Journal* (terminal operations, same
+  rows as the journal page).
+- Row: kind label, project, duration, status; active rows show progress and
+  current step; terminal rows show the journal action and a link to the
+  resource.
+- Filters: project, severity (info/success/warning/error), date; persists in the
+  URL so an investigation can be shared.
+- Unread rows are marked; opening the center marks visible rows read (batched);
+  *Tout marquer comme lu*.
+- Failure rows stay until read; success rows can be dismissed.
+- Empty state per tab.
+- Keyboard: opens with the header button, closes with `Escape`, focus returns to
+  the bell.
+
+**Reused journal page**:
+
+- The existing journal (`/admin/logs` for administrators, project logs for
+  members) gains an `operationId` filter and an *Opérations* facet.
+- A user sees journal rows for projects they can access; administrators see all.
+- No duplicate history: the Activity Center links to the journal row rather
+  than rendering a second copy with different wording.
 
 **Per-resource state**:
 
@@ -292,6 +363,7 @@ resource data and exposes selectors that join with `operationStore`.
 - Environment/repository rows: `En attente`, `En cours`, `Échec` badges driven
   by the operation kind and target id.
 - Buttons disable only for the operation they trigger, not the whole page.
+- No cancel button anywhere.
 
 **Submission pattern**:
 
@@ -301,12 +373,13 @@ click "Reprovisionner"
   → close modal immediately
   → toast "Reprovisionnement lancé" (2 s)
   → project chip shows progress from SSE
-  → on finish: success/failure notification; project data refreshed
+  → on finish: journal row + unread badge; project data refreshed
 ```
 
-**Errors**: never auto-dismiss. A failed operation stays in the Activity Center
-and on the resource until the user reads it. The message is the server's
-actionable French message, with a link to logs.
+**Errors**: never auto-dismiss. The failed operation stays in the Activity
+Center and in the journal until the user reads it. The message is the server's
+actionable French message, with a link to logs and a *Réessayer* action that
+creates a new operation.
 
 ### 5.4 Accessibility
 
@@ -318,10 +391,9 @@ actionable French message, with a link to logs.
 - Progress is expressed as text (`40 % — GitLab`) in addition to the bar.
 - `prefers-reduced-motion` disables the progress shimmer.
 
-### 5.5 Shell / navigation (drastic part)
+### 5.5 Shell / navigation
 
-The shell becomes context-first, matching the cloud-console patterns already
-documented in `docs/client/navigation.md`:
+The shell becomes context-first:
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -350,7 +422,6 @@ documented in `docs/client/navigation.md`:
 controller → permission check → transaction {
   insert Operation(queued)
   insert OperationEvent(operation.updated)
-  insert Notification? (on terminal only)
 } → 202
 ```
 
@@ -365,24 +436,38 @@ transaction, not by GitLab/ArgoCD latency.
   (`ProjectHooksService`, environment/repository/deployment services).
 - Each handler reports steps through an `OperationContext`:
   `ctx.step('gitlab')`, `ctx.progress(40)`, `ctx.log(...)`.
-- Terminal transition and notification insert happen in one transaction with
-  the final event.
+- Terminal transition, journal `Log` insert and final event happen in one
+  transaction.
 - Plugin results are mapped to a readable `error.cause` and `error.hint`.
+- The runner never accepts a stop signal: no cancellation.
 
-### 6.3 Multi-replica fan-out
+### 6.3 Journal write
 
-- Single replica: in-process `EventEmitter` hub is enough.
+On terminal state:
+
+1. Write one `Log` row with `operationId`, `action` (existing wording), `data`
+   (result or error summary), `userId` and `projectId`.
+2. Link `Operation.logId` to it.
+3. Emit `operation.finished`.
+
+The journal remains the single audit trail. If the log write fails, the
+operation stays `running` until the transaction succeeds; the runner retries the
+transaction, not the whole plugin execution.
+
+### 6.4 Multi-replica fan-out
+
+- Single replica: in-process `EventEmitter` hub.
 - Multiple replicas: publish `OperationEvent` to Redis; each replica pushes to
   its connected SSE clients. If Redis is unavailable, clients fall back to
-  polling; no data is lost because the DB is the source of truth.
+  polling; no data is lost because Postgres is the source of truth.
 
-### 6.4 Compatibility
+### 6.5 Compatibility
 
-- The old synchronous endpoints stay behind `operations.async.enabled` per kind.
+- Old synchronous endpoints stay behind `operations.async.enabled` per kind.
 - During the transition, a synchronous call also creates an `Operation` row in
-  `succeeded`/`failed` state so the client has one model.
-- Rollback: disable the flag per kind; the client falls back to the old
-  promise-based path. No data migration is required.
+  `succeeded`/`failed` state plus its journal row, so the client has one model.
+- Rollback: disable the flag per kind; the client falls back to the legacy path.
+  No data migration is required.
 
 ---
 
@@ -390,13 +475,13 @@ transaction, not by GitLab/ArgoCD latency.
 
 | Phase | Content | Size | Exit criteria |
 | --- | --- | --- | --- |
-| 0 | Contracts + Prisma models + `GET /operations` + SSE behind flag, no UI | L | Schemas merged; migration applied; SSE emits heartbeat |
-| 1 | Runner for `project_replay_hooks` only; dual-write legacy call | M | Replay returns 202; operation reaches succeeded in staging |
-| 2 | Client stream + Activity Center; `operationStore`; keep legacy buttons | M | Reload during replay keeps progress; two tabs converge |
+| 0 | Contracts, Prisma models, `Log.operationId`, `OperationRead`, read API, SSE behind flag | L | Schemas merged; migration applied; SSE heartbeat works |
+| 1 | Idempotency audit + double-execution tests for every kind; runner for `project_replay_hooks` | L | Replay returns 202; re-running the same operation produces one external effect |
+| 2 | Client stream + Activity Center (*En cours* / *Journal*) + read markers | M | Reload during replay keeps progress; two tabs converge; unread count correct |
 | 3 | Convert environment/repository/deployment/member/role mutations | L | p95 mutation request < 300 ms; no modal waits |
 | 4 | Remove `operationsInProgress`/`needReplay`; resource badges from operations | M | No client-only operation state remains |
-| 5 | Notifications inbox, read state, browser notifications, retention/purge | M | Failure survives reload and tab close; unread count correct |
-| 6 | Multi-replica Redis fan-out, load test, dashboards, remove legacy flag | M | 2 replicas, 500 concurrent SSE clients, no lost terminal events |
+| 5 | Journal integration: `operationId` filter, facets, deep links, retention alignment | M | Journal is the only history; no duplicate notification store |
+| 6 | Multi-replica Redis fan-out, load test, dashboards, remove legacy flag | M | 2 replicas, 500 SSE clients, no lost terminal events |
 
 Each phase is a separate PR, feature-flagged, with its own rollback. The client
 never depends on a phase that is not deployed.
@@ -408,15 +493,16 @@ never depends on a phase that is not deployed.
 | Failure | Mitigation |
 | --- | --- |
 | SSE blocked by proxy buffering | `X-Accel-Buffering: no`, heartbeat every 15 s, polling fallback |
-| Session/token expires | reconnect with refreshed token; on 401, pause and prompt re-login without losing snapshot |
+| Session/token expires | reconnect with refreshed token; pause and prompt re-login without losing snapshot |
 | Event lost after terminal state | snapshot reconciliation on reconnect (`GET /operations/:id`) |
 | Duplicate events | monotonic event id + idempotent reducer |
-| Pod restart mid-operation | lease heartbeat; stale lease requeued; handler must be idempotent |
+| Pod restart mid-operation | lease heartbeat; stale lease requeued; handlers are idempotent |
+| Handler replayed | idempotency contract + double-execution test |
 | Two tabs | `BroadcastChannel` + shared event ids; server snapshot wins |
-| User closes tab | operation continues server-side; notification persists |
-| Long operation exceeds retention | retention only applies to terminal states; active rows never purged |
-| Cancel unsupported by a plugin | `409` with explanation; operation continues |
+| User closes tab | operation continues server-side; journal row persists |
+| Journal write fails | terminal transaction retries; operation stays `running` until the row is durable |
 | Redis down | DB polling fallback; no correctness loss |
+| User wants to stop a job | not supported by decision; UI explains that it will run to completion |
 
 ---
 
@@ -427,31 +513,35 @@ Metrics:
 - `operations_queued_total{kind}`, `operations_duration_seconds{kind}`,
   `operations_failed_total{kind}`, `operations_active`.
 - `sse_connections`, `sse_reconnects_total`, `sse_delivery_lag_seconds`.
-- `notifications_unread{user}` is not a metric (cardinality); expose aggregate.
+- `journal_write_failures_total`, `journal_lag_seconds`.
 
 SLOs:
 
 - 99 % of terminal events delivered to a connected client within 2 s.
 - 99 % of mutations return within 300 ms (202 path).
-- 0 lost terminal states after reconnect (snapshot reconciliation).
-- Failure notifications readable after 30 days.
+- 0 lost terminal states after reconnect.
+- Journal row written for 100 % of terminal operations.
 
 ---
 
 ## 10. Acceptance criteria
 
-1. Reloading the page during a replay shows the operation still running, with
-   the same progress and step.
-2. Two tabs show the same operation state within 2 s and only one toast.
-3. A failed operation survives reload and remains unread until dismissed.
+1. Reloading during a replay shows the operation still running, with the same
+   progress and step.
+2. Two tabs show the same state within 2 s and only one toast.
+3. A failed operation survives reload, appears in the journal, and stays unread
+   until dismissed.
 4. No mutating request stays open for more than 1 s in the nominal path.
-5. Killing the backend mid-operation requeues it; the client shows
-   `reconnexion…` and then the resumed state.
-6. SSE disabled (network) → polling keeps progress within 5 s.
-7. Keyboard-only user can open the Activity Center, read a failure and retry.
+5. Killing the backend mid-operation requeues it; the client reconnects and
+   shows the resumed state.
+6. SSE disabled → polling keeps progress within 5 s.
+7. Keyboard-only user can open the Activity Center, read a failure, open the
+   journal row and retry.
 8. Screen reader announces start, completion and failure exactly once.
 9. `pnpm a11y:audit` stays at 0 violations; new surfaces have component tests.
-10. Legacy flag off restores the previous behaviour without a data migration.
+10. Legacy flag off restores the previous behaviour without data migration.
+11. Replaying the same operation twice produces one external resource and one
+    journal row.
 
 ---
 
@@ -460,25 +550,29 @@ SLOs:
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
 | Backend effort dominates | High | Phase 0–1 first; client keeps legacy path until phase 3 |
-| Plugin handlers are not idempotent | Duplicate side effects on retry | Require idempotency per handler; audit each plugin before enabling |
-| SSE through the ingress | Connection drops, buffering | Heartbeat + polling fallback; load test through nginx |
-| Notification fatigue | Users ignore the center | Only terminal failures persist; progress stays in the rail |
-| Permission leakage via SSE | Security | Resolve project scope per event; never broadcast globally |
-| Operation table growth | DB bloat | 90-day retention, partition by month if needed |
+| Handlers are not idempotent today | High | Phase 1 audit + double-execution tests gate every kind |
+| SSE through the ingress | Medium | Heartbeat + polling fallback; load test through nginx |
+| Journal visibility leaks data | High | Project-scoped queries; admins see all, members see their projects |
+| Operation table growth | Medium | Align retention with `Log`; partition by month if needed |
+| No cancellation frustrates users | Medium | Clear “cette opération ira au bout” copy; retry only after failure |
 
 Open questions:
 
-1. Should cancellation be supported per kind, or only "stop scheduling"?
-2. Is a per-user inbox required, or is a per-project activity feed enough?
-3. Do we need email/webhook notifications for operations longer than N minutes?
-4. Which plugins can be made idempotent without changing their external APIs?
+1. Which existing `Log` retention applies, and should operations outlive it?
+2. Should the *Journal* tab be available to all members or only to project
+   managers? (Current journal routes are admin-oriented.)
+3. How do we expose per-step logs without duplicating the `Log` payload?
+4. Which plugin handler has the highest duplicate risk and should be the pilot
+   for the idempotency harness?
 
 ---
 
 ## 12. Out of scope
 
+- Cancellation of running operations (explicit decision).
+- Email, webhook or push notifications (explicit decision).
+- A separate notification database.
 - Replacing the plugin/hook system.
 - Changing the permission model.
-- A full design-system replacement; DSFR remains the base.
 - Real-time collaborative editing.
 - Mobile push notifications.
