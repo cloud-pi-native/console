@@ -25,7 +25,7 @@ gh api --paginate "repos/$REPO/milestones?state=open" \
 
 echo "== projects (owner) =="
 gh project list --owner "$OWNER" --format json \
-  --jq '.[] | "\(.number)\t\(.title)"' 2>/dev/null ||
+  --jq '.projects[] | "\(.number)\t\(.title)"' 2>/dev/null ||
   echo "no accessible projects (needs project scope)"
 
 echo "== assignees =="

@@ -24,16 +24,10 @@ MILESTONES=$(gh api "repos/$REPO/milestones?state=open" \
 
 echo "# classes: type=$TYPES fields=$FIELDS milestones=$MILESTONES"
 
-gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] |
-  [.number,
-   (if .pull_request then "pr" else "issue" end),
-   (.type.name // "none"),
-   ([.labels[].name] | join(",")),
-   ([.assignees[].login] | join(",")),
-   (if ([.issue_field_values[].issue_field_name] | length) == 0 then "none"
-    else [.issue_field_values[].issue_field_name] | join(",") end),
-   (.milestone.title // "none")] | @tsv' |
-  while IFS=$'\t' read -r n kind type labels assignees fields milestone; do
+FIELD_NAMES=$(gh api "orgs/$OWNER/issue-fields" --jq '[.[].name] | join(",")' 2>/dev/null || echo "")
+
+gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] | [.number, (if .pull_request then "pr" else "issue" end), (.type.name // "none"), (if ([.labels[].name] | length) == 0 then "none" else ([.labels[].name] | join(",")) end), (if ([.assignees[].login] | length) == 0 then "none" else ([.assignees[].login] | join(",")) end), ([.issue_field_values[]?.issue_field_name] | join(",") | if . == "" then "none" else . end), (.milestone.title // "none")] | @tsv' |
+while IFS=$'\t' read -r n kind type labels assignees fields milestone; do
     gaps=""
     if [[ $kind == issue && $TYPES -gt 0 && $type == "none" ]]; then
       gaps+="type,"
@@ -47,8 +41,22 @@ gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] |
     if [[ $MILESTONES -gt 0 && $milestone == "none" ]]; then
       gaps+="milestone,"
     fi
-    if [[ $kind == issue && $FIELDS -gt 0 && $fields == "none" ]]; then
-      gaps+="fields,"
+    if [[ $kind == issue && $FIELDS -gt 0 ]]; then
+      # A partially-filled item still owes the missing org fields (thread 3):
+      # compare available field names against the ones actually set.
+      IFS=',' read -r -a have <<< "$fields"
+      IFS=',' read -r -a want <<< "$FIELD_NAMES"
+      if [[ ${#want[@]} -gt 0 && ${want[0]} != "" ]]; then
+        missing=0
+        for w in "${want[@]}"; do
+          found=0
+          for h in "${have[@]}"; do
+            [[ $h == "$w" ]] && found=1 && break
+          done
+          [[ $found -eq 0 ]] && missing=1 && break
+        done
+        [[ $missing -eq 1 ]] && gaps+="fields,"
+      fi
     fi
     if [[ -n $gaps ]]; then
       printf '%s\t%s\t%s\n' "$n" "$kind" "${gaps%,}"
