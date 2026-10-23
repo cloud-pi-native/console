@@ -251,6 +251,11 @@ const save = useAsyncAction(async () => {
 that triggers a network call **MUST** be disabled while pending and **MUST**
 recover on failure.
 
+> **Direction** — long-running mutations (provisioning, replay, environment and
+> repository lifecycle) are moving to server-owned operations delivered over
+> SSE; see `docs/client/async-operations-redesign.md`. `useAsyncAction` remains
+> the right tool for short, request-bound actions.
+
 **Why** — today each component re-implements `isProcessing` booleans with
 slightly different semantics, and several `finally` blocks can leave the flag
 stuck when the component unmounts mid-flight.
