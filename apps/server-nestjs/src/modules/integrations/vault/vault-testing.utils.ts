@@ -9,6 +9,7 @@ export function makeProjectWithDetails(overrides: Partial<ProjectWithDetails> = 
     name: faker.company.name(),
     description: faker.company.buzzPhrase(),
     environments: [],
+    repositories: [],
     plugins: [],
     ...overrides,
   } satisfies ProjectWithDetails
@@ -40,4 +41,12 @@ export function makeVaultSecretMetadata(overrides: Partial<VaultSecret['metadata
     version: 1,
     ...overrides,
   }
+}
+
+export function makeProjectSlug() {
+  return faker.string.alphanumeric(10).toLowerCase()
+}
+
+export function makeRepoName() {
+  return faker.string.alphanumeric(8).toLowerCase()
 }

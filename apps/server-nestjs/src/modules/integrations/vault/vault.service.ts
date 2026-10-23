@@ -356,7 +356,28 @@ export class VaultService {
       ...projectSecurityGroupPaths.map(groupPath =>
         this.ensureIdentityGroup(generateProjectGroupName(project, 'security'), [projectSecurityPolicyName], groupPath)),
       this.client.ensureAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
+      this.ensureGitlabMirrorSecrets(project),
     ])
+  }
+
+  /**
+   * Reconciles the project's `<repo>-mirror` secrets with the declared repositories:
+   * destroys every mirror secret whose repository is no longer declared.
+   */
+  private async ensureGitlabMirrorSecrets(project: ProjectWithDetails): Promise<void> {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const declaredRepoNames = project.repositories.map(repo => repo.internalRepoName)
+    const declaredRepos = new Set(declaredRepoNames)
+    const orphanRepoNames = (await this.client.listKvMetadata(this.vaultConfig.kvName, generateProjectPath(this.baseConfig.projectsRootDir, project.slug)))
+      .filter(secretPath => secretPath.endsWith('-mirror'))
+      .map(secretPath => secretPath.slice(0, -'-mirror'.length))
+      .filter(repoName => !declaredRepos.has(repoName))
+    span?.setAttribute('vault.orphan.mirror.count', orphanRepoNames.length)
+    await Promise.all(orphanRepoNames.map(async (repoName) => {
+      await this.client.deleteGitlabMirrorCreds(project.slug, repoName)
+      this.logger.log(`Deleted orphan Vault GitLab mirror credentials (projectSlug=${project.slug}, repoName=${repoName})`)
+    }))
   }
 
   @StartActiveSpan()

@@ -3,8 +3,9 @@ name: cpn-commit
 description:
   "Use when committing in this repo: conventional commit shape enforced by
   commitlint."
-version: 1.1.0
 license: Apache-2.0
+metadata:
+  version: 1.1.0
 ---
 
 # Console commits

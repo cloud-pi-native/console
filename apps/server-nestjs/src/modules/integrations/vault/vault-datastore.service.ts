@@ -23,6 +23,12 @@ export const projectSelect = {
       autosync: true,
     },
   },
+  repositories: {
+    select: {
+      id: true,
+      internalRepoName: true,
+    },
+  },
 } satisfies Prisma.ProjectSelect
 
 export type ProjectWithDetails = Prisma.ProjectGetPayload<{
