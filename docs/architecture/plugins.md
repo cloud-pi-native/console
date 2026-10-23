@@ -14,6 +14,7 @@ L’état observé est confronté au [code de référence `2de2d8378`](https://g
 - **État observé** : fait étayé par un fichier et un symbole cités. `NestJS direct` désigne un appel inter-module observé ; `événement` désigne un découplage par événement ; `legacy à qualifier` désigne une référence historique dont l’usage runtime n’est pas établi par la seule déclaration.
 - **Convention de nommage** : un consommateur construit localement un chemin de groupe que Keycloak provisionne. L’absence d’import de `KeycloakModule` supprime l’appel direct, pas le couplage fonctionnel ; comparer chemins et permissions avant de conclure à un manque de portage.
 - **Cible recommandée** : proposition d’architecture, non implémentée. Le **delta** indique ce qu’il faudrait remplacer, ajouter ou qualifier.
+- **Statuts du delta** : `à arbitrer` = décision d’architecture à prendre ; `cible proposée` = solution recommandée, non adoptée ; `à porter` = comportement legacy à migrer (`à porter ou retirer explicitement` laisse ouverte une décision de retrait) ; `à investiguer` = usage ou besoin à établir ; `à qualifier` = correspondance des comportements ou droits à vérifier. Ces statuts ne fixent ni priorité ni échéance.
 
 ## Documents par module
 
