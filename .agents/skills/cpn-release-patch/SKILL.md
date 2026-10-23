@@ -101,4 +101,4 @@ the release-please PR targets `hotfix/<x.y.z>`.
 
 `cpn-pr` (branch
 conventions) · `cpn-merge` (landing the release PR) ·
-`cpn-dev-workflow` (lifecycle).
+`cpn-dev` (lifecycle).
