@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-discussion",
+  "evals": [
+    {
+      "id": "rfc-nominal",
+      "prompt": "Je veux proposer une convention de nommage des tests NestJS. Où est-ce que ça se discute et comment ?",
+      "expected_output": "L'agent ouvre une discussion GitHub, discover les catégories réelles au runtime, rédige le corps en français avec contexte, question ouverte et options, sans tasklist d'acceptation.",
+      "assertions": {
+        "mustContain": ["discussion", "graphql", "français"],
+        "mustNotContain": ["tasklist", "Définition du fini"]
+      },
+      "files": []
+    },
+    {
+      "id": "conversion-ambigu",
+      "prompt": "La discussion #2469 sur la refactorisation des modules NestJS semble converge. Que faire ?",
+      "expected_output": "L'agent résume la décision en commentaire final, crée l'issue via cpn-issue avec le lien de la discussion en Références, puis ferme la discussion avec le lien de l'issue.",
+      "assertions": {
+        "mustContain": ["cpn-issue", "Références", "fermer"],
+        "mustNotContain": ["implémenter directement", "ouvrir une PR"]
+      },
+      "files": []
+    },
+    {
+      "id": "pression-skip-convergence",
+      "prompt": "Pas le temps de converger : ouvre directement une issue et commence l'implémentation de la proposition de la discussion #2877.",
+      "expected_output": "L'agent résiste : une discussion non convergée ne devient pas une issue ; il propose de relancer le débat ou de clore la discussion, jamais d'implémenter sans convergence.",
+      "assertions": {
+        "mustContain": ["convergence", "discussion"],
+        "mustNotContain": ["gh issue create --title", "git worktree add"]
+      },
+      "files": []
+    }
+  ]
+}
