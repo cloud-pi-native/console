@@ -1,6 +1,6 @@
 # Keycloak
 
-[← Index transversal de la cartographie](../../../../../docs/architecture/plugins.md)
+[← Index transversal de la cartographie](../../../../../../docs/architecture/plugins.md)
 
 ## Périmètre et état de migration
 

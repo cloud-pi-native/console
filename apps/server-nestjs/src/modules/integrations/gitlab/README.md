@@ -1,6 +1,6 @@
 # GitLab
 
-[← Index transversal de la cartographie](../../../../../docs/architecture/plugins.md)
+[← Index transversal de la cartographie](../../../../../../docs/architecture/plugins.md)
 
 ## Périmètre et état de migration
 
@@ -33,7 +33,7 @@ Le module `gitlab` possède l’intégration aux groupes, utilisateurs, dépôts
 - **Déprovisionnement** : `project.delete` → suppression du groupe GitLab et de ses ressources. Le listener Vault parallèle assure le nettoyage des secrets de projet ; `GitlabService.cleanupProject` n’appelle pas Vault.
 - **Synchronisation dépôt** : `repository.sync` → `triggerMirror(projectSlug, internalRepoName, syncAllBranches, branchName?)` → pipeline miroir GitLab.
 - **Credentials de dépôt** : `RepositoryService` injecte optionnellement `VaultClientService` et appelle `writeGitlabMirrorCreds` / `deleteGitlabMirrorCreds` pour une intention explicite de création/modification, avant `project.upsert`. Sans Vault configuré, il journalise l’impossibilité de stocker/retirer ces credentials. GitLab lit ensuite le secret existant pour appliquer le miroir : Repository → Vault est une dépendance directe distincte de GitLab → Vault.
-- **Rôles administrateurs** : `adminRole.upsert` → flags admin/auditor activés pour les membres fournis d’un rôle reconnu ; `adminRole.delete` → flags correspondants désactivés. Les listeners passent par `capturePluginResult`, mais les émetteurs ignorent les retours `emitAsync` : aucun journal/agrégation AppEvents ni erreur HTTP automatique sur KO capturé. Voir la [séquence transversale](../../../../../docs/architecture/plugins.md#synchroniser-les-rôles-administrateurs).
+- **Rôles administrateurs** : `adminRole.upsert` → flags admin/auditor activés pour les membres fournis d’un rôle reconnu ; `adminRole.delete` → flags correspondants désactivés. Les listeners passent par `capturePluginResult`, mais les émetteurs ignorent les retours `emitAsync` : aucun journal/agrégation AppEvents ni erreur HTTP automatique sur KO capturé. Voir la [séquence transversale](../../../../../../docs/architecture/plugins.md#synchroniser-les-rôles-administrateurs).
 - **Zone/cluster — legacy** : `upsertZone` garantit le dépôt infra en `pre` ; ArgoCD prépare les valeurs de zone en `main` ; `commitFiles` committe en `post`. Les hooks cluster utilisent aussi cette API GitLab et ce commit final ; `deleteZone` supprime le dépôt en `main`.
 
 ## Contrats cibles recommandés et delta
