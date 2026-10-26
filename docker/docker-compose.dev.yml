@@ -81,7 +81,8 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - 4001:8080
+      # Diagnostic local uniquement ; le trafic applicatif passe par nginx-strangler.
+      - 127.0.0.1:4001:8080
       - 9229:9229
     env_file:
       - ../apps/server/.env.docker

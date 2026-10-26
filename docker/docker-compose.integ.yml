@@ -52,7 +52,8 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - 4001:8080
+      # Diagnostic local uniquement ; le trafic applicatif passe par nginx-strangler.
+      - 127.0.0.1:4001:8080
       - 9229:9229
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
