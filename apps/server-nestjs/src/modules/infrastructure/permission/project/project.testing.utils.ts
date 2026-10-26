@@ -1,6 +1,7 @@
 import type { ExecutionContext } from '@nestjs/common'
 import type { HttpArgumentsHost } from '@nestjs/common/interfaces'
 import type { Prisma } from '@prisma/client'
+import type { FastifyRequest } from 'fastify'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { makeProjectSelect } from './project-loader.utils'
 import type { ProjectContext } from './project.guard'
@@ -31,6 +32,12 @@ export function makeExecutionContext(request: Record<string, unknown>): DeepMock
   httpArgs.getRequest.mockReturnValue(request)
   ctx.switchToHttp.mockReturnValue(httpArgs)
   return ctx
+}
+
+export function makeProjectRequest(params: { projectId?: string, projectSlug?: string }): DeepMockProxy<FastifyRequest<{ Params?: { projectId?: string, projectSlug?: string } }>> {
+  const request = mockDeep<FastifyRequest<{ Params?: { projectId?: string, projectSlug?: string } }>>()
+  request.params = params
+  return request
 }
 
 export function makeProjectContext(overrides: Partial<ProjectContext> = {}): ProjectContext {

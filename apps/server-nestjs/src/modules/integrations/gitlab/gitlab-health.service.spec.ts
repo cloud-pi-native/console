@@ -1,8 +1,19 @@
 import type { TestingModule } from '@nestjs/testing'
+import type { gitlabConfigFactory } from '../../../config/gitlab.config'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { Test } from '@nestjs/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { GitlabHealthService } from './gitlab-health.service'
+
+const gitlabConfig = {
+  token: 'test-token',
+  url: 'https://gitlab.external',
+  internalUrl: 'https://gitlab.internal',
+  secretExposeInternalUrl: false,
+  mirrorTokenExpirationDays: 365,
+  mirrorTokenRotationThresholdDays: 250,
+  projectRootDir: 'projects',
+} satisfies ReturnType<typeof gitlabConfigFactory>
 
 describe('gitlabHealthService', () => {
   let module: TestingModule
@@ -24,7 +35,7 @@ describe('gitlabHealthService', () => {
         {
           provide: GitlabHealthService,
           useFactory: (healthIndicator: HealthIndicatorService) =>
-            new GitlabHealthService({ internalUrl: 'https://gitlab.internal', url: 'https://gitlab.external' } as any, healthIndicator),
+            new GitlabHealthService(gitlabConfig, healthIndicator),
           inject: [HealthIndicatorService],
         },
       ],
