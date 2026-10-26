@@ -25,7 +25,7 @@ test.describe('Zone page', () => {
     await page.getByTestId('labelInput').fill(zone.label)
     await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
     await page.getByTestId('descriptionInput').fill(zone.description)
-    expect(expect(page.locator('#clusters-select')).not.toBeVisible())
+    await expect(page.locator('#clusters-select')).not.toBeVisible()
     await page.getByTestId('addZoneBtn').click()
 
     await page.reload()

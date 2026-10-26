@@ -14,7 +14,7 @@ import {
   invalidInternalRepoErrorMessage,
 } from '../helpers/constants'
 import { createProject, projectSlugTextRegexp } from '../helpers/project'
-import { createRepository as createRepositoryThroughUi } from '../helpers/repository'
+import { createRepository as createRepositoryThroughUi, waitForRepoSync } from '../helpers/repository'
 
 test.describe('Repositories', () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
@@ -526,7 +526,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('branchNameInput')).toHaveValue('main')
       await expect(page.getByTestId('branchNameInput')).toBeEnabled()
       await expect(page.getByTestId('syncRepoBtn')).toBeEnabled()
+      const firstSyncRequest = waitForRepoSync({ page })
       await page.getByTestId('syncRepoBtn').click()
+      await firstSyncRequest
       await expect(
         page.getByText(
           'Travail de synchronisation lancé pour le dépôt repo03Fermer le message',
@@ -537,7 +539,9 @@ test.describe('Repositories', () => {
       await expect(page.getByTestId('syncRepoBtn')).toBeDisabled()
       await page.getByTestId('branchNameInput').fill('develop')
       await expect(page.getByTestId('syncRepoBtn')).toBeEnabled()
+      const secondSyncRequest = waitForRepoSync({ page })
       await page.getByTestId('syncRepoBtn').click()
+      await secondSyncRequest
       await expect(
         page.getByText(
           'Travail de synchronisation lancé pour le dépôt repo03Fermer le message',
