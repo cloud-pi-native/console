@@ -31,7 +31,12 @@ export const ExposedAdminTokenSchema = AdminTokenSchema.extend({
 
 export const CreateAdminTokenBodySchema = AdminTokenSchema
   .pick({ name: true, permissions: true, expirationDate: true })
-  .extend({ expirationDate: ExpirationDateSchema.nullable() })
+  .extend({
+    expirationDate: z.preprocess(
+      value => value === '' ? null : value,
+      ExpirationDateSchema.nullable(),
+    ),
+  })
   .required()
 
 export type AdminToken = Zod.infer<typeof AdminTokenSchema>

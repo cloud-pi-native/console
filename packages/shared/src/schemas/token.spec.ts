@@ -15,6 +15,13 @@ describe('token body schemas', () => {
     if (result.success) return
     expect(result.error.issues[0].message).toBe('Date d\'expiration trop courte')
   })
+
+  it('treats an empty expiration date as absent', () => {
+    const result = CreateAdminTokenBodySchema.safeParse({ name: faker.string.alpha({ length: 8, casing: 'lower' }), permissions: '4', expirationDate: '' })
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.data.expirationDate).toBeNull()
+  })
 })
 
 describe('createPersonalAccessTokenBodySchema', () => {
