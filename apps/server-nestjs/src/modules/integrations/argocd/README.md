@@ -1,6 +1,6 @@
 # ArgoCD
 
-[← Index transversal de la cartographie](../../../../../docs/architecture/plugins.md)
+[← Index transversal de la cartographie](../../../../../../docs/architecture/plugins.md)
 
 ## Périmètre et état de migration
 
@@ -32,7 +32,7 @@ Le module NestJS `argocd` réconcilie et supprime les fichiers de valeurs de dé
 - **Réconciliation projet** : `project.upsert` → lecture des zones et du projet → lecture/génération des valeurs ArgoCD → lecture ou création du dépôt GitLab → commit des actions. Vault peut être interrogé pour configurer l’accès Vault dans les manifests.
 - **Déprovisionnement** : `project.delete` reçoit le snapshot antérieur à l’archivage → toutes les zones sont parcourues → fichiers `values.yaml` du projet supprimés dans GitLab.
 - **Zone — legacy** : `upsertZone` → `updateZoneValues` → lecture des accès Vault et des noms de clusters → préparation d’`argocd-values.yaml` dans le dépôt infra GitLab → commit par GitLab en `post`. Le hook GitLab `pre` garantit le dépôt ; le pont zone NestJS de GitLab reste suivi dans #2864 / #2807.
-- **Cluster — legacy** : `upsertCluster` garantit le KV de zone et y écrit les credentials `clusters/cluster-<label>/argocd-cluster-secret` ; `deleteCluster` détruit ce secret. Les deux appellent ensuite `updateZoneValues`, puis GitLab committe en `post`. Voir la [séquence transversale](../../../../../docs/architecture/plugins.md#provisionner-un-cluster--legacy-et-delta-nestjs).
+- **Cluster — legacy** : `upsertCluster` garantit le KV de zone et y écrit les credentials `clusters/cluster-<label>/argocd-cluster-secret` ; `deleteCluster` détruit ce secret. Les deux appellent ensuite `updateZoneValues`, puis GitLab committe en `post`. Voir la [séquence transversale](../../../../../../docs/architecture/plugins.md#provisionner-un-cluster--legacy-et-delta-nestjs).
 - Les écouteurs projet s’exécutent en parallèle avec les autres plugins, sans ordre garanti ; chaque résultat est agrégé par `AppEventsService`.
 
 ## Contrats cibles recommandés et delta
