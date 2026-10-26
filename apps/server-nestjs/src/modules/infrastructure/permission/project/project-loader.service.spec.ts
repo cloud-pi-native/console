@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { PrismaService } from '../../database/prisma.service'
 import { ProjectPermissionLoaderService } from './project-loader.service'
-import { makeProjectRecord } from './project.testing.utils'
+import { makeProjectRecord, makeProjectRequest } from './project.testing.utils'
 
 const UUID = '0b3f7e58-1e2a-4c6b-9d0e-5f6a7b8c9d01'
 
@@ -28,31 +28,31 @@ describe('projectPermissionLoaderService', () => {
   })
 
   it('rejects a request without projectId nor projectSlug', async () => {
-    await expect(loader.load({ params: {} } as any, 'user-id')).rejects.toThrow(BadRequestException)
+    await expect(loader.load(makeProjectRequest({}), 'user-id')).rejects.toThrow(BadRequestException)
   })
 
   it('rejects an unknown project', async () => {
     prisma.project.findUnique.mockResolvedValue(null)
-    await expect(loader.load({ params: { projectId: UUID } } as any, 'user-id')).rejects.toThrow(NotFoundException)
+    await expect(loader.load(makeProjectRequest({ projectId: UUID }), 'user-id')).rejects.toThrow(NotFoundException)
   })
 
   it('queries by slug when the projectId is not a uuid and returns only id/slug without requirements', async () => {
     prisma.project.findUnique.mockResolvedValue(makeProjectRecord())
-    const project = await loader.load({ params: { projectId: 'my-slug' } } as any, 'user-id')
+    const project = await loader.load(makeProjectRequest({ projectId: 'my-slug' }), 'user-id')
     expect(prisma.project.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { slug: 'my-slug' } }))
     expect(project).toEqual({ id: '0b3f7e58-1e2a-4c6b-9d0e-5f6a7b8c9d01', slug: 'project-slug' })
   })
 
   it('queries by slug when a projectSlug param is set', async () => {
     prisma.project.findUnique.mockResolvedValue(makeProjectRecord())
-    await loader.load({ params: { projectSlug: 'other-slug' } } as any, 'user-id')
+    await loader.load(makeProjectRequest({ projectSlug: 'other-slug' }), 'user-id')
     expect(prisma.project.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { slug: 'other-slug' } }))
   })
 
   it('queries by id when the projectId is a uuid and resolves permissions when required', async () => {
     prisma.project.findUnique.mockResolvedValue(makeProjectRecord())
     const project = await loader.load(
-      { params: { projectId: UUID } } as any,
+      makeProjectRequest({ projectId: UUID }),
       'member-id',
       { includeStatus: true, includeLocked: true, includePermissions: true },
     )
@@ -65,7 +65,7 @@ describe('projectPermissionLoaderService', () => {
   it('omits status, locked and permissions when the requirements disable them', async () => {
     prisma.project.findUnique.mockResolvedValue(makeProjectRecord())
     const project = await loader.load(
-      { params: { projectId: UUID } } as any,
+      makeProjectRequest({ projectId: UUID }),
       'member-id',
       { includeStatus: false, includeLocked: false, includePermissions: false },
     )
