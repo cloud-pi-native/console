@@ -33,6 +33,10 @@ export async function createGroup(page: Page, groupsToDelete: string[]) {
 }
 
 test.describe('Keycloak', () => {
+  // Serial mode keeps the module-level usersToDelete/groupsToDelete arrays
+  // complete in a single worker.
+  test.describe.configure({ mode: 'serial' })
+
   test.beforeEach(async ({ page }) => {
     await signInKeycloak(page)
   })
@@ -133,52 +137,58 @@ test.describe('Keycloak', () => {
       await page.getByTestId('confirm').click()
     })
 
-    test('cleanup Keycloak test data', { tag: '@integ' }, async ({ request }) => {
-      const params = new URLSearchParams()
-      params.append('grant_type', 'password')
-      params.append('client_id', 'admin-cli')
-      params.append('username', keycloakConfig.adminUser)
-      params.append('password', keycloakConfig.adminPass)
+    test.afterAll(async ({ browser }) => {
+      const context = await browser.newContext()
+      const request = context.request
+      try {
+        const params = new URLSearchParams()
+        params.append('grant_type', 'password')
+        params.append('client_id', 'admin-cli')
+        params.append('username', keycloakConfig.adminUser)
+        params.append('password', keycloakConfig.adminPass)
 
-      const tokenRes = await request.post(
-        `${keycloakConfig.url}/realms/master/protocol/openid-connect/token`,
-        {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          data: params.toString(),
-        },
-      )
-
-      if (!tokenRes.ok) {
-        throw new Error(`Failed to get token: ${tokenRes.statusText}`)
-      }
-
-      const tokenData = await tokenRes.json()
-      const authHeader = { Authorization: `Bearer ${tokenData.access_token}` }
-
-      for (const username of usersToDelete) {
-        const usersRes = await request.get(
-          `${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users?username=${username}`,
-          { headers: authHeader },
+        const tokenRes = await request.post(
+          `${keycloakConfig.url}/realms/master/protocol/openid-connect/token`,
+          {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            data: params.toString(),
+          },
         )
-        const users = await usersRes.json()
-        for (const user of users) {
-          await request.delete(`${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${user.id}`, {
-            headers: authHeader,
-          })
-        }
-      }
 
-      for (const groupName of groupsToDelete) {
-        const groupsRes = await request.get(
-          `${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/groups?search=${groupName}`,
-          { headers: authHeader },
-        )
-        const groups = await groupsRes.json()
-        for (const group of groups) {
-          await request.delete(`${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/groups/${group.id}`, {
-            headers: authHeader,
-          })
+        if (!tokenRes.ok) {
+          throw new Error(`Failed to get token: ${tokenRes.statusText}`)
         }
+
+        const tokenData = await tokenRes.json()
+        const authHeader = { Authorization: `Bearer ${tokenData.access_token}` }
+
+        for (const username of usersToDelete) {
+          const usersRes = await request.get(
+            `${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users?username=${username}`,
+            { headers: authHeader },
+          )
+          const users = await usersRes.json()
+          for (const user of users) {
+            await request.delete(`${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/users/${user.id}`, {
+              headers: authHeader,
+            })
+          }
+        }
+
+        for (const groupName of groupsToDelete) {
+          const groupsRes = await request.get(
+            `${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/groups?search=${groupName}`,
+            { headers: authHeader },
+          )
+          const groups = await groupsRes.json()
+          for (const group of groups) {
+            await request.delete(`${keycloakConfig.url}/admin/realms/${keycloakConfig.realm}/groups/${group.id}`, {
+              headers: authHeader,
+            })
+          }
+        }
+      } finally {
+        await context.close()
       }
     })
   })
