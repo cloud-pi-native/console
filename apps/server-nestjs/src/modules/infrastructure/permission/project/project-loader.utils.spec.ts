@@ -1,18 +1,9 @@
 import { PROJECT_PERMS } from '@cpn-console/shared'
 import { describe, expect, it } from 'vitest'
 import { isUuid, makeProjectSelect, resolveProjectPermissions } from './project-loader.utils'
+import { makeProjectPermissionsRaw } from './project.testing.utils'
 
 const UUID = '0b3f7e58-1e2a-4c6b-9d0e-5f6a7b8c9d01'
-
-function makeRaw(overrides: Partial<Parameters<typeof resolveProjectPermissions>[0]> = {}): Parameters<typeof resolveProjectPermissions>[0] {
-  return {
-    ownerId: 'owner-id',
-    everyonePerms: 0n,
-    roles: [{ id: 'role-1', permissions: PROJECT_PERMS.LIST_REPOSITORIES }],
-    members: [{ userId: 'member-id', roleIds: ['role-1'] }],
-    ...overrides,
-  }
-}
 
 describe('makeProjectSelect', () => {
   it('includes every block by default', () => {
@@ -32,15 +23,15 @@ describe('makeProjectSelect', () => {
 
 describe('resolveProjectPermissions', () => {
   it('grants MANAGE to the owner regardless of roles', () => {
-    expect(resolveProjectPermissions(makeRaw(), 'owner-id')).toBe(PROJECT_PERMS.MANAGE)
+    expect(resolveProjectPermissions(makeProjectPermissionsRaw(), 'owner-id')).toBe(PROJECT_PERMS.MANAGE)
   })
 
   it('returns no permission for a non-member', () => {
-    expect(resolveProjectPermissions(makeRaw(), 'stranger-id')).toBe(0n)
+    expect(resolveProjectPermissions(makeProjectPermissionsRaw(), 'stranger-id')).toBe(0n)
   })
 
   it('unions everyonePerms, GUEST and the permissions of the member roles', () => {
-    const raw = makeRaw({
+    const raw = makeProjectPermissionsRaw({
       everyonePerms: PROJECT_PERMS.LIST_ENVIRONMENTS,
       roles: [
         { id: 'role-1', permissions: PROJECT_PERMS.LIST_REPOSITORIES },
@@ -54,7 +45,7 @@ describe('resolveProjectPermissions', () => {
   })
 
   it('still grants GUEST to a member without any matching role', () => {
-    const raw = makeRaw({ members: [{ userId: 'member-id', roleIds: [] }] })
+    const raw = makeProjectPermissionsRaw({ members: [{ userId: 'member-id', roleIds: [] }] })
     expect(resolveProjectPermissions(raw, 'member-id')).toBe(PROJECT_PERMS.GUEST)
   })
 })
