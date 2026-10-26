@@ -22,6 +22,7 @@ test.describe('Project logs page', () => {
       // Assert
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
+      await expect(page.locator('#panel-logs [data-testid$="-json"]').first()).toBeVisible()
     },
   )
 
@@ -29,6 +30,11 @@ test.describe('Project logs page', () => {
     'Should display additional logs after reprovisionning a project',
     { tag: '@e2e' },
     async ({ page }) => {
+      const readLogsTotal = async () => {
+        const text = await page.getByTestId('positionInfo').first().textContent()
+        return Number(text?.match(/sur\s+(\d+)/)?.[1] ?? 0)
+      }
+
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
@@ -36,11 +42,19 @@ test.describe('Project logs page', () => {
 
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
+      const logsTotalBefore = await readLogsTotal()
 
       // Act
       await page.getByTestId('replayHooksBtn').click()
 
       // Assert
+      await expect(page.getByTestId('snackbar')).toContainText(
+        'Le projet a été reprovisionné avec succès',
+      )
+      await page.getByTestId('refreshBtn').click()
+      await expect.poll(readLogsTotal, { timeout: 30_000 }).toBeGreaterThan(
+        logsTotalBefore,
+      )
       await expect(page.locator('#panel-logs')).toBeVisible()
     },
   )
@@ -62,6 +76,7 @@ test.describe('Project logs page', () => {
       // Assert - as Project Owner
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
+      await expect(page.locator('#panel-logs [data-testid$="-json"]').first()).toBeVisible()
       await page.getByTestId('replayHooksBtn').click()
 
       // Assert - as Project Member
@@ -71,6 +86,7 @@ test.describe('Project logs page', () => {
       await page.getByRole('link', { name: projectName }).click()
       await page.getByTestId('test-tab-logs').click()
       await expect(page.locator('#panel-logs')).toBeVisible()
+      await expect(page.locator('#panel-logs [data-testid$="-json"]').first()).toBeVisible()
     },
   )
 })

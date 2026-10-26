@@ -12,12 +12,9 @@ test.describe('Service Chains page', () => {
         await page.getByTestId('menuAdministrationBtn').click()
         await page.getByTestId('menuAdministrationServiceChains').click()
         // We take the first service chain available
-        await expect(
-          page
-            .getByTestId('tableAdministrationServiceChains')
-            .locator('tr')
-            .nth(1),
-        ).toBeVisible()
+        const firstRow = page.locator('[data-testid^="serviceChainTr-"]').first()
+        await expect(firstRow).toBeVisible()
+        await expect(firstRow.getByTestId('state')).toBeVisible()
       },
     )
 
@@ -29,12 +26,9 @@ test.describe('Service Chains page', () => {
         await signInCloudPiNative({ page, credentials: adminUser })
         await page.getByTestId('menuAdministrationBtn').click()
         await page.getByTestId('menuAdministrationServiceChains').click()
+        await expect(page.getByTitle('Voir les détails de la chaîne de service').first()).toBeVisible()
         // We take the first service chain available
-        await page
-          .getByTestId('tableAdministrationServiceChains')
-          .locator('tr')
-          .nth(1)
-          .click()
+        await page.locator('[data-testid^="serviceChainTr-"]').first().click()
         await expect(
           page.getByRole('heading', { name: 'Chaîne de services' }),
         ).toBeVisible()
@@ -56,11 +50,7 @@ test.describe('Service Chains page', () => {
           page.getByTitle('Voir les détails de la chaîne de service').first(),
         ).toBeVisible()
         // We take the first service chain available
-        await page
-          .getByTestId('tableAdministrationServiceChains')
-          .locator('tr')
-          .nth(1)
-          .click()
+        await page.locator('[data-testid^="serviceChainTr-"]').first().click()
         await expect(page.getByTestId('service-chain-flows')).toBeVisible()
       },
     )

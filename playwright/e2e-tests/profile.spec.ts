@@ -46,12 +46,11 @@ test.describe('Profile page', () => {
     await page.getByTestId('showNewTokenFormBtn').click()
 
     // Assert
-    expect(page.getByTestId('newTokenPassword')).toBeDefined()
     const locator = page.locator('tr', { hasText: 'test2' })
-    expect(locator).toContainText(new Date().getFullYear().toString())
-    expect(locator).toContainText('2100')
-    expect(locator).toContainText('Jamais')
-    expect(locator).toContainText('Actif')
+    await expect(locator).toContainText(new Date().getFullYear().toString())
+    await expect(locator).toContainText('2100')
+    await expect(locator).toContainText('Jamais')
+    await expect(locator).toContainText('Actif')
     await locator.getByTitle('Supprimer').click()
     await page.getByTestId('confirmDeletionBtn').click()
     await expect(page.getByTestId('tokenTable')).toContainText(
