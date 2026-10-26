@@ -136,36 +136,40 @@ test.describe('Clusters page', () => {
     },
   )
 
-  test('should create a cluster even if given informations is longer than 200 chars but shorter than 1001 chars', async ({
-    page,
-  }) => {
-    const informations = faker.string.alpha(1000).toLowerCase()
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
-    const clusterName = await createCluster({
-      page,
-      confidentiality: 'dedicated',
-      informations,
-    })
-    // Validate
-    await page.getByTestId(`clusterLink-${clusterName}`).click()
-    await expect(page.getByTestId('infosInput')).toHaveValue(informations)
-  })
+  test(
+    'should create a cluster even if given informations is longer than 200 chars but shorter than 1001 chars',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      const informations = faker.string.alpha(1000).toLowerCase()
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: adminUser })
+      const clusterName = await createCluster({
+        page,
+        confidentiality: 'dedicated',
+        informations,
+      })
+      // Validate
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
+      await expect(page.getByTestId('infosInput')).toHaveValue(informations)
+    },
+  )
 
-  test('should NOT create a cluster when given informations is longer than 1000 chars', async ({
-    page,
-  }) => {
-    const clusterName = faker.string.alpha(10).toLowerCase()
-    const informations = faker.string.alpha(1001).toLowerCase()
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationClusters').click()
-    await page.getByTestId('addClusterLink').click()
-    await page.getByTestId('labelInput').fill(clusterName)
-    await page.getByTestId('infosInput').fill(informations)
-    await expect(page.getByTestId('addClusterBtn')).toBeDisabled()
-  })
+  test(
+    'should NOT create a cluster when given informations is longer than 1000 chars',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      const clusterName = faker.string.alpha(10).toLowerCase()
+      const informations = faker.string.alpha(1001).toLowerCase()
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: adminUser })
+      await page.getByTestId('menuAdministrationBtn').click()
+      await page.getByTestId('menuAdministrationClusters').click()
+      await page.getByTestId('addClusterLink').click()
+      await page.getByTestId('labelInput').fill(clusterName)
+      await page.getByTestId('infosInput').fill(informations)
+      await expect(page.getByTestId('addClusterBtn')).toBeDisabled()
+    },
+  )
 
   test('should delete a cluster', { tag: '@e2e' }, async ({ page }) => {
     await page.goto(clientURL)
@@ -226,34 +230,36 @@ test.describe('Clusters page', () => {
     },
   )
 
-  test('should NOT update the cluster label if it has associated environment', async ({
-    page,
-  }) => {
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: adminUser })
-    // Create a public cluster
-    const clusterName = await createCluster({
-      page,
-      zone: 'publique',
-      confidentiality: 'public',
-      associateStage: 'all',
-    })
-    // Create a project and an environment using this cluster
-    await createProject({ page })
-    await createEnvironment({
-      page,
-      zone: 'publique',
-      customStageName: 'dev',
-      customClusterName: clusterName,
-      cpuInput: '2',
-      gpuInput: '0',
-    })
-    // Verify that cluster label is disabled
-    await expect(page.getByText('Opération en cours...')).toHaveCount(0)
-    await openClustersAdministration({ page })
-    await page.getByTestId('projectsSearchInput').fill(clusterName)
-    await page.getByTestId(`clusterLink-${clusterName}`).click()
-    await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)
-    await expect(page.getByTestId('labelInput')).toBeDisabled()
-  })
+  test(
+    'should NOT update the cluster label if it has associated environment',
+    { tag: '@e2e' },
+    async ({ page }) => {
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: adminUser })
+      // Create a public cluster
+      const clusterName = await createCluster({
+        page,
+        zone: 'publique',
+        confidentiality: 'public',
+        associateStage: 'all',
+      })
+      // Create a project and an environment using this cluster
+      await createProject({ page })
+      await createEnvironment({
+        page,
+        zone: 'publique',
+        customStageName: 'dev',
+        customClusterName: clusterName,
+        cpuInput: '2',
+        gpuInput: '0',
+      })
+      // Verify that cluster label is disabled
+      await expect(page.getByText('Opération en cours...')).toHaveCount(0)
+      await openClustersAdministration({ page })
+      await page.getByTestId('projectsSearchInput').fill(clusterName)
+      await page.getByTestId(`clusterLink-${clusterName}`).click()
+      await expect(page.getByTestId('labelInput')).toHaveValue(clusterName)
+      await expect(page.getByTestId('labelInput')).toBeDisabled()
+    },
+  )
 })
