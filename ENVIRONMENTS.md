@@ -15,14 +15,15 @@ Pour orchestrer cette migration, un **nginx-strangler** a été introduit (ticke
       │ proxy /api → nginx-strangler:8080
       ▼
 [nginx-strangler :8080]
-      ├── /api/[routes migrées]  ──→  server-nestjs:3001  (NestJS)
-      └── /api/[tout le reste]   ──→  server:8080         (legacy)
+      ├── /api/*                         ──→  server-nestjs:3001 (NestJS)
+      └── /swagger-ui-server-nestjs*      ──→  server-nestjs:3001
 ```
 
 **Conséquences pratiques pour les développeurs :**
 
 - `server-nestjs` est désormais présent dans tous les `docker-compose` aux côtés de `server`.
-- Le `nginx-strangler` est le nouveau point d'entrée unique pour les appels API — le `client` ne pointe plus directement vers `server`.
+- Le `nginx-strangler` est le point d’entrée pour tous les appels API, fallback inclus — le `client` ne pointe plus directement vers `server`. Swagger legacy est retiré ; utiliser `/swagger-ui-server-nestjs`.
+- Le port HTTP legacy 4001 des stacks Docker dev/integ est limité à `127.0.0.1` pour le diagnostic. Les accès directs et probes techniques ne constituent pas des parcours applicatifs ; voir l’inventaire et la procédure de retour arrière dans le [README du proxy](apps/nginx-strangler/README.md).
 - Consultez [`MODULARISATION-STATUT.md`](apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-STATUT.md) avant de développer sur un module backend, pour savoir s'il est en cours de migration (zones en feature freeze).
 - Si vous travaillez sur un module déjà migré vers `server-nestjs`, développez dans `apps/server-nestjs`, pas dans `apps/server`.
 
@@ -79,8 +80,7 @@ graph LR
 
     NAV_L --> NGINX_L
     NGINX_L -- "/api" --> STRANGLER_L
-    STRANGLER_L -- "défaut\n(pas migré)" --> SERVER_L
-    STRANGLER_L -- "migré" --> NESTJS_L
+    STRANGLER_L -- "toutes les API" --> NESTJS_L
   end
 
   style DEV_LOCAL fill:#fff,stroke:#333,stroke-width:2px
@@ -359,12 +359,11 @@ graph LR
       direction LR
       NGINX_I(("nginx (client)\n:8080\nexposé :8080"))
       STRANGLER_I(("nginx-strangler\n:8080\nexposé :4000"))
-      SERVER_I(("server\n:8080\nexposé :4001"))
+      SERVER_I(("server\n:8080\ndiagnostic 127.0.0.1:4001"))
       NESTJS_I(("server-nestjs\n:3001\nexposé :3001"))
 
       NGINX_I -- "/api" --> STRANGLER_I
-      STRANGLER_I -- "pas migré" --> SERVER_I
-      STRANGLER_I -- "migré" --> NESTJS_I
+      STRANGLER_I -- "toutes les API" --> NESTJS_I
     end
 
     NAV_I --> NGINX_I
@@ -373,7 +372,7 @@ graph LR
 
     CURL_I -- ":8080" --> NGINX_I
     CURL_I -- ":4000" --> STRANGLER_I
-    CURL_I -- ":4001" --> SERVER_I
+    CURL_I -. "diagnostic local :4001" .-> SERVER_I
     CURL_I -- ":3001" --> NESTJS_I
   end
 

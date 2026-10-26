@@ -1,32 +1,14 @@
-# =============================================================================
-# Exemple de configuration nginx-strangler pour le développement local
-# (pnpm dev — server et server-nestjs tournent nativement, hors Docker)
+# Exemple documentaire pour pnpm dev (backends natifs, proxy Docker).
+# En pratique, docker-compose.local.yml utilise routing.conf et envsubst :
+#   LEGACY_UPSTREAM=host.docker.internal:4001 (retour arrière uniquement)
+#   NESTJS_UPSTREAM=host.docker.internal:3001
 #
-# Ce fichier est fourni à titre documentaire.
-# En pratique, le docker-compose.local.yml injecte directement les variables
-# d'environnement LEGACY_UPSTREAM et NESTJS_UPSTREAM dans le conteneur
-# nginx-strangler via envsubst, sans qu'il soit nécessaire de modifier ce fichier.
-#
-# Pour lancer le nginx-strangler en mode local :
-#
-#   docker compose -f docker/docker-compose.local.yml up nginx-strangler
-#
-# Les valeurs par défaut dans docker-compose.local.yml :
-#   LEGACY_UPSTREAM=host.docker.internal:4000   (server Fastify natif)
-#   NESTJS_UPSTREAM=host.docker.internal:3001   (server-nestjs natif)
-#
-# Si vos servers écoutent sur des ports différents, surcharger les variables :
-#
-#   LEGACY_UPSTREAM=host.docker.internal:4000 \
-#   NESTJS_UPSTREAM=host.docker.internal:3001 \
-#   docker compose -f docker/docker-compose.local.yml up nginx-strangler
-#
-# Le nginx-strangler est alors accessible sur http://localhost:8082
-# (le client Vue.js en dev natif doit pointer son proxy /api vers localhost:8082)
-# =============================================================================
+# Démarrage : docker compose -f docker/docker-compose.local.yml up nginx-strangler
+# Proxy accessible sur http://localhost:4000 ; le client utilise ce port pour /api.
+# Aucun accès applicatif au legacy ni Swagger legacy dans la configuration normale.
 
 upstream server-legacy {
-    server host.docker.internal:4000;
+    server host.docker.internal:4001;
 }
 
 upstream server-nestjs {
@@ -36,12 +18,12 @@ upstream server-nestjs {
 server {
     listen 8080;
 
-    # ── Routes migrées vers NestJS ────────────────────────────────────────────
-    # (vide au démarrage — toutes les routes sont en fallback sur server-legacy)
+    location = /api {
+        return 404;
+    }
 
-    # ── Fallback : tout le reste vers le server legacy ────────────────────────
     location /api/ {
-        proxy_pass         http://server-legacy;
+        proxy_pass         http://server-nestjs;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
@@ -53,8 +35,8 @@ server {
         proxy_redirect     off;
     }
 
-    location /swagger-ui {
-        proxy_pass         http://server-legacy;
+    location /swagger-ui-server-nestjs {
+        proxy_pass         http://server-nestjs;
         proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
