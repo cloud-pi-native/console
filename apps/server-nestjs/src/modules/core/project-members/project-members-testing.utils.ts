@@ -9,3 +9,12 @@ export function makeProjectMembers(overrides: Partial<ProjectMembers> = {}): Pro
     ...overrides,
   } satisfies ProjectMembers
 }
+
+export function makeProjectMemberUser() {
+  return {
+    id: faker.string.uuid(),
+    email: faker.internet.email(),
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+  }
+}
