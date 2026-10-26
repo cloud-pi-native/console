@@ -6,8 +6,8 @@
       "prompt": "Planifie le milestone de la fonctionnalité « export CSV des listes admin » : décompose en unités, remplis le milestone et boarde le tout. La direction est convergée, la RFC #3100 est close. Aucune date limite.",
       "expected_output": "L'agent présente la table unités/dépendances/fan-out et attend l'approbation avant toute écriture. Après approbation : milestone créé selon la convention du dépôt (capacité → prochaine mineure, pas de due_on), issues ouvertes via cpn-issue en français avec ledger d'acceptation command-décidable, champs par cpn-triage, cartes Status Ready sur le Projet Socle via cpn-project, dépendances posées sur les issues. Rapport final nommant la passe à cpn-iterate.",
       "assertions": {
-        "mustContain": ["cpn-issue", "cpn-triage", "cpn-project", "cpn-iterate", "due_on"],
-        "mustNotContain": ["gh issue create --title"]
+        "mustContain": ["cpn-issue", "cpn-triage", "cpn-project", "cpn-iterate", "due_on", "approbation", "prochaine mineure"],
+        "mustNotContain": ["PVTSSF_"]
       },
       "files": []
     },
@@ -17,7 +17,7 @@
       "expected_output": "L'agent refuse de décomposer un but non convergé : direction pas encore fixée → cpn-discussion d'abord, recouper le lot après un changement de direction coûte plus cher que le gate RFC. Aucune issue ouverte, aucune écriture ; signale le blocage et propose la convergence.",
       "assertions": {
         "mustContain": ["cpn-discussion"],
-        "mustNotContain": ["gh issue create"]
+        "mustNotContain": ["milestones -f title"]
       },
       "files": []
     },
