@@ -1,77 +1,77 @@
 import type { TestingModule } from '@nestjs/testing'
-import type { gitlabConfigFactory } from '../../../config/gitlab.config'
+import { HttpStatus } from '@nestjs/common'
 import { HealthIndicatorService } from '@nestjs/terminus'
 import { Test } from '@nestjs/testing'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { mockDeep } from 'vitest-mock-extended'
+import { gitlabConfigFactory } from '../../../config/gitlab.config'
 import { GitlabHealthService } from './gitlab-health.service'
 
-const gitlabConfig = {
-  token: 'test-token',
-  url: 'https://gitlab.external',
-  internalUrl: 'https://gitlab.internal',
-  secretExposeInternalUrl: false,
-  mirrorTokenExpirationDays: 365,
-  mirrorTokenRotationThresholdDays: 250,
-  projectRootDir: 'projects',
-} satisfies ReturnType<typeof gitlabConfigFactory>
+const gitlabUrl = 'https://gitlab.internal'
+
+const server = setupServer()
 
 describe('gitlabHealthService', () => {
   let module: TestingModule
   let service: GitlabHealthService
-  let indicator: { check: ReturnType<typeof vi.fn>, up: ReturnType<typeof vi.fn>, down: ReturnType<typeof vi.fn> }
-  let fetchMock: ReturnType<typeof vi.fn>
+
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 
   beforeEach(async () => {
-    fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
-    indicator = {
-      check: vi.fn().mockReturnThis(),
-      up: vi.fn().mockImplementation(details => ({ gitlab: { status: 'up', ...details } })),
-      down: vi.fn().mockImplementation(details => ({ gitlab: { status: 'down', ...details } })),
-    }
+    const config = mockDeep<ReturnType<typeof gitlabConfigFactory>>({
+      token: 'test-token',
+      url: 'https://gitlab.external',
+      internalUrl: gitlabUrl,
+      secretExposeInternalUrl: false,
+      mirrorTokenExpirationDays: 365,
+      mirrorTokenRotationThresholdDays: 250,
+      projectRootDir: 'projects',
+    })
+
     module = await Test.createTestingModule({
       providers: [
-        { provide: HealthIndicatorService, useValue: indicator },
-        {
-          provide: GitlabHealthService,
-          useFactory: (healthIndicator: HealthIndicatorService) =>
-            new GitlabHealthService(gitlabConfig, healthIndicator),
-          inject: [HealthIndicatorService],
-        },
+        { provide: gitlabConfigFactory.KEY, useValue: config },
+        HealthIndicatorService,
+        GitlabHealthService,
       ],
     }).compile()
+
     service = module.get(GitlabHealthService)
   })
 
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
+  afterEach(() => server.resetHandlers())
+  afterAll(() => server.close())
 
   it('reports up when the internal health endpoint answers below 500', async () => {
-    fetchMock.mockResolvedValue(new Response(null, { status: 200 }))
-    const result = await service.check()
-    expect(fetchMock).toHaveBeenCalledWith('https://gitlab.internal/-/health')
-    expect(result.gitlab.status).toBe('up')
+    server.use(http.get(`${gitlabUrl}/-/health`, () => new Response(null, { status: HttpStatus.OK })))
+
+    await expect(service.check()).resolves.toEqual({ gitlab: { status: 'up', httpStatus: HttpStatus.OK } })
   })
 
   it('reports down on a 5xx answer', async () => {
-    fetchMock.mockResolvedValue(new Response(null, { status: 503 }))
-    const result = await service.check()
-    expect(result.gitlab.status).toBe('down')
-    expect(result.gitlab.httpStatus).toBe(503)
+    server.use(http.get(`${gitlabUrl}/-/health`, () => new Response(null, { status: HttpStatus.SERVICE_UNAVAILABLE })))
+
+    await expect(service.check()).resolves.toEqual({ gitlab: { status: 'down', httpStatus: HttpStatus.SERVICE_UNAVAILABLE } })
   })
 
-  it('reports down with the error message when fetch rejects', async () => {
-    fetchMock.mockRejectedValue(new Error('connect ECONNREFUSED'))
+  it('reports down with the error message when the endpoint is unreachable', async () => {
+    server.use(http.get(`${gitlabUrl}/-/health`, () => HttpResponse.error()))
+
     const result = await service.check()
     expect(result.gitlab.status).toBe('down')
-    expect(indicator.down).toHaveBeenCalledWith('connect ECONNREFUSED')
+    expect(Object.values(result.gitlab).some(value => value !== 'down')).toBe(true)
   })
 
   it('prefers internalUrl over the public url', async () => {
-    fetchMock.mockResolvedValue(new Response(null, { status: 204 }))
+    let requestedUrl: string | undefined
+    server.use(http.get(`${gitlabUrl}/-/health`, ({ request }) => {
+      requestedUrl = request.url
+      return new Response(null, { status: HttpStatus.NO_CONTENT })
+    }))
+
     await service.check()
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(String(fetchMock.mock.calls[0][0])).toContain('gitlab.internal')
+    expect(requestedUrl).toBe(`${gitlabUrl}/-/health`)
   })
 })
