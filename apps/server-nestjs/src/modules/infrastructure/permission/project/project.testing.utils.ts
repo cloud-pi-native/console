@@ -7,7 +7,9 @@ import type { ProjectContext } from './project.guard'
 import type { ProjectPolicyConfig } from './project.policy'
 import { mockDeep } from 'vitest-mock-extended'
 
-type RawProject = Prisma.ProjectGetPayload<{ select: ReturnType<typeof makeProjectSelect> }>
+type RawProjectSelect = ReturnType<typeof makeProjectSelect>
+
+type RawProject = Partial<Prisma.ProjectGetPayload<{ select: RawProjectSelect }>> & Pick<Prisma.ProjectGetPayload<{ select: RawProjectSelect }>, 'id' | 'slug'>
 
 export function makeProjectRecord(overrides: Partial<RawProject> = {}): RawProject {
   return {
@@ -17,8 +19,8 @@ export function makeProjectRecord(overrides: Partial<RawProject> = {}): RawProje
     locked: false,
     ownerId: 'owner-id',
     everyonePerms: 0n,
-    roles: [{ id: 'role-1', permissions: 1n }],
-    members: [{ userId: 'member-id', roleIds: ['role-1'] }],
+    roles: [{ id: 'role-1', name: 'Role 1', permissions: 1n, projectId: '0b3f7e58-1e2a-4c6b-9d0e-5f6a7b8c9d01', position: 0, oidcGroup: '', type: 'managed' }],
+    members: [{ userId: 'member-id', projectId: '0b3f7e58-1e2a-4c6b-9d0e-5f6a7b8c9d01', roleIds: ['role-1'] }],
     ...overrides,
   }
 }
