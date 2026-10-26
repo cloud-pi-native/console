@@ -4,11 +4,13 @@ import { onMounted, ref } from 'vue'
 import router from '@/router/index.js'
 import { useServiceChainStore } from '@/stores/service-chain.js'
 import { getRandomId } from '@/utils/func.js'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const serviceChainStore = useServiceChainStore()
 
 const tableKey = ref(getRandomId('table'))
 const isLoading = ref(true)
+const loadError = ref<Error>()
 const inputSearchText = ref('')
 
 const serviceChainsFiltered = computed(() =>
@@ -46,9 +48,26 @@ const serviceChainsFiltered = computed(() =>
 )
 const title = 'Liste des Chaînes de Services'
 
-onMounted(async () => {
-  await Promise.all([serviceChainStore.getServiceChainsList()])
-  isLoading.value = false
+const viewState = computed(() => collectionViewState({
+  loading: isLoading.value,
+  error: loadError.value,
+  count: serviceChainsFiltered.value.length,
+}))
+
+async function getServiceChainsList() {
+  isLoading.value = true
+  loadError.value = undefined
+  try {
+    await serviceChainStore.getServiceChainsList()
+  } catch (error) {
+    loadError.value = error instanceof Error ? error : new Error('Erreur inattendue')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  getServiceChainsList()
 })
 
 function clickServiceChain(id: ServiceChain['id']) {
@@ -85,9 +104,37 @@ function clickServiceChain(id: ServiceChain['id']) {
         <td>Mis à jour le</td>
       </tr>
     </template>
-    <tr v-if="isLoading || !serviceChainsFiltered.length">
+    <tr v-if="viewState === 'loading'">
       <td colspan="7">
-        {{ isLoading ? 'Chargement...' : 'Aucune chaîne de service trouvée' }}
+        <Loader />
+      </td>
+    </tr>
+    <tr
+      v-else-if="viewState === 'error' && loadError"
+      data-testid="serviceChainsLoadError"
+    >
+      <td colspan="7">
+        <DsfrAlert
+          type="error"
+          title="Impossible de charger les chaînes de services"
+          :description="`${loadError.message} Réessayez dans quelques instants.`"
+        />
+        <DsfrButton
+          class="fr-mt-2w"
+          label="Réessayer"
+          data-testid="listRetry"
+          secondary
+          icon="ri:refresh-line"
+          @click="getServiceChainsList"
+        />
+      </td>
+    </tr>
+    <tr
+      v-else-if="!serviceChainsFiltered.length"
+      data-testid="serviceChainsEmptyState"
+    >
+      <td colspan="7">
+        Aucune chaîne de service trouvée
       </td>
     </tr>
     <tr

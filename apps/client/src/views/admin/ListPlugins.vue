@@ -2,8 +2,10 @@
 import type { PluginConfigItem, PluginSchema } from '@cpn-console/shared'
 import { logger } from '@cpn-console/logger/browser'
 import { ref } from 'vue'
+import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { usePluginsConfigStore } from '@/stores/plugins.js'
 import { useSnackbarStore } from '@/stores/snackbar'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const pluginsStore = usePluginsConfigStore()
 const snackbarStore = useSnackbarStore()
@@ -26,13 +28,26 @@ function refTheValues(services: PluginSchema[]) {
 
 const services: Ref<ReturnType<typeof refTheValues>> = ref([])
 
-async function reload() {
+const {
+  pending,
+  error: loadError,
+  run: loadServices,
+} = useAsyncAction(async () => {
   const resServices = await pluginsStore.getPluginsConfig()
   services.value = []
   await nextTick()
 
   services.value = refTheValues(resServices)
+})
 
+const viewState = computed(() => collectionViewState({
+  loading: pending.value,
+  error: loadError.value,
+  count: services.value.length,
+}))
+
+async function reload() {
+  await loadServices()
   updated.value = {}
 }
 
@@ -50,7 +65,7 @@ async function save() {
 }
 
 onBeforeMount(() => {
-  reload()
+  loadServices()
 })
 
 function update(data: { value: string, key: string, plugin: string }) {
@@ -63,9 +78,30 @@ const activeAccordion = ref<number>()
 </script>
 
 <template>
+  <Loader v-if="viewState === 'loading'" />
   <div
-    v-if="!services.length"
+    v-else-if="viewState === 'error' && loadError"
+    class="fr-mb-2w"
+  >
+    <DsfrAlert
+      data-testid="servicesLoadError"
+      type="error"
+      title="Impossible de charger les services"
+      :description="`${loadError.message} Réessayez dans quelques instants.`"
+    />
+    <DsfrButton
+      class="fr-mt-2w"
+      label="Réessayer"
+      data-testid="listRetry"
+      secondary
+      icon="ri:refresh-line"
+      @click="loadServices()"
+    />
+  </div>
+  <div
+    v-else-if="!services.length"
     id="servicesTable"
+    data-testid="servicesEmptyState"
     class="p-10 flex justify-center italic"
   >
     Aucun service disponible

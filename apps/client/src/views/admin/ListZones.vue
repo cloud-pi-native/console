@@ -2,9 +2,11 @@
 import type { CreateZoneBody, UpdateZoneBody, Zone } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { useClusterStore } from '@/stores/cluster'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useZoneStore } from '@/stores/zone.js'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const snackbarStore = useSnackbarStore()
 const clusterStore = useClusterStore()
@@ -22,6 +24,23 @@ const zones = computed(() => zoneStore.zones)
 const allClusters = computed(() => clusterStore.clusters)
 const associatedClusters = computed(() => allClusters.value.filter(cluster => cluster.zoneId === selectedZone.value?.id))
 
+const {
+  pending,
+  error: loadError,
+  run: loadZones,
+} = useAsyncAction(async () => {
+  await Promise.all([
+    zoneStore.getAllZones(),
+    clusterStore.getClusters(),
+  ])
+})
+
+const viewState = computed(() => collectionViewState({
+  loading: pending.value,
+  error: loadError.value,
+  count: zoneList.value.length,
+}))
+
 function setZoneTiles(zones: Zone[]) {
   zoneList.value = sortArrByObjKeyAsc(zones, 'name')
     .map(zone => ({
@@ -31,7 +50,7 @@ function setZoneTiles(zones: Zone[]) {
     }))
 }
 
-async function setSelectedZone(zone: Zone) {
+function setSelectedZone(zone: Zone) {
   if (selectedZone.value?.id === zone.id) {
     selectedZone.value = undefined
     return
@@ -83,15 +102,11 @@ async function deleteZone(zoneId: Zone['id']) {
   snackbarStore.isWaitingForResponse = false
 }
 
-onMounted(async () => {
-  await Promise.all([
-    zoneStore.getAllZones(),
-    clusterStore.getClusters(),
-  ])
-  setZoneTiles(zones.value)
+onMounted(() => {
+  loadZones()
 })
 
-watch(zones, async () => {
+watch(zones, () => {
   setZoneTiles(zones.value)
 })
 </script>
@@ -148,6 +163,26 @@ watch(zones, async () => {
     @update="(zone: any) => updateZone(zone)"
     @delete="(zoneId: any) => deleteZone(zoneId)"
   />
+  <Loader v-else-if="viewState === 'loading'" />
+  <div
+    v-else-if="viewState === 'error' && loadError"
+    class="fr-mb-2w"
+  >
+    <DsfrAlert
+      data-testid="zonesLoadError"
+      type="error"
+      title="Impossible de charger les zones"
+      :description="`${loadError.message} Réessayez dans quelques instants.`"
+    />
+    <DsfrButton
+      class="fr-mt-2w"
+      label="Réessayer"
+      data-testid="listRetry"
+      secondary
+      icon="ri:refresh-line"
+      @click="loadZones()"
+    />
+  </div>
   <div
     v-else-if="zoneList.length"
     class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
@@ -167,6 +202,7 @@ watch(zones, async () => {
   </div>
   <div
     v-else
+    data-testid="zonesEmptyState"
   >
     <p>Aucune zone enregistrée</p>
   </div>

@@ -9,6 +9,7 @@ import router from '@/router/index.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { getRandomId } from '@/utils/func.js'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
@@ -22,6 +23,7 @@ type FileForDownload = File & {
 const tableKey = ref(getRandomId('table'))
 const inputSearchText = ref('')
 const isLoading = ref(true)
+const loadError = ref<Error>()
 const activeFilter = ref<keyof FilterMethods>('Non archivés')
 const file = ref<FileForDownload | undefined>(undefined)
 const queryChanged = ref(false)
@@ -64,6 +66,12 @@ const isAllSelected = computed<boolean>(() => {
   return !!selectedProjects.value.length && selectedProjects.value.length === projects.value.length
 })
 
+const viewState = computed(() => collectionViewState({
+  loading: isLoading.value,
+  error: loadError.value,
+  count: projects.value.length,
+}))
+
 function selectAll() {
   if (isAllSelected.value) {
     selectedProjectIds.value = []
@@ -82,11 +90,14 @@ function switchSelection(checked: boolean, id: ProjectV2['id']) {
 async function getProjects() {
   queryChanged.value = false
   isLoading.value = true
+  loadError.value = undefined
   try {
     projects.value = await projectStore.listProjects({
       ...filterMethods[activeFilter.value],
       ...inputSearchText.value && { search: inputSearchText.value.toLowerCase() },
     })
+  } catch (error) {
+    loadError.value = error instanceof Error ? error : new Error('Erreur inattendue')
   } finally {
     isLoading.value = false
     tableKey.value = getRandomId('table')
@@ -115,8 +126,8 @@ async function generateProjectsDataFile() {
   }
 }
 
-onBeforeMount(async () => {
-  await getProjects()
+onBeforeMount(() => {
+  getProjects()
 })
 
 async function validateBulkAction() {
@@ -222,10 +233,38 @@ function clickProject(project: ArrayElement<typeof projectWithSelection.value>) 
         </tr>
       </template>
       <tr
-        v-if="isLoading || !projects.length"
+        v-if="viewState === 'loading'"
       >
         <td colspan="7">
-          {{ isLoading ? 'Chargement...' : 'Aucun projet trouvé' }}
+          <Loader />
+        </td>
+      </tr>
+      <tr
+        v-else-if="viewState === 'error' && loadError"
+        data-testid="projectsLoadError"
+      >
+        <td colspan="7">
+          <DsfrAlert
+            type="error"
+            title="Impossible de charger les projets"
+            :description="`${loadError.message} Réessayez dans quelques instants.`"
+          />
+          <DsfrButton
+            class="fr-mt-2w"
+            label="Réessayer"
+            data-testid="listRetry"
+            secondary
+            icon="ri:refresh-line"
+            @click="getProjects"
+          />
+        </td>
+      </tr>
+      <tr
+        v-else-if="!projects.length"
+        data-testid="projectsEmptyState"
+      >
+        <td colspan="7">
+          Aucun projet trouvé
         </td>
       </tr>
       <tr

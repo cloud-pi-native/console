@@ -2,9 +2,11 @@
 import type { CreateStageBody, Stage, StageAssociatedEnvironments, UpdateStageBody } from '@cpn-console/shared'
 import { sortArrByObjKeyAsc } from '@cpn-console/shared'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const stageStore = useStageStore()
 const clusterStore = useClusterStore()
@@ -17,6 +19,21 @@ const isNewStageForm = ref(false)
 
 const stages = computed(() => stageStore.stages)
 const allClusters = computed(() => clusterStore.clusters)
+
+const {
+  pending,
+  error: loadError,
+  run: loadStages,
+} = useAsyncAction(async () => {
+  await clusterStore.getClusters()
+  await stageStore.getAllStages()
+})
+
+const viewState = computed(() => collectionViewState({
+  loading: pending.value,
+  error: loadError.value,
+  count: stageList.value.length,
+}))
 
 function setStageTiles(stages: Stage[]) {
   stageList.value = sortArrByObjKeyAsc(stages, 'name')
@@ -81,10 +98,8 @@ async function getStageAssociatedEnvironments(stageId: string) {
   snackbarStore.isWaitingForResponse = false
 }
 
-onMounted(async () => {
-  await clusterStore.getClusters()
-  await stageStore.getAllStages()
-  setStageTiles(stages.value)
+onMounted(() => {
+  loadStages()
 })
 
 watch(stages, () => {
@@ -145,6 +160,26 @@ watch(stages, () => {
       @delete="(stageId: string) => deleteStage(stageId)"
     />
   </div>
+  <Loader v-else-if="viewState === 'loading'" />
+  <div
+    v-else-if="viewState === 'error' && loadError"
+    class="fr-mb-2w"
+  >
+    <DsfrAlert
+      data-testid="stagesLoadError"
+      type="error"
+      title="Impossible de charger les types d'environnement"
+      :description="`${loadError.message} Réessayez dans quelques instants.`"
+    />
+    <DsfrButton
+      class="fr-mt-2w"
+      label="Réessayer"
+      data-testid="listRetry"
+      secondary
+      icon="ri:refresh-line"
+      @click="loadStages()"
+    />
+  </div>
   <div
     v-else-if="stageList.length"
     class="flex flex-row flex-wrap gap-5 items-stretch justify-start gap-8 w-full"
@@ -163,6 +198,7 @@ watch(stages, () => {
   </div>
   <div
     v-else
+    data-testid="stagesEmptyState"
   >
     <p>Aucun type d'environnement enregistré</p>
   </div>
