@@ -108,9 +108,9 @@
     {
       "id": "board-mechanics-ambiguous",
       "prompt": "Je dois déplacer des cartes entre les itérations du PI et réconcilier les milestones de release. Je fais ça à la main sur le board ?",
-      "expected_output": "L'agent renvoie les mécaniques de board, le preflight d'authentification et l'audit à `cpn-pi-transition` au lieu de improviser des mutations sur le board.",
+      "expected_output": "L'agent renvoie les itérations PI, le preflight d'authentification et l'audit à `cpn-pi-transition`, et le boarding et le Status des cartes à `cpn-project`, au lieu d'improviser des mutations sur le board.",
       "assertions": {
-        "mustContain": ["cpn-pi-transition"],
+        "mustContain": ["cpn-pi-transition", "cpn-project"],
         "mustNotContain": ["glisser-déposer"]
       },
       "files": []

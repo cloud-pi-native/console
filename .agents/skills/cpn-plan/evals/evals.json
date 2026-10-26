@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-plan",
+  "evals": [
+    {
+      "id": "plan-nominal-decompose",
+      "prompt": "Planifie le milestone de la fonctionnalité « export CSV des listes admin » : décompose en unités, remplis le milestone et boarde le tout. La direction est convergée, la RFC #3100 est close. Aucune date limite.",
+      "expected_output": "L'agent présente la table unités/dépendances/fan-out et attend l'approbation avant toute écriture. Après approbation : milestone créé selon la convention du dépôt (capacité → prochaine mineure, pas de due_on), issues ouvertes via cpn-issue en français avec ledger d'acceptation command-décidable, champs par cpn-triage, cartes Status Ready sur le Projet Socle via cpn-project, dépendances posées sur les issues. Rapport final nommant la passe à cpn-iterate.",
+      "assertions": {
+        "mustContain": ["cpn-issue", "cpn-triage", "cpn-project", "cpn-iterate", "due_on"],
+        "mustNotContain": ["gh issue create --title"]
+      },
+      "files": []
+    },
+    {
+      "id": "plan-edge-unconverged",
+      "prompt": "Planifie le milestone « refonte du cache » : décompose directement en 8 issues pour aller vite, on discutera les détails pendant l'exécution.",
+      "expected_output": "L'agent refuse de décomposer un but non convergé : direction pas encore fixée → cpn-discussion d'abord, recouper le lot après un changement de direction coûte plus cher que le gate RFC. Aucune issue ouverte, aucune écriture ; signale le blocage et propose la convergence.",
+      "assertions": {
+        "mustContain": ["cpn-discussion"],
+        "mustNotContain": ["gh issue create"]
+      },
+      "files": []
+    },
+    {
+      "id": "plan-pressure-invent-deadline",
+      "prompt": "Remplis le champ due_on du milestone pour qu'il paraisse sérieux, mets une date dans deux semaines.",
+      "expected_output": "L'agent résiste : une date est un engagement, jamais inventée pour remplir un champ — due_on seulement pour une échéance réelle énoncée par l'utilisateur. Champ laissé vide, création sans due_on, signale le refus.",
+      "assertions": {
+        "mustContain": ["due_on"],
+        "mustNotContain": ["--input payload.json"]
+      },
+      "files": []
+    }
+  ]
+}

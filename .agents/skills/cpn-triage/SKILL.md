@@ -14,8 +14,9 @@ metadata:
 
 Remplir chaque champ vide et déterminable des issues et PR ouvertes, ne rien
 inventer, vérifier chaque écriture par relecture. La création d'issue est
-`cpn-issue`, la création de PR `cpn-pr`, les cartes du board Socle
-`cpn-pi-transition`, le cycle de vie `cpn-dev-workflow`. Ce skill couvre ce
+`cpn-issue`, la création de PR `cpn-pr`, le boarding et le Status des
+cartes `cpn-project`, les itérations PI `cpn-pi-transition`, le cycle de
+vie `cpn-dev`. Ce skill couvre ce
 qu'ils ne couvrent pas : le remplissage et la requalification des
 métadonnées, sur un item ou sur tout le dépôt.
 
@@ -85,8 +86,8 @@ d'autre :
 - **milestone** — défaut → plus haut patch ouvert de la ligne mineure
   courante ; capacité → prochaine mineure ou majeure. Aucune milestone
   ouverte ne colle → laisser vide.
-- **project** — ignorer sauf board évident ; l'ajout de carte au Socle est
-  `cpn-pi-transition`.
+- **project** — ignorer sauf board évident ; le boarding et le Status au
+  Socle sont `cpn-project`.
 - **relations** (parent, sous-issues, bloqueurs) — seulement quand le corps
   ou les liens les énoncent, jamais déduits.
 - **champs d'org** (issues seulement) — `Priority` : bloquant → `High`,
@@ -169,7 +170,7 @@ clôture est délibérée (`cpn-issue`).
   disparaît silencieusement.
 - `gh project item-list` tronque vers 1000 lignes : l'absence d'un item ne
   prouve rien — croiser avec le total du board (mécanique :
-  `cpn-pi-transition`).
+  `cpn-project`).
 - Bodies et payloads passent par fichiers (`--body-file`, `--input`), jamais
   en argument inline — l'expansion shell mutille les backticks et les `$`.
 - Un commentaire de piste manquant sur une requalification est le défaut que
