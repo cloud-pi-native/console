@@ -62,7 +62,7 @@ gh issue edit <N> --repo cloud-pi-native/console \
 - **milestone** — by **title**, never by number; bug → highest open patch of
   the current minor line, enhancement → next minor/major.
 - **project** — `--add-project <n>` only when one board is the obvious home;
-  skip when ambiguous.
+  skip when ambiguous; boarding and Status on the Socle are `cpn-project`.
 
 The issue clearly belongs to another `cloud-pi-native/*` repo? Transfer
 instead of re-triaging: `gh issue transfer <N> <OWNER/REPO>` — do not edit or

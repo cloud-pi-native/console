@@ -56,7 +56,8 @@ per fact, no rephrasing, no filler. Inflation buries signal.
 Before picking up a unit, read the Projet Socle board for the current PI
 iteration and take the next card from the rightmost active column. The board
 is the tactical plan; this lifecycle only executes the unit it hands over.
-Board mechanics, auth preflight, and audit live in `cpn-pi-transition`.
+Boarding and Status transitions live in `cpn-project`; PI iterations, auth
+preflight, and audit live in `cpn-pi-transition`.
 
 ## Authoring-skill routing (write phase)
 
