@@ -1,0 +1,21 @@
+name: 🧪 Recette
+description: Ouvrir une campagne de recette pour une release candidate.
+title: "🧪 [RECETTE] - <title>"
+labels: [recette]
+body:
+  - type: textarea
+    id: sondes
+    attributes:
+      label: Sondes
+      description: Une ligne par sonde — ID du cahier de tests fonctionnels quand il existe, « à compléter » sinon, issue amont visée. Les dernières cases ferment la campagne.
+      value: |
+        - [ ] <ID scénario> — <contrôle> (<issue amont>)
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Références
+    validations:
+      required: false
