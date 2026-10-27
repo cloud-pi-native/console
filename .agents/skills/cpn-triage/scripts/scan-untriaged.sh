@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Usage: scripts/scan-untriaged.sh OWNER/REPO
 # List open issues and PRs whose triage metadata is incomplete, computed
-# against what the repo or its org actually supports. One paginated call per
-# repo. Output: TSV number, kind, missing classes.
+# against what the repo or its org actually supports. Assignment follows the
+# triage doctrine: machine-routable work gets an assignee, human-only work
+# stays unassigned — an unassigned item is never a gap. One paginated call
+# per repo. Output: TSV number, kind, missing classes.
 set -euo pipefail
 
 if [[ $# -ne 1 || -z $1 ]]; then
@@ -26,17 +28,14 @@ echo "# classes: type=$TYPES fields=$FIELDS milestones=$MILESTONES"
 
 FIELD_NAMES=$(gh api "orgs/$OWNER/issue-fields" --jq '[.[].name] | join(",")' 2>/dev/null || echo "")
 
-gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] | [.number, (if .pull_request then "pr" else "issue" end), (.type.name // "none"), (if ([.labels[].name] | length) == 0 then "none" else ([.labels[].name] | join(",")) end), (if ([.assignees[].login] | length) == 0 then "none" else ([.assignees[].login] | join(",")) end), ([.issue_field_values[]?.issue_field_name] | join(",") | if . == "" then "none" else . end), (.milestone.title // "none")] | @tsv' |
-while IFS=$'\t' read -r n kind type labels assignees fields milestone; do
+gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] | [.number, (if .pull_request then "pr" else "issue" end), (.type.name // "none"), (if ([.labels[].name] | length) == 0 then "none" else ([.labels[].name] | join(",")) end), ([.issue_field_values[]?.issue_field_name] | join(",") | if . == "" then "none" else . end), (.milestone.title // "none")] | @tsv' |
+while IFS=$'\t' read -r n kind type labels fields milestone; do
     gaps=""
     if [[ $kind == issue && $TYPES -gt 0 && $type == "none" ]]; then
       gaps+="type,"
     fi
     if [[ $labels == "none" ]]; then
       gaps+="labels,"
-    fi
-    if [[ $assignees == "none" ]]; then
-      gaps+="assignee,"
     fi
     if [[ $MILESTONES -gt 0 && $milestone == "none" ]]; then
       gaps+="milestone,"
