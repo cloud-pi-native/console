@@ -7,7 +7,7 @@ description:
   whose evidence moved after triage."
 license: Apache-2.0
 metadata:
-  version: '1.0.0'
+  version: '1.1.0'
 ---
 
 # Triage console
@@ -81,8 +81,10 @@ d'autre :
   défaut → `Bug`, capacité nouvelle → `Feature`, corvée ou suivi → `Task`.
 - **labels** — correspondance de sens : défaut → `bug`, capacité →
   `enhancement`, doc → `docs`. Toujours `--add-label`, jamais `--label`.
-- **assignee** — si vide : l'auteur de l'issue ; sinon
-  `$(gh api user --jq .login)`.
+- **assignee** — si vide et si le travail est pilotable par un agent
+  (aucun identifiant humain, matériel, ni dépense requis) : l'auteur de
+  l'issue ; sinon `$(gh api user --jq .login)`. Sinon, laisser vide en
+  consignant la raison dans le rapport — jamais d'assignation de forme.
 - **milestone** — défaut → plus haut patch ouvert de la ligne mineure
   courante ; capacité → prochaine mineure ou majeure. Aucune milestone
   ouverte ne colle → laisser vide.

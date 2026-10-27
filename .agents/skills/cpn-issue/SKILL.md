@@ -5,7 +5,7 @@ description:
   templates, acceptance ledger, additive triage."
 license: Apache-2.0
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Console issues
@@ -58,7 +58,9 @@ gh issue edit <N> --repo cloud-pi-native/console \
 ```
 
 - **labels** — from `gh label list`, seeded by the title marker.
-- **assignee** — the author, if empty.
+- **assignee** — if empty and the work is machine-routable (no human
+  credentials, hardware, or spending): the author; otherwise leave empty
+  with a recorded reason.
 - **milestone** — by **title**, never by number; bug → highest open patch of
   the current minor line, enhancement → next minor/major.
 - **project** — `--add-project <n>` only when one board is the obvious home;
