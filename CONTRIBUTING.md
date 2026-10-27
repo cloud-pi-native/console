@@ -51,6 +51,28 @@ Utilisez le [template de pull request](.github/PULL_REQUEST_TEMPLATE.md) pour
 présenter le comportement modifié et les informations utiles à la revue. Son
 évolution est traitée séparément de ce guide.
 
+## Contribuer depuis un fork
+
+Les contributeurs externes à l'organisation ouvrent leur contribution depuis
+un fork :
+
+1. Forkez le dépôt puis créez votre branche sur ce fork ;
+2. Poussez vos commits et ouvrez une pull request de votre branche de fork
+   vers la branche `main` de ce dépôt ;
+3. Gardez la branche du fork synchronisée avec `main`, la pull request
+   intègre alors les changements de `main` à chaque poussée.
+
+La CI s'exécute sur ces pull requests après une approbation de run
+manuel d'un mainteneur, requise au premier jet : le run reste alors en
+attente (`action_required`) sans aucun job exécuté, ce qui n'indique pas un
+défaut de votre code. Sans approbation sous 30 jours, GitHub expire le run
+et le marque en échec, toujours sans job exécuté ; un échec sans aucun job
+est cette expiration, pas une régression de votre contribution. Une fois la
+première contribution fusionnée, les runs suivants du même auteur ne
+demandent plus d'approbation. Si votre run reste en attente, mentionnez-le
+dans la pull request : un mainteneur l'approuve depuis l'onglet Actions du
+dépôt.
+
 ## Obtenir les validations requises
 
 Une approbation explicite de l'équipe Co est obligatoire pour toute
