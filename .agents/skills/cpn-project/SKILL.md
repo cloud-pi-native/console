@@ -6,7 +6,7 @@ description:
   onboarding, transitions, drift audit."
 license: Apache-2.0
 metadata:
-  version: '1.0.0'
+  version: '1.1.0'
 ---
 
 # Cartes et statut sur le Projet Socle
@@ -46,7 +46,7 @@ Avancer sur le signal, remonter sur marche arrière :
 | Issue  | Done   | issue fermée délibérément, ledger N sur N                   |
 | PR     | Active | PR ouverte depuis la worktree d'isolation                   |
 | PR     | Review | revue demandée (approbateur assigné)                        |
-| PR     | Done   | PR fusionnée (squash sur `main`)                            |
+| PR     | Done   | PR fusionnée (rebase via la merge queue sur `main`)         |
 | Toute  | Parked | rationale explicite requise                                 |
 
 Le signal `Review` part une fois, à la demande de revue — pas à chaque push

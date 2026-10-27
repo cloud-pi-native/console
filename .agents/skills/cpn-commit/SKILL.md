@@ -5,7 +5,7 @@ description:
   commitlint."
 license: Apache-2.0
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Console commits
@@ -41,12 +41,12 @@ references use a full URL or `owner/repo#N`.
 Keep the subject ≤ 72 chars — GitHub truncates `messageHeadline` at 72
 bytes with `…`, breaking downstream title-parity checks.
 
-## Squash-merge message
+## Merge-time messages
 
-When landing (`cpn-merge`), pass the squash message as ONE clean block:
-subject via `-t`, body + trailers via `-b`. `-m` is the `--merge` strategy
-boolean — a second `-m "text"` fails with "accepts at most 1 arg(s)".
-Never trust GitHub's auto-concatenated body.
+Console lands through the merge queue as a REBASE merge (`cpn-merge`) —
+your commits land as-is; there is no merge-time message to craft. Subject
+quality is a commit-time concern (commitlint enforces it). `-m` on
+`gh pr merge` is the `--merge` strategy boolean, never a message flag.
 
 ## Procedure
 

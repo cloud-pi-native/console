@@ -14,7 +14,7 @@
     {
       "id": "triage-item-empty-fields",
       "prompt": "Trie l'issue 123 du dépôt : tous ses champs sont vides. Assigne type, labels, assignee, milestone et champs d'org dérivables du contexte, sans rien inventer. Attention : le corps contient une mention littérale @ Quelqu'un — cite-la sans déclencher de notification.",
-      "expected_output": "L’agent découvre d'abord les classes disponibles, dérive type (défaut → Bug, capacité → Feature), labels par correspondance de sens, assignee = auteur sinon agent, milestone selon la nature, champs d'org par gravité/effort avec lecture-fusion-écriture depuis un fichier. Cite la mention littérale dans un code span. Relit pour preuve.",
+      "expected_output": "L’agent découvre d'abord les classes disponibles, dérive type (défaut → Bug, capacité → Feature), labels par correspondance de sens, assignee = auteur sinon agent seulement pour un travail pilotable par un agent (champ laissé vide et motivé sinon), milestone selon la nature, champs d'org par gravité/effort avec lecture-fusion-écriture depuis un fichier. Cite la mention littérale dans un code span. Relit pour preuve.",
       "assertions": {
         "mustContain": ["discover-metadata", "issue-field-values", "--add-label", "add-assignee"],
         "mustNotContain": ["--label ", "single_select_option_id"]
