@@ -54,24 +54,17 @@ présenter le comportement modifié et les informations utiles à la revue. Son
 ## Contribuer depuis un fork
 
 Les contributeurs externes à l'organisation ouvrent leur contribution depuis
-un fork :
+un fork : créez votre branche sur le fork, poussez-y vos commits et ouvrez
+la pull request vers `main`, en gardant la branche synchronisée avec `main`.
 
-1. Forkez le dépôt puis créez votre branche sur ce fork ;
-2. Poussez vos commits et ouvrez une pull request de votre branche de fork
-   vers la branche `main` de ce dépôt ;
-3. Gardez la branche du fork synchronisée avec `main`, la pull request
-   intègre alors les changements de `main` à chaque poussée.
-
-La CI s'exécute sur ces pull requests après une approbation de run
-manuel d'un mainteneur, requise au premier jet : le run reste alors en
-attente (`action_required`) sans aucun job exécuté, ce qui n'indique pas un
-défaut de votre code. Sans approbation sous 30 jours, GitHub expire le run
-et le marque en échec, toujours sans job exécuté ; un échec sans aucun job
-est cette expiration, pas une régression de votre contribution. Une fois la
-première contribution fusionnée, les runs suivants du même auteur ne
-demandent plus d'approbation. Si votre run reste en attente, mentionnez-le
-dans la pull request : un mainteneur l'approuve depuis l'onglet Actions du
-dépôt.
+La CI exige l'approbation d'un mainteneur pour tout run déclenché par un
+contributeur externe (`approval_policy: all_external_contributors`) : une
+contribution antérieurement fusionnée ne dispense pas de cette approbation.
+Si votre run reste en attente (`action_required`), mentionnez-le dans la
+pull request : un mainteneur l'approuve depuis l'onglet Actions. Un échec
+sans aucun job exécuté peut provenir de l'expiration d'un run resté en
+attente plus de 30 jours : vérifiez la date du run avant de conclure à une
+régression de votre code.
 
 ## Obtenir les validations requises
 
