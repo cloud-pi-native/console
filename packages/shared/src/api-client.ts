@@ -13,6 +13,7 @@ export async function getContract() {
     Clusters: (await import('./contracts/index.js')).clusterContract,
     ServiceChains: (await import('./contracts/index.js')).serviceChainContract,
     Deployments: (await import('./contracts/index.js')).deploymentContract,
+    ExperimentalFeatures: (await import('./contracts/index.js')).experimentalFeatureContract,
     Environments: (await import('./contracts/index.js')).environmentContract,
     EnvironmentsV2: (await import('./contracts/index.js')).environmentContractV2,
     Logs: (await import('./contracts/index.js')).logContract,
