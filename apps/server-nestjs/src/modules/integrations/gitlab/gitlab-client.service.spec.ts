@@ -4,6 +4,7 @@ import type { TestingModule } from '@nestjs/testing'
 import type { MockedFunction } from 'vitest'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { GitbeakerRequestError } from '@gitbeaker/requester-utils'
+import { Gitlab as GitlabRest } from '@gitbeaker/rest'
 import { Test } from '@nestjs/testing'
 import { http, HttpResponse } from 'msw'
 import { setupServer } from 'msw/node'
@@ -29,7 +30,6 @@ import {
 } from './gitlab-testing.utils'
 import {
   GITLAB_CI_CONFIG_PATH,
-  GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
   MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY,
   PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY,
@@ -76,19 +76,8 @@ describe('gitlab-client', () => {
       const infraGroupId = 456
       const projectId = 789
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
-
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [],
-        paginationInfo: { next: null },
-      })
-
+      gitlabApi.Groups.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group Not Found' }))
       gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: infraGroupId, full_path: 'forge/infra' }))
 
       const gitlabProjectsAllMock = gitlabApi.Projects.all as MockedFunction<typeof gitlabApi.Projects.all>
@@ -111,7 +100,6 @@ describe('gitlab-client', () => {
         path_with_namespace: 'forge/infra/zone-1',
       }))
       expect(gitlabApi.Groups.create).toHaveBeenCalledWith('infra', 'infra', expect.any(Object))
-      expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(rootId, GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(infraGroupId, INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY, 'true')
       expect(gitlabApi.Projects.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -277,16 +265,8 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 456
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group Not Found' }))
       gitlabApi.Groups.create.mockResolvedValue(makeExpandedGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}` }))
 
       const result = await service.ensureProjectSubGroup(projectSlug)
@@ -304,20 +284,12 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 456
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }))
 
       const result = await service.ensureProjectSubGroup(projectSlug)
 
-      expect(result).toEqual({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' })
+      expect(result).toEqual(expect.objectContaining({ id: groupId, name: projectSlug, parent_id: rootId, full_path: 'forge/project-1' }))
       expect(gitlabApi.Groups.create).not.toHaveBeenCalled()
     })
   })
@@ -329,15 +301,8 @@ describe('gitlab-client', () => {
       const rootId = 123
       const groupId = 1
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, full_path: 'forge/project-1' }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, full_path: 'forge/project-1' }))
 
       const result = await service.ensureProjectGroupInternalRepoUrl(projectSlug, repoName)
       expect(result).toBe('https://gitlab.internal/forge/project-1/repo-1.git')
@@ -379,20 +344,33 @@ describe('gitlab-client', () => {
       expect(gitlabApi.ProjectCustomAttributes.set).toHaveBeenCalledWith(repoId, MANAGED_BY_CONSOLE_CUSTOM_ATTRIBUTE_KEY, 'true')
     })
 
+    it.each([
+      { label: 'repo', repoName: 'repo-1', driftName: 'renamed-repo-1' },
+      { label: 'mirror', repoName: 'mirror', driftName: 'renamed-mirror' },
+    ])('should restore the managed name of $label before skipping the edit', async ({ repoName, driftName }) => {
+      const projectSlug = 'project-1'
+      const repoId = 101
+
+      // Projects.show finds the repo by path, so the path is intact but the display name drifted.
+      gitlabApi.Projects.show.mockResolvedValue(makeProjectSchema({ id: repoId, name: driftName }))
+      gitlabApi.Projects.edit.mockResolvedValue(makeProjectSchema({ id: repoId, name: repoName }))
+
+      const result = await service.ensureProjectGroupRepoSettings(projectSlug, repoName)
+
+      expect(result).toEqual(expect.objectContaining({ id: repoId, name: repoName }))
+      expect(gitlabApi.Projects.edit).toHaveBeenCalledWith(repoId, expect.objectContaining({
+        name: repoName,
+        path: repoName,
+      }))
+    })
+
     describe('triggerMirror', () => {
       const projectSlug = 'project-1'
       const mirrorId = 10
 
       function mockProjectGroupRepos(repos: { id: number, name: string }[]) {
-        const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-        gitlabGroupsAllMock.mockResolvedValueOnce({
-          data: [{ id: 123, full_path: 'forge' }],
-          paginationInfo: { next: null },
-        })
-        gitlabGroupsAllMock.mockResolvedValueOnce({
-          data: [{ id: 1, full_path: `forge/${projectSlug}` }],
-          paginationInfo: { next: null },
-        })
+        gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
+        gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 1, full_path: `forge/${projectSlug}` }))
         const gitlabGroupsAllProjectsMock = gitlabApi.Groups.allProjects as MockedFunction<typeof gitlabApi.Groups.allProjects>
         gitlabGroupsAllProjectsMock.mockResolvedValue({
           data: repos,
@@ -646,11 +624,6 @@ describe('gitlab-client', () => {
       const tokenName = `${projectSlug}-bot`
       const token = makeAccessTokenExposedSchema({ id: 1, name: tokenName, token: 'secret-token' })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: 123, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
 
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
@@ -707,16 +680,8 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }))
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
@@ -746,16 +711,8 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }))
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
@@ -781,16 +738,8 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }))
 
       gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: projectId, name: repoName }))
 
@@ -816,15 +765,8 @@ describe('gitlab-client', () => {
         paginationInfo: { next: null },
       })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: rootId, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }],
-        paginationInfo: { next: null },
-      })
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: rootId, full_path: 'forge' }))
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: groupId, name: subGroupPath, parent_id: rootId, full_path: `forge/${subGroupPath}` }))
 
       // GitLab validation errors carry an object `message`, which gitbeaker copies
       // verbatim into `cause.description` despite the string type.
@@ -918,11 +860,6 @@ describe('gitlab-client', () => {
       const tokenName = `${projectSlug}-bot`
       const token = makeAccessTokenSchema({ id: 1, name: tokenName })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: 123, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
@@ -948,11 +885,6 @@ describe('gitlab-client', () => {
       const tokenId = 789
       const group = makeGroupSchema({ id: groupId, name: projectSlug, path: projectSlug, full_path: `forge/${projectSlug}`, full_name: `forge/${projectSlug}`, parent_id: 123 })
 
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({
-        data: [{ id: 123, full_path: 'forge' }],
-        paginationInfo: { next: null },
-      })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({
@@ -969,13 +901,50 @@ describe('gitlab-client', () => {
   describe('getProjectGroup', () => {
     it('should return undefined when the project group is not found', async () => {
       const projectSlug = 'missing'
-      const gitlabGroupsAllMock = gitlabApi.Groups.all as MockedFunction<typeof gitlabApi.Groups.all>
-      gitlabGroupsAllMock.mockResolvedValueOnce({ data: [{ id: 123, full_path: 'forge' }], paginationInfo: { next: null } })
       gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: 123, full_path: 'forge' }))
       const gitlabGroupsAllSubgroupsMock = gitlabApi.Groups.allSubgroups as MockedFunction<typeof gitlabApi.Groups.allSubgroups>
       gitlabGroupsAllSubgroupsMock.mockResolvedValueOnce({ data: [], paginationInfo: { next: null } })
 
       await expect(service.getProjectGroup(projectSlug)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('getGroupByPath (HTTP transport)', () => {
+    const server = setupServer()
+
+    beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+    afterEach(() => server.resetHandlers())
+    afterAll(() => server.close())
+
+    it('should request the group path with slash encoding, not double encoding', async () => {
+      const config = mockDeep<ConfigType<typeof gitlabConfigFactory>>({
+        url: 'https://gitlab.internal',
+        token: 'token',
+        internalUrl: 'https://gitlab.internal',
+        projectRootDir: 'forge',
+        mirrorTokenExpirationDays: 30,
+      })
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          GitlabClientService,
+          { provide: GITLAB_REST_CLIENT, useValue: new GitlabRest({ token: 'test-token', host: 'https://gitlab.internal' }) },
+          { provide: gitlabConfigFactory.KEY, useValue: config },
+        ],
+      }).compile()
+      const transportService = module.get(GitlabClientService)
+
+      let capturedUrl: string | null = null
+      server.use(
+        http.get('https://gitlab.internal/api/v4/groups/forge%2Fconsole%2Fproject-1', ({ request }) => {
+          capturedUrl = new URL(request.url).pathname
+          return HttpResponse.json(makeExpandedGroupSchema({ id: 456, full_path: 'forge/console/project-1' }))
+        }),
+      )
+
+      const result = await transportService.getGroupByPath('forge/console/project-1')
+
+      expect(result).toEqual(expect.objectContaining({ id: 456 }))
+      expect(capturedUrl).toBe('/api/v4/groups/forge%2Fconsole%2Fproject-1')
     })
   })
 
