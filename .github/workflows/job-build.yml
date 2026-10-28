@@ -43,6 +43,9 @@ on:
     secrets:
       ARGOCD_TOKEN:
         required: false
+    outputs:
+      publish:
+        value: ${{ jobs.build.outputs.publish }}
   workflow_dispatch:
     inputs:
       REGISTRY:
@@ -82,6 +85,7 @@ jobs:
     outputs:
       build-matrix: ${{ steps.build-matrix.outputs.BUILD_MATRIX }}
       lower-branch: ${{ steps.lower-branch.outputs.LOWER_BRANCH }}
+      publish: ${{ steps.publish.outputs.publish }}
     steps:
       - name: Checks-out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -90,6 +94,19 @@ jobs:
         id: build-matrix
         run: |
           echo "BUILD_MATRIX=$(jq -c . < ./ci/matrix-docker.json)" >> $GITHUB_OUTPUT
+
+      - name: Determine publish policy
+        id: publish
+        run: |
+          # Fork PRs receive a read-only GITHUB_TOKEN: registry pushes fail with
+          # "installation not allowed to Write organization package". Publish
+          # only from trusted contexts (same-repo PRs, queue, main); fork PR
+          # builds stay local.
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Get lowercase branch name
         id: lower-branch
@@ -101,6 +118,8 @@ jobs:
     runs-on: ${{ matrix.runners }}
     needs:
       - matrix
+    outputs:
+      publish: ${{ needs.matrix.outputs.publish }}
     strategy:
       fail-fast: false
       matrix:
@@ -131,6 +150,7 @@ jobs:
         if: ${{ inputs.USE_QEMU }}
 
       - name: Login to GitHub Container Registry
+        if: ${{ needs.matrix.outputs.publish == 'true' }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ${{ inputs.REGISTRY }}
@@ -146,7 +166,7 @@ jobs:
           file: ${{ matrix.images.build.dockerfile }}
           provenance: false
           platforms: ${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'linux/amd64,linux/arm64') || (inputs.BUILD_ARM64 && 'linux/arm64') || (inputs.BUILD_AMD64 && 'linux/amd64') }}
-          outputs: type=image,name=${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }},push-by-digest=true,name-canonical=true,push=${{ needs.matrix.outputs.publish == 'true' }}
           build-args: |
             APP_VERSION=${{ ( inputs.TAG && inputs.TAG != '..' ) && inputs.TAG || steps.short-sha.outputs.SHORT_SHA }}
           # cache-from: type=gha
@@ -163,12 +183,14 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Export digest
+        if: ${{ needs.matrix.outputs.publish == 'true' }}
         run: |
           mkdir -p /tmp/digests/${{ matrix.images.name }}
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests/${{ matrix.images.name }}/${digest#sha256:}"
 
       - name: Upload digest
+        if: ${{ needs.matrix.outputs.publish == 'true' }}
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: digests-${{ matrix.images.name }}.${{ (inputs.BUILD_AMD64 && inputs.BUILD_ARM64 && inputs.USE_QEMU && 'multiarch') || (inputs.BUILD_ARM64 && 'arm64') || (inputs.BUILD_AMD64 && 'amd64') }}.digest
@@ -182,6 +204,7 @@ jobs:
     needs:
       - matrix
       - build
+    if: ${{ needs.build.outputs.publish == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -210,6 +233,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
 
       - name: Login to GitHub Container Registry
+        if: ${{ needs.matrix.outputs.publish == 'true' }}
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
         with:
           registry: ${{ inputs.REGISTRY }}
@@ -229,10 +253,11 @@ jobs:
 
   preview:
     name: Redeploy preview app
-    if: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'preview') && inputs.PR_NUMBER != '' }}
+    if: ${{ needs.build.outputs.publish == 'true' && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'preview') && inputs.PR_NUMBER != '' }}
     runs-on: ubuntu-latest
     needs:
       - merge
+      - build
     steps:
       - name: Replace template fields
         id: feed-template
