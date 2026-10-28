@@ -4,9 +4,9 @@ import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 import { deleteValidationInput } from '../helpers/constants'
 
-test.describe('Zone page', () => {
+test.describe('Zone page', { tag: '@e2e' }, () => {
   // @TODO: Add clusters to this test to ensure this part of the feature
-  test('Should create a zone', { tag: ['@e2e', '@need-rework'] }, async ({ page }) => {
+  test('should create a zone', { tag: ['@need-rework'] }, async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -52,7 +52,7 @@ test.describe('Zone page', () => {
     await expect(page.getByTestId('updateZoneBtn')).toBeEnabled()
   })
 
-  test('Should update a zone', { tag: '@e2e' }, async ({ page }) => {
+  test('should update a zone', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -106,7 +106,7 @@ test.describe('Zone page', () => {
     await expect(page.getByTestId('updateZoneBtn')).toBeEnabled()
   })
 
-  test('Should not create a zone if slug is already taken', { tag: '@e2e' }, async ({ page }) => {
+  test('should not create a zone if slug is already taken', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -142,7 +142,7 @@ test.describe('Zone page', () => {
     await expect(snackbar).toBeVisible()
   })
 
-  test('Should not delete a zone if associated clusters', { tag: '@e2e' }, async ({ page }) => {
+  test('should not delete a zone if associated clusters', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -158,7 +158,7 @@ test.describe('Zone page', () => {
     await expect(page.getByTestId('associatedClustersAlert')).toBeVisible()
   })
 
-  test('Should delete a zone', { tag: '@e2e' }, async ({ page }) => {
+  test('should delete a zone', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })

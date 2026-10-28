@@ -3,7 +3,7 @@ import { clientURL, signInCloudPiNative, tcolinUser, testUser } from '../config/
 import { createProject } from '../helpers/project'
 
 test.describe('Services externes', { tag: '@e2e' }, () => {
-  test('Should show the project services table empty state as user', async ({ page }) => {
+  test('should show the project services table empty state as user', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
@@ -16,7 +16,7 @@ test.describe('Services externes', { tag: '@e2e' }, () => {
     await expect(page.locator('#servicesTable')).toContainText('Aucun service disponible')
   })
 
-  test('Should show the project services table empty state as admin', async ({ page }) => {
+  test('should show the project services table empty state as admin', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })

@@ -10,22 +10,21 @@ import { deleteValidationInput } from '../helpers/constants'
 import { createProject } from '../helpers/project'
 import { createRepository, synchronizeBranchOnRepository } from '../helpers/repository'
 
-test.describe('Projects page', () => {
+test.describe('Projects page', { tag: '@e2e' }, () => {
   test(
-    'Should display only projects that user is member of',
-    { tag: '@e2e' },
+    'should display only projects that user is member of',
     async ({ page }) => {
-      // Create a project as one user
+      // Arrange - create a project as one user, sign off, login as another user
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
       const { name: projectName } = await createProject({ page })
-
-      // Sign off and login as another user
       await page.getByRole('link', { name: 'Se déconnecter' }).click()
       await signInCloudPiNative({ page, credentials: cnolletUser })
 
-      // Previously created project should not appear for this user
+      // Act
       await page.getByTestId('menuMyProjects').click()
+
+      // Assert
       await expect(page.getByTestId('createProjectLink')).toBeVisible()
       await expect(
         page.getByRole('link', { name: projectName }),
@@ -34,9 +33,9 @@ test.describe('Projects page', () => {
   )
 
   test(
-    'Should not keep the same default branch name for all repositories of a projects',
-    { tag: '@e2e' },
+    'should not keep the same default branch name for all repositories of a projects',
     async ({ page }) => {
+      // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
       await createProject({ page })
@@ -47,8 +46,12 @@ test.describe('Projects page', () => {
         page,
         repositoryName: firstRepositoryName,
       })
+
+      // Act
       const secondRepositoryName = await createRepository({ page })
       await page.getByTestId(`repoTr-${secondRepositoryName}`).click()
+
+      // Assert
       await expect(page.getByTestId('resource-modal')).toBeVisible()
       await expect(page.getByTestId('branchNameInput')).not.toHaveValue(
         branchName,
@@ -60,8 +63,8 @@ test.describe('Projects page', () => {
   // initially we wanted to delete projects but we moved on to archiving, while not updating
   // the frontend x)
   test(
-    'Should archive a project, when logged in as an admin',
-    { tag: ['@e2e', '@need-rework'] },
+    'should archive a project, when logged in as an admin',
+    { tag: ['@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)

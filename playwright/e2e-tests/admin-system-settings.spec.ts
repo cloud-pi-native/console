@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 
 test.describe('Réglages système', { tag: '@e2e' }, () => {
-  test('Should display system settings with maintenance mode off', async ({ page }) => {
+  test('should display system settings with maintenance mode off', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
