@@ -28,7 +28,7 @@ export async function patchRoles(
       updatedRoles.push({
         id: dbRole.id,
         name: matchingRole.name ?? dbRole.name,
-        permissions: matchingRole.permissions ? BigInt(matchingRole.permissions) : dbRole.permissions,
+        permissions: matchingRole.permissions ?? dbRole.permissions,
         position: matchingRole.position ?? dbRole.position,
         oidcGroup: matchingRole.oidcGroup ?? dbRole.oidcGroup,
         type: matchingRole.type ?? dbRole.type,

@@ -61,9 +61,9 @@ describe('adminTokenService', () => {
 
   describe('create', () => {
     it('rejects an expiration date before tomorrow', async () => {
-      await expect(service.create({ name: 'my-token', permissions: '4', expirationDate: new Date() }))
+      await expect(service.create({ name: 'my-token', permissions: 4n, expirationDate: new Date() }))
         .rejects.toThrow(BadRequestException)
-      await expect(service.create({ name: 'my-token', permissions: '4', expirationDate: new Date() }))
+      await expect(service.create({ name: 'my-token', permissions: 4n, expirationDate: new Date() }))
         .rejects.toThrow('Date d\'expiration trop courte')
       expect(prisma.$transaction).not.toHaveBeenCalled()
     })
@@ -87,7 +87,7 @@ describe('adminTokenService', () => {
       tx.adminToken.create.mockResolvedValue(created)
       prisma.$transaction.mockImplementation(async fn => fn(tx))
 
-      const result = await service.create({ name: 'my-token', permissions: '2', expirationDate: null })
+      const result = await service.create({ name: 'my-token', permissions: 2n, expirationDate: null })
 
       expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function))
       expect(tx.user.create).toHaveBeenCalled()

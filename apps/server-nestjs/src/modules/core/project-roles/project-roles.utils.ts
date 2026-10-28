@@ -1,7 +1,7 @@
 import type { ProjectRole as SharedProjectRole } from '@cpn-console/shared'
 import type { ProjectRole } from '@prisma/client'
 import type { ProjectRoleWithProject } from './project-roles-queries.utils'
-import { isSystemRoleType } from '@cpn-console/shared'
+import { isSystemRoleType, projectRoleContract } from '@cpn-console/shared'
 import { BadRequestException } from '@nestjs/common'
 
 export interface ProjectRoleResponse {
@@ -13,8 +13,8 @@ export interface ProjectRoleResponse {
   userCount?: number
 }
 
-export type CreateProjectRoleInput = Omit<SharedProjectRole, 'position' | 'id' | 'projectId'>
-export type PatchProjectRoleInput = Pick<SharedProjectRole, 'id'> & Partial<Omit<SharedProjectRole, 'id' | 'projectId'>>
+export type CreateProjectRoleInput = typeof projectRoleContract.createProjectRole.body._type
+export type PatchProjectRoleInput = typeof projectRoleContract.patchProjectRoles.body._type[number]
 export type PatchProjectRolesInput = PatchProjectRoleInput[]
 
 export function toProjectRoleResponse(
@@ -79,9 +79,7 @@ function mergeProjectRolePatch(
   dbRole: ProjectRole,
   matchingRole: PatchProjectRoleInput,
 ): ProjectRole {
-  const permissions = typeof matchingRole.permissions === 'string'
-    ? BigInt(matchingRole.permissions)
-    : dbRole.permissions
+  const permissions = matchingRole.permissions ?? dbRole.permissions
   const oidcGroup = typeof matchingRole.oidcGroup === 'string'
     ? `/${projectSlug}${matchingRole.oidcGroup}`
     : dbRole.oidcGroup

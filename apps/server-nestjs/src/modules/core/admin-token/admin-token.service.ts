@@ -1,4 +1,4 @@
-import type { CreateAdminTokenBody } from '@cpn-console/shared'
+import type { CreateAdminTokenBodyParsed } from '@cpn-console/shared'
 import { randomUUID } from 'node:crypto'
 import { isAtLeastTomorrow } from '@cpn-console/shared'
 import { BadRequestException, Inject, Injectable, Logger } from '@nestjs/common'
@@ -33,7 +33,7 @@ export class AdminTokenService {
   }
 
   @StartActiveSpan()
-  async create(data: CreateAdminTokenBody) {
+  async create(data: CreateAdminTokenBodyParsed) {
     const span = trace.getActiveSpan()
     span?.setAttribute('adminToken.create.name', data.name)
     this.logger.log(`adminToken.create started (tokenName=${data.name})`)
@@ -51,7 +51,7 @@ export class AdminTokenService {
         await createBotUser(tx, { botUserId, name: data.name })
         return createAdminToken(tx, {
           name: data.name,
-          permissions: BigInt(data.permissions),
+          permissions: data.permissions,
           expirationDate,
           hash,
           userId: botUserId,

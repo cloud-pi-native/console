@@ -1,4 +1,4 @@
-import type { CreateAdminTokenBody } from '@cpn-console/shared'
+import type { CreateAdminTokenBodyParsed } from '@cpn-console/shared'
 import { CoerceBooleanSchema, CreateAdminTokenBodySchema } from '@cpn-console/shared'
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common'
 import { RequireAdminPermission } from '../../infrastructure/permission/user/user-admin-permission.decorator'
@@ -23,7 +23,7 @@ export class AdminTokenController {
   @HttpCode(HttpStatus.CREATED)
   @RequireAdminPermission('ManageAdminToken')
   async create(
-    @Body(new ZodValidationPipe(CreateAdminTokenBodySchema)) data: CreateAdminTokenBody,
+    @Body(new ZodValidationPipe(CreateAdminTokenBodySchema)) data: CreateAdminTokenBodyParsed,
   ) {
     const { token, password } = await this.service.create(data)
     return toExposedAdminToken(token, password)

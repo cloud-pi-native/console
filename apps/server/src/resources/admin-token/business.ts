@@ -48,7 +48,7 @@ export async function createToken(data: typeof adminTokenContract.createAdminTok
     data: {
       ...data,
       hash,
-      permissions: BigInt(data.permissions),
+      permissions: data.permissions,
       expirationDate: data.expirationDate ? new Date(data.expirationDate) : undefined,
       userId: botUserId,
     },

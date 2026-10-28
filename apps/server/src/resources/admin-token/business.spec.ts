@@ -35,11 +35,11 @@ describe('test admin-token business', () => {
         expirationDate: null,
         id: faker.string.uuid(),
         name: 'test',
-        permissions: '2',
+        permissions: 2n,
       }
       prisma.adminToken.findUnique.mockResolvedValueOnce(dbToken)
       prisma.adminToken.create.mockResolvedValueOnce(createdToken)
-      await createToken({ name: 'test', permissions: '2', expirationDate: null }, userId, undefined)
+      await createToken({ name: 'test', permissions: 2n, expirationDate: null }, userId, undefined)
 
       expect(prisma.adminToken.create).toHaveBeenCalledWith({
         data: {
@@ -57,7 +57,7 @@ describe('test admin-token business', () => {
     })
     it('should not create cause expiration is too short', async () => {
       const expirationDate = new Date()
-      await createToken({ name: 'test', permissions: '2', expirationDate: expirationDate.toISOString() })
+      await createToken({ name: 'test', permissions: 2n, expirationDate: expirationDate.toISOString() })
 
       expect(prisma.adminToken.create).toHaveBeenCalledTimes(0)
     })

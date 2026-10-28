@@ -238,8 +238,8 @@ describe('test admin-role business', () => {
       expect(prisma.adminRole.update).toHaveBeenCalledTimes(2)
     })
     it('should update permissions', async () => {
-      const updateRoles: (Pick<AdminRole, 'id'> & { permissions?: string })[] = [
-        { id: dbRoles[1].id, permissions: '0' },
+      const updateRoles: (Pick<AdminRole, 'id'> & { permissions?: bigint })[] = [
+        { id: dbRoles[1].id, permissions: 0n },
       ]
       prisma.adminRole.findMany.mockResolvedValue(dbRoles)
       hook.adminRole.upsert.mockResolvedValue({ args: {}, failed: false, results: {} })

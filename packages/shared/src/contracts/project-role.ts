@@ -2,6 +2,7 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
+import { permissionLevelInputSchema } from '../schemas/_utils.js'
 import { ProjectRoleSchema } from '../schemas/role.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
@@ -21,7 +22,7 @@ export const projectRoleContract = contractInstance.router({
   createProjectRole: {
     method: 'POST',
     path: '',
-    body: ProjectRoleSchema.omit({ position: true, id: true, projectId: true }),
+    body: ProjectRoleSchema.omit({ position: true, id: true, projectId: true }).extend({ permissions: permissionLevelInputSchema.default('0') }),
     pathParams: z.object({ projectId: z.string().uuid() }),
     responses: {
       // 200: z.any(),
@@ -37,7 +38,7 @@ export const projectRoleContract = contractInstance.router({
     path: '',
     pathParams: z.object({ projectId: z.string().uuid() }),
     // body: z.any(),
-    body: ProjectRoleSchema.pick({ id: true }).merge(ProjectRoleSchema.omit({ id: true, projectId: true }).partial()).array(),
+    body: ProjectRoleSchema.pick({ id: true }).merge(ProjectRoleSchema.omit({ id: true, projectId: true }).partial()).extend({ permissions: permissionLevelInputSchema.optional() }).array(),
     responses: {
       // 200: z.any(),
       200: ProjectRoleSchema.array(),

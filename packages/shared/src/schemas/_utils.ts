@@ -12,6 +12,11 @@ export const AtDatesToStringExtend = {
   createdAt: dateToString,
 }
 export const permissionLevelSchema = z.coerce.string()
+  .refine(value => /^\d+$/.test(value), { message: 'Permissions doit être un entier' })
+
+export const permissionLevelInputSchema = permissionLevelSchema
+  .transform(value => BigInt(value))
+  .default('0')
 
 export const UuidOrCsvUuidSchema = z.string()
   .refine((value) => {

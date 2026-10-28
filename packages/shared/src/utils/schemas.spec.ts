@@ -2,7 +2,8 @@ import type { Log, ProjectV2 } from '../index.js'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
 import { ZodError } from 'zod'
-import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, defaultBranchName, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
+import { ClusterDetailsSchema, ClusterPrivacy, ClusterUsageSchema, defaultBranchName, descriptionMaxLength, EnvironmentSchema, instanciateSchema, LogSchema, parseZodError, projectRoleContract, ProjectSchemaV2, RepoSchema, StageSchema, UserSchema } from '../index.js'
+import { permissionLevelSchema } from '../schemas/_utils.js'
 
 describe('schemas utils', () => {
   it('should delete config in log', () => {
@@ -371,5 +372,21 @@ describe('schemas utils', () => {
     'a'.repeat(51),
   ])('should reject invalid RFC 1123 cluster label %s', (label) => {
     expect(ClusterDetailsSchema.shape.label.safeParse(label).success).toBe(false)
+  })
+
+  it('should reject a CSV permissions in a project role', () => {
+    const result = permissionLevelSchema.safeParse('256,512')
+    expect(result.success).toBe(false)
+    expect(result.error).toBeInstanceOf(ZodError)
+
+    const createBody = projectRoleContract.createProjectRole.body
+    const invalid = createBody.safeParse({ name: 'Test', permissions: '256,512' })
+    expect(invalid.success).toBe(false)
+    const valid = createBody.safeParse({ name: 'Test', permissions: '256' })
+    expect(valid.success).toBe(true)
+    expect(valid.data.permissions).toBe(256n)
+    const omitted = createBody.safeParse({ name: 'Test' })
+    expect(omitted.success).toBe(true)
+    expect(omitted.data.permissions).toBe(0n)
   })
 })

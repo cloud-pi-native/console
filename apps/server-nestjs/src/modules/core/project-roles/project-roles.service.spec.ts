@@ -60,7 +60,7 @@ describe('projectRolesService', () => {
     prisma.projectRole.findMany.mockResolvedValue([])
     prisma.project.findUnique.mockResolvedValueOnce(makeProject({ id: projectId, slug }))
 
-    await service.create(projectId, { name: 'test', permissions: '4' })
+    await service.create(projectId, { name: 'test', permissions: 4n })
 
     expect(prisma.projectRole.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
@@ -77,7 +77,7 @@ describe('projectRolesService', () => {
     const projectId = faker.string.uuid()
     prisma.project.findUnique.mockResolvedValueOnce(makeProject({ slug: 'slug' }))
 
-    await expect(service.create(projectId, { name: 'test', permissions: '4', type: 'system:managed' }))
+    await expect(service.create(projectId, { name: 'test', permissions: 4n, type: 'system:managed' }))
       .rejects.toThrow(BadRequestException)
   })
 
