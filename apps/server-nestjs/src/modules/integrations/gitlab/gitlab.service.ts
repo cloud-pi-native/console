@@ -277,8 +277,8 @@ export class GitlabService {
     this.logger.verbose(`Loaded GitLab project group state (${project.slug}): groupId=${group.id} members=${members.length}`)
     await this.ensureProjectGroupMembers(project, group, members)
     await this.ensureSystemRepos(project)
-    await this.ensureProjectRepos(project)
-    await this.purgeOrphanRepos(project)
+    await this.ensureProjectRepos(project, group)
+    await this.purgeOrphanRepos(project, group)
     this.logger.verbose(`GitLab project group reconciled (${project.slug})`)
   }
 
@@ -484,12 +484,15 @@ export class GitlabService {
   }
 
   @StartActiveSpan()
-  private async ensureProjectRepos(project: ProjectWithDetails) {
+  private async ensureProjectRepos(project: ProjectWithDetails, group: GroupSchemaWith<'id' | 'full_path'>) {
     const span = trace.getActiveSpan()
     span?.setAttributes({
       'project.slug': project.slug,
       'repositories.count': project.repositories.length,
     })
+    const projectMirrorCreds = project.repositories.some(r => r.externalRepoUrl)
+      ? await this.getOrRotateMirrorCreds(project, group)
+      : undefined
     let mirroringEnabledCount = 0
     let mirroringDisabledCount = 0
     for (const repo of project.repositories) {
@@ -507,7 +510,7 @@ export class GitlabService {
       if (repo.externalRepoUrl) {
         span?.setAttribute('repository.mirroring', true)
         mirroringEnabledCount++
-        await this.configureRepositoryMirroring(project, repo)
+        await this.configureRepositoryMirroring(project, repo, group, projectMirrorCreds!)
       } else {
         span?.setAttribute('repository.mirroring', false)
         mirroringDisabledCount++
@@ -519,10 +522,10 @@ export class GitlabService {
   }
 
   @StartActiveSpan()
-  private async purgeOrphanRepos(project: ProjectWithDetails) {
+  private async purgeOrphanRepos(project: ProjectWithDetails, group: GroupSchemaWith<'id'>) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const gitlabRepositories = await getAll(this.gitlab.getRepos(project.slug))
+    const gitlabRepositories = await getAll(this.gitlab.getGroupRepos(group.id))
     span?.setAttribute('gitlab.repositories.count', gitlabRepositories.length)
 
     // Delete console-owned repos no longer tracked (e.g. console repository deletion).
@@ -553,6 +556,8 @@ export class GitlabService {
   private async configureRepositoryMirroring(
     project: ProjectWithDetails,
     repo: ProjectWithDetails['repositories'][number],
+    group: GroupSchemaWith<'id' | 'full_path'>,
+    projectMirrorCreds: MirrorUserSecret,
   ) {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
@@ -567,13 +572,12 @@ export class GitlabService {
       this.logger.warn(`No existing mirror credentials found in Vault; rotating new credentials (project=${project.slug}, repoName=${repo.internalRepoName})`)
     }
 
-    const internalRepoUrl = await this.gitlab.ensureProjectGroupInternalRepoUrl(project.slug, repo.internalRepoName)
     const externalRepoUrn = repo.externalRepoUrl.split('://')[1]
-    const internalRepoUrn = internalRepoUrl.split('://')[1]
+    const urlBase = this.gitlabConfig.internalUrl ?? this.gitlabConfig.url
+    if (!urlBase) throw new Error('GITLAB_URL is required')
+    const internalRepoUrn = `${urlBase}/${group.full_path}/${repo.internalRepoName}.git`.split('://')[1]
     span?.setAttribute('repository.externalRepoUrn', externalRepoUrn)
     span?.setAttribute('repository.internalRepoUrn', internalRepoUrn)
-
-    const projectMirrorCreds = await this.getOrRotateMirrorCreds(project)
 
     const mirrorSecretData = {
       GIT_INPUT_URL: externalRepoUrn,
@@ -627,11 +631,9 @@ export class GitlabService {
   }
 
   @StartActiveSpan()
-  private async getOrRotateMirrorCreds(project: ProjectWithDetails): Promise<MirrorUserSecret> {
+  private async getOrRotateMirrorCreds(project: ProjectWithDetails, group: GroupSchemaWith<'id'>): Promise<MirrorUserSecret> {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
-    const group = await this.gitlab.getProjectGroup(project.slug)
-    if (!group) throw new Error(`No group found for project ${project.slug}`)
     const currentToken = await this.gitlab.getProjectToken(group, project.slug)
     if (currentToken) {
       const vaultSecret = await this.vault.readTechnReadOnlyCreds(project.slug)

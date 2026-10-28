@@ -15,6 +15,7 @@ import type {
   VariableType,
 } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
+import type { UpsertProjectGroupRepoOptions } from './gitlab.utils'
 import { join } from 'node:path'
 import { defaultBranchName } from '@cpn-console/shared'
 import { Gitlab as GitlabRest } from '@gitbeaker/rest'
@@ -22,6 +23,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { gitlabConfigFactory } from '../../../config/gitlab.config'
 import { find } from '../../../utils/iterable.utils'
 import {
+  GITLAB_PAGE_SIZE,
   GROUP_ROOT_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_CUSTOM_ATTRIBUTE_KEY,
   INFRA_GROUP_PATH,
@@ -34,19 +36,13 @@ import {
   TOPIC_SYSTEM_MANAGED,
   USER_ID_CUSTOM_ATTRIBUTE_KEY,
 } from './gitlab.constants'
-import { ensure, generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isCommitAlreadyApplied, isGitbeakerUnauthorized, unlessNotFound } from './gitlab.utils'
+import { ensure, generateGitlabCIConfigContent, generateMirrorScriptContent, hasFileContentChanged, hasGitbeakerCause, isCommitAlreadyApplied, isGitbeakerUnauthorized, isRepoSettingsChanged, unlessNotFound } from './gitlab.utils'
 
 export const GITLAB_REST_CLIENT = Symbol('GITLAB_REST_CLIENT')
 
 type With<T, K extends keyof T> = T & Required<Pick<T, K>>
 export type GroupSchemaWith<T extends keyof GroupSchema> = With<GroupSchema, T>
 export type CondensedProjectSchemaWith<T extends keyof CondensedProjectSchema> = With<CondensedProjectSchema, T>
-
-export interface UpsertProjectGroupRepoOptions {
-  description?: string
-  ciConfigPath?: string
-  extraTopics?: string[]
-}
 export type EditUserOptionsWith<T extends keyof EditUserOptions> = With<EditUserOptions, T>
 type UserSchema = SimpleUserSchema | ExpandedUserSchema
 
@@ -128,10 +124,7 @@ export class GitlabClientService {
 
   async getGroupByPath(path: string) {
     this.logger.verbose(`Looking up a GitLab group by path ${path}`)
-    return find(
-      this.offsetPaginate(opts => this.client.Groups.all({ search: path, orderBy: 'path', ...opts })),
-      g => g.full_path === path,
-    )
+    return unlessNotFound(() => this.client.Groups.show(path))
   }
 
   private async setManagedGroupAttributesByPath(fullPath: string, groupId: number) {
@@ -177,9 +170,6 @@ export class GitlabClientService {
 
     this.logger.verbose(`Resolving GitLab group path ${path} (depth=${1 + parts.length})`)
     let parentGroup = await this.getGroupByPath(rootGroupPath) ?? await this.createGroup(rootGroupPath)
-    if (this.config.projectRootDir && parentGroup.full_path === this.config.projectRootDir) {
-      await this.setManagedRootGroupAttributes(parentGroup.id)
-    }
 
     let currentFullPath: string
     for (const part of parts) {
@@ -188,7 +178,7 @@ export class GitlabClientService {
     }
 
     this.logger.verbose(`GitLab group path resolved (path=${path}, groupId=${parentGroup.id})`)
-    return parentGroup as GroupSchemaWith<'id'>
+    return parentGroup
   }
 
   async ensureProjectGroup() {
@@ -494,15 +484,18 @@ export class GitlabClientService {
   }
 
   async ensureProjectGroupRepoSettings(projectSlug: string, repoName: string, options: UpsertProjectGroupRepoOptions = {}) {
-    const { description, ciConfigPath, extraTopics = [] } = options
     const fullPath = `${projectSlug}/${repoName}`
-    const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath, ciConfigPath)
+    const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath, options.ciConfigPath)
+    if (!isRepoSettingsChanged(repo, repoName, options)) {
+      this.logger.verbose(`GitLab project repository settings unchanged; skipping edit (path=${fullPath}, repoId=${repo.id})`)
+      return repo
+    }
     const updated = await this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
-      topics: [TOPIC_PLUGIN_MANAGED, ...extraTopics],
-      description,
-      ciConfigPath: ciConfigPath ?? '',
+      topics: [TOPIC_PLUGIN_MANAGED, ...(options.extraTopics ?? [])],
+      description: options.description,
+      ciConfigPath: options.ciConfigPath ?? '',
     })
     return updated
   }
@@ -749,7 +742,7 @@ export class GitlabClientService {
       try {
         const { data, paginationInfo } = await request({
           page,
-          perPage: options?.perPage,
+          perPage: options?.perPage ?? GITLAB_PAGE_SIZE,
           maxPages: options?.maxPages,
           showExpanded: true,
           pagination: 'offset',

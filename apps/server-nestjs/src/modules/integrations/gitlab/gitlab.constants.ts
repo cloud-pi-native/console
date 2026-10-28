@@ -16,6 +16,8 @@ export const GITLAB_CI_CONFIG_PATH = '.gitlab-ci-dso.yml'
 // Managed resources sentinel
 export const TOPIC_PLUGIN_MANAGED = 'plugin-managed'
 
+export const GITLAB_PAGE_SIZE = 100
+
 // Console-owned plumbing repos (mirror, infra-apps, observability...), protected from orphan purge
 export const TOPIC_SYSTEM_MANAGED = 'system-managed'
 export const TOKEN_DESCRIPTION = 'mirroring-from-external-repo'

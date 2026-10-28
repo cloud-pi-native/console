@@ -238,6 +238,42 @@ export function isDeclaredRepo(project: ProjectWithDetails, repo: ProjectSchema)
   return project.repositories.some(r => r.internalRepoName === repo.name)
 }
 
+export interface UpsertProjectGroupRepoOptions {
+  description?: string
+  ciConfigPath?: string
+  extraTopics?: string[]
+}
+
+const managedTopics = (repo: ProjectSchema, extraTopics: string[]) => [TOPIC_PLUGIN_MANAGED, ...extraTopics]
+
+function sameTopics(a: string[], b: string[]) {
+  return a.slice().sort((x, y) => x.localeCompare(y)).join(',') === b.slice().sort((x, y) => x.localeCompare(y)).join(',')
+}
+
+function sameDescription(repo: ProjectSchema, description?: string) {
+  return (repo.description ?? '') === (description ?? '')
+}
+
+// `Projects.show` resolves by path, so a drifted display name here is the one signal
+// `triggerMirror` relies on to find the target/mirror repos; never skip the restore write.
+const sameName = (repo: ProjectSchema, repoName: string) => repo.name === repoName
+
+function sameCiConfigPath(repo: ProjectSchema, ciConfigPath?: string) {
+  const repoCiConfigPath = typeof repo.ci_config_path === 'string' ? repo.ci_config_path : ''
+  return repoCiConfigPath === (ciConfigPath ?? '')
+}
+
+export function isRepoSettingsChanged(
+  repo: ProjectSchema,
+  repoName: string,
+  { description, ciConfigPath, extraTopics = [] }: UpsertProjectGroupRepoOptions,
+): boolean {
+  return !sameTopics(managedTopics(repo, extraTopics), repo.topics ?? [])
+    || !sameDescription(repo, description)
+    || !sameName(repo, repoName)
+    || !sameCiConfigPath(repo, ciConfigPath)
+}
+
 export function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
 }
