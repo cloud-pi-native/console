@@ -1,93 +1,88 @@
 ---
 name: cpn-recette
 description:
-  "Use when running a recette (HP validation) campaign on the CPiN console:
-  probe the fixes of a release candidate on the HP platform, with API-driven
-  ground truth and evidence on the record."
+  "Use when running or planning a recette (validation) campaign for a CPiN
+  release candidate: define sondes, execute them with evidence, record the
+  compte-rendu — on any platform, console or socle."
 license: Apache-2.0
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
-# Recette HP
+# Recette
 
-Validate a release candidate on the HP platform before the recette session.
-The output is evidence-backed probe results and a compte-rendu, not
-impressions.
+Validate a release candidate against its target platform before the recette
+session. The unit of work is the **sonde**: one corrective issue, one
+expected behavior, one piece of evidence. The output is a compte-rendu with
+a GO/NO-GO verdict, not impressions.
 
-## Prerequisites
+## Campaign lifecycle
 
-- The candidate build is deployed: check version and base first, never probe
-  the wrong build:
+1. **Plan.** Source the sondes from the release milestone's validation queue
+   (the board view `Ready for test HP`) plus any fix shipped in the
+   candidate that the queue hides. One campaign issue carries the sondes as
+   a `- [ ]` ledger — that ledger is the board the loop reads.
+2. **Verify the target.** Never probe an unverified build: version endpoint
+   and tag-compare first (the deployed sha must contain every fix under
+   test).
+3. **Prepare fixtures and identities.** Identities and fixtures are
+   provisioned declaratively when possible (socle values, Argocd-synced) —
+   hand-created users are a fallback, never the convention. A campaign that
+   needs shared-infrastructure manipulation states the need and waits for
+   the operator's window.
+4. **Execute.** Order non-destructive sondes first; destructive ones wait
+   for the operator's review of pass-1 results. One sonde = one evidence
+   trail. A blocked sonde is parked with its findings banked, not skipped.
+5. **Record.** The compte-rendu is versioned in the repo before the recette
+   session, and the upstream issues the ledger names are closed (or
+   evidenced) per its terms.
 
-```bash
-curl -s https://console.dso.cpin-hp.numerique-interieur.fr/api/v1/version
-# compare with gh api repos/cloud-pi-native/console/compare/<rc-tag>...main
-```
+## Sonde anatomy
 
-- A drivable browser exists (automation Chrome with
-  `--remote-debugging-port=9222`, session survives in its profile). Without
-  it, park BLOCKED with the finding banked — DNS/reachability and build
-  validity checks still run.
-- Campaign identities exist on the platform (provisioned declaratively in
-  the socle values `gitops/envs/conf-dso/apps/keycloak*/templates/users.yaml`
-  — merge + Argocd sync mints them; password is set at first login).
-- **Scope gate** — destructive sondes (archive, purge, anything mutating
-  shared services) run only after the non-destructive pass is reviewed.
+A sonde is command-decidable or it is not a sonde:
 
-## Run a sonde
+- **Fixture** — what must exist (project, repo, role, failing service).
+- **Action** — the request or UI step, against the real contract.
+- **Expected** — the observable that decides PASS/FAIL, ideally read back
+  from a source of truth, not from the UI that performed the action.
+- **Reserve** — when evidence is bounded (sequential instead of concurrent,
+  happy path instead of failure path), the compte-rendu says so in a named
+  ⚠️; a reserve is not a failure but it is never silent.
 
-1. Read the contract before any call: the SPA bundle carries the full
-   ts-rest contracts — grep `index-*.js` for `<operation>:{method,path,body}`
-   and mirror the exact body keys (a guessed verb/field is a 404/400, not
-   knowledge).
+## Execution discipline
 
-```bash
-curl -s https://console.dso.cpin-hp.numerique-interieur.fr/assets/<index-*.js> -o /tmp/spa.js
-grep -oE 'patchMembers:\{method:"PATCH",path:"",body:\{[^}]{0,120}' /tmp/spa.js
-```
+- **Contract before call.** Read the API contract from source — for the
+  console, the SPA bundle `index-*.js` carries the full ts-rest contracts;
+  grep `<operation>:{method,path,body}` and mirror the exact keys. A guessed
+  verb or field returns 404/400, which proves nothing.
+- **Token freshness.** An SPA-held token expires mid-campaign (`401 jwt
+  expired`): refresh by driving any SPA tab, not by retrying the stale
+  request.
+- **Ground truth over rendered state.** A 2xx is a claim; the GET read-back
+  is the evidence. When the claim touches infrastructure, check outside the
+  application — Vault with an admin token, GitLab via its API, DB rows via
+  psql — even when the UI shows success.
+- **Invalid-payload probes.** Boundary probes with wrong payloads surface
+  contract bugs (500 instead of 400) that the UI never exposes; file them
+  as upstream candidates rather than campaign blockers.
+- **Failure injection must hit the right layer.** Before arming a failure
+  (unreachable URL, blocked service), trace which layer the code under test
+  actually touches — a poisoned mirror source does not fail a GitLab group
+  deletion. If honest injection needs shared-infrastructure downtime, ask,
+  don't improvise; fall back to code-order + specs evidence with a ⚠️.
 
-2. Capture the SPA bearer token: register a fetch shim that records the
-   `Authorization` header via
-   `Page.addScriptToEvaluateOnNewDocument` (the shim dies on reload —
-   re-register in the same CDP session each time). Refresh the token by
-   clicking any SPA tab; a 401 `jwt expired` means stale token, not wrong
-   request.
-3. Probe with the real body shape, then **read back** the object — a 2xx is
-   a claim, the GET is the evidence.
-4. Cross-check ground truth outside the console when the claim touches
-   infrastructure: Vault via `kubectl exec conf-dso-vault-0` with the root
-   token from `conf-dso-vault-keys` (mirror secrets live under
-   `forge-dso/forge-mi/projects/<slug>/`, not the project mount), GitLab via
-   its API with the console server's token, DB rows via the console
-   Postgres.
-
-## Known traps
-
-- `z.coerce.string()` schemas accept anything; a CSV like `"256,512"` can
-  500 in the service (`BigInt`). Probe boundaries with invalid payloads.
-- The UI can lag the API state (stale table after a mutation) — trust the
-  API read-back over the rendered page.
-- `gh pr checks --watch` on fork PRs: `build` jobs fail on ghcr push
-  (`denied: Write organization package`) — fork artifact, compilation/lint
-  /unit results are the real signal; say so in a PR comment for reviewers.
-- Org repos allow direct branch push as `shikanime`; forks of socle repos
-  are disabled — branch on upstream directly.
-- `.invalid` URLs poison a mirror's *source*, not GitLab's delete path:
-  archive with failing GitLab needs a different failure injector.
-
-## Record
+## Recording
 
 - One sonde, one comment on the campaign issue: fixture, request/response,
-  read-back, reserve if the evidence is bounded. Never report PASS from
-  memory.
-- Tick the campaign issue's ledger checkbox per sonde; scope decisions the
-  user makes mid-campaign go on the card as a comment too.
-- End the campaign with a compte-rendu versioned in the repo
-  (`docs/recette-<version>.md`): one table (sonde, corrective issue,
-  statut ✅/⚠️/🚫), incidents, nettoyage, verdict for the recette session.
-  ⚠️ carries a named reserve — what would strengthen the evidence.
-- Close upstream issues the ledger names only after their sonde passes;
-  attach the HP evidence as a comment even when already closed.
-- Clean the fixture project at the end (archive purges GitLab/Vault/roles);
-  keep the campaign identities for the next campaign.
+  read-back, reserve if any. Never report PASS from memory; the ledger
+  checkbox ticks only when the comment exists.
+- Mid-campaign operator decisions (scope, ordering) are comments on the
+  campaign issue — the card carries the state, not the chat.
+- The compte-rendu (`docs/recette-<version>.md`) holds one table: sonde,
+  corrective issue, statut ✅ / ⚠️ (named reserve) / 🚫 (out of scope, why),
+  then incidents found along the way, nettoyage, and the verdict. Published
+  before the recette session.
+- Clean the fixture at campaign end; keep identities provisioned for the
+  next campaign.
+- Issues the ledger names close only after their sonde passes; attach the
+  campaign evidence as a comment even when already closed by the team.
