@@ -24,3 +24,8 @@ export async function openZonesAdministration({ page }: { page: Page }) {
   await ensureAdminMenuVisible(page, 'menuAdministrationZones')
   await page.getByTestId('menuAdministrationZones').click()
 }
+
+export async function openRolesAdministration({ page }: { page: Page }) {
+  await ensureAdminMenuVisible(page, 'menuAdministrationRoles')
+  await page.getByTestId('menuAdministrationRoles').click()
+}
