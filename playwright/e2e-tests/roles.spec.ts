@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
-import { setCheckbox } from '../helpers/checkbox'
+import { clientURL, cnolletUser, signInCloudPiNative, tcolinUser } from '../config/console'
+import { addUserToAdminRole, createAdminRole, deleteAdminRole } from '../helpers/role'
 
 test.describe('Administration Roles', { tag: '@e2e' }, () => {
   test(
@@ -35,48 +35,15 @@ test.describe('Administration Roles', { tag: '@e2e' }, () => {
     const newOidcRole = {
       name: faker.string.alpha(10).toLowerCase(),
       oidcGroupName: `/${faker.string.alpha(10).toLowerCase()}`,
-      user: {
-        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
-        firstName: 'Claire',
-        lastName: 'NOLLET',
-        email: 'claire.nollet@test.com',
-        createdAt: '2023-07-03T14:46:56.771Z',
-        updatedAt: '2023-07-03T14:46:56.771Z',
-        adminRoleIds: [],
-        type: 'human',
-      },
     }
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationRoles').click()
-
-    await expect(page.getByTestId('role-list')).not.toContainText(
-      newOidcRole.name,
-    )
-    await page.getByTestId('addRoleBtn').click()
-    await expect(
-      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
-    ).toBeVisible()
-    await expect(page.getByTestId('saveBtn')).toBeDisabled()
-    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
-    await page.getByTestId('roleNameInput').fill(newOidcRole.name)
-    await page.getByTestId('oidcGroupInput').fill(newOidcRole.oidcGroupName)
-    await page.getByTestId('saveBtn').click()
-
-    // Assert
-    await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
-    await page.getByTestId('test-members').click()
-    await expect(page.getByTestId('addUserBtn')).toBeDisabled()
-    await page
-      .getByTestId('addUserSuggestionInput')
-      .locator('input')
-      .fill(`${newOidcRole.user.email}`)
-    await page.getByTestId('addUserBtn').click()
+    await createAdminRole({ page, role: newOidcRole })
+    await addUserToAdminRole({ page, userEmail: cnolletUser.email })
 
     // Assert
     const membershipCheckbox = page.getByTestId(
-      `input-checkbox-${newOidcRole.user.id}-cbx`,
+      `input-checkbox-${cnolletUser.id}-cbx`,
     )
     await expect(membershipCheckbox).toBeVisible()
     await expect(membershipCheckbox).toBeChecked()
@@ -88,22 +55,11 @@ test.describe('Administration Roles', { tag: '@e2e' }, () => {
     await signInCloudPiNative({ page, credentials: tcolinUser })
     const newRole = {
       name: faker.string.alpha(10).toLowerCase(),
+      managePerm: true,
     }
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationRoles').click()
-
-    await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
-    await page.getByTestId('addRoleBtn').click()
-    await expect(
-      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
-    ).toBeVisible()
-    await expect(page.getByTestId('saveBtn')).toBeDisabled()
-    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
-    await page.getByTestId('roleNameInput').fill(newRole.name)
-    await setCheckbox(page.locator('input[name=MANAGE]'))
-    await page.getByTestId('saveBtn').click()
+    await createAdminRole({ page, role: newRole })
 
     // Assert
     await expect(page.getByTestId('role-list')).toContainText(newRole.name)
@@ -115,45 +71,16 @@ test.describe('Administration Roles', { tag: '@e2e' }, () => {
     await signInCloudPiNative({ page, credentials: tcolinUser })
     const newRole = {
       name: faker.string.alpha(10).toLowerCase(),
-      user: {
-        id: 'cb8e5b4b-7b7b-40f5-935f-594f48ae6567',
-        firstName: 'Claire',
-        lastName: 'NOLLET',
-        email: 'claire.nollet@test.com',
-        createdAt: '2023-07-03T14:46:56.771Z',
-        updatedAt: '2023-07-03T14:46:56.771Z',
-        adminRoleIds: [],
-        type: 'human',
-      },
+      managePerm: true,
     }
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationRoles').click()
-    // Create non-OIDC role
-    await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
-    await page.getByTestId('addRoleBtn').click()
-    await expect(
-      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
-    ).toBeVisible()
-    await expect(page.getByTestId('saveBtn')).toBeDisabled()
-    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
-    await page.getByTestId('roleNameInput').fill(newRole.name)
-    await setCheckbox(page.locator('input[name=MANAGE]'))
-    await page.getByTestId('saveBtn').click()
-    await expect(page.getByTestId('role-list')).toContainText(newRole.name)
-    // Add user to role
-    await page.getByTestId('test-members').click()
-    await expect(page.getByTestId('addUserBtn')).toBeDisabled()
-    await page
-      .getByTestId('addUserSuggestionInput')
-      .locator('input')
-      .fill(`${newRole.user.email}`)
-    await page.getByTestId('addUserBtn').click()
+    await createAdminRole({ page, role: newRole })
+    await addUserToAdminRole({ page, userEmail: cnolletUser.email })
 
     // Assert
     const membershipCheckbox = page.getByTestId(
-      `input-checkbox-${newRole.user.id}-cbx`,
+      `input-checkbox-${cnolletUser.id}-cbx`,
     )
     await expect(membershipCheckbox).toBeVisible()
     await expect(membershipCheckbox).toBeChecked()
@@ -167,27 +94,10 @@ test.describe('Administration Roles', { tag: '@e2e' }, () => {
       name: faker.string.alpha(10).toLowerCase(),
       oidcGroupName: `/${faker.string.alpha(10).toLowerCase()}`,
     }
+    await createAdminRole({ page, role: newOidcRole })
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationRoles').click()
-    // Create OIDC role
-    await expect(page.getByTestId('role-list')).not.toContainText(
-      newOidcRole.name,
-    )
-    await page.getByTestId('addRoleBtn').click()
-    await expect(
-      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
-    ).toBeVisible()
-    await expect(page.getByTestId('saveBtn')).toBeDisabled()
-    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
-    await page.getByTestId('roleNameInput').fill(newOidcRole.name)
-    await page.getByTestId('oidcGroupInput').fill(newOidcRole.oidcGroupName)
-    await page.getByTestId('saveBtn').click()
-    await expect(page.getByTestId('role-list')).toContainText(newOidcRole.name)
-    // Delete role
-    await page.getByTestId('deleteBtn').click()
-    await page.getByTestId('confirmDeletionBtn').click()
+    await deleteAdminRole({ page })
 
     // Assert
     await expect(page.getByTestId('role-list')).not.toContainText(
@@ -201,26 +111,12 @@ test.describe('Administration Roles', { tag: '@e2e' }, () => {
     await signInCloudPiNative({ page, credentials: tcolinUser })
     const newRole = {
       name: faker.string.alpha(10).toLowerCase(),
+      managePerm: true,
     }
+    await createAdminRole({ page, role: newRole })
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationRoles').click()
-    // Create OIDC role
-    await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)
-    await page.getByTestId('addRoleBtn').click()
-    await expect(
-      page.getByTestId('snackbar').filter({ hasText: 'Rôle ajouté' }).first(),
-    ).toBeVisible()
-    await expect(page.getByTestId('saveBtn')).toBeDisabled()
-    await expect(page.getByTestId('roleNameInput')).toHaveValue('Nouveau rôle')
-    await page.getByTestId('roleNameInput').fill(newRole.name)
-    await setCheckbox(page.locator('input[name=MANAGE]'))
-    await page.getByTestId('saveBtn').click()
-    await expect(page.getByTestId('role-list')).toContainText(newRole.name)
-    // Delete role
-    await page.getByTestId('deleteBtn').click()
-    await page.getByTestId('confirmDeletionBtn').click()
+    await deleteAdminRole({ page })
 
     // Assert
     await expect(page.getByTestId('role-list')).not.toContainText(newRole.name)

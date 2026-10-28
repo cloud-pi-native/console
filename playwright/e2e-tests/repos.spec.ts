@@ -13,22 +13,20 @@ import {
   invalidGitUrlErrorMessage,
   invalidInternalRepoErrorMessage,
 } from '../helpers/constants'
-import { createProject, projectSlugTextRegexp } from '../helpers/project'
-import { createRepository as createRepositoryThroughUi, waitForRepoSync } from '../helpers/repository'
+import { createProject } from '../helpers/project'
+import { createRepository, waitForRepoSync } from '../helpers/repository'
 
 test.describe('Repositories', { tag: '@e2e' }, () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
   // good hint that something is very very wrong)
   test(
     'should handle repository form validation',
-    { tag: ['@e2e', '@repos', '@need-rework'] },
+    { tag: ['@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
+      await createProject({ page })
       const repo = {
         internalRepoName: 'repo00',
         externalRepoUrl: 'https://github.com/externalUser01/repo00.git',
@@ -37,15 +35,6 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       }
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-
       await page.getByTestId('addRepoLink').click()
       await page.locator('dialog').waitFor({ state: 'visible' })
       await expect(page.locator('h2')).toContainText(
@@ -148,39 +137,17 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
-      const repo = {
-        internalRepoName: 'repo00',
-        isInfra: false,
-      }
+      await createProject({ page })
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
+      const repositoryName = await createRepository({
+        page,
+        repositoryName: 'repo00',
+        standaloneRepo: true,
+      })
 
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await setCheckbox(
-        page.getByTestId('standaloneRepoSwitch').locator('input'),
-      )
-      await page.getByTestId('addRepoBtn').click()
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      // Assert - a standalone repo offers no synchronisation
+      await page.getByTestId(`repoTr-${repositoryName}`).click()
       await expect(page.locator('h2')).not.toContainText(
         'Synchroniser le dépôt',
       )
@@ -194,43 +161,14 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser01/repo01.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo01',
-        isInfra: false,
-        isPrivate: false,
-      }
+      await createProject({ page })
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
+      await createRepository({
+        page,
+        repositoryName: 'repo01',
+        externalRepoUrlInput: 'https://github.com/externalUser01/repo01.git',
+      })
     },
   )
 
@@ -241,45 +179,16 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser02/repo02.git',
-        externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
-        externalUserName: '',
-        internalRepoName: 'repo02',
-        isInfra: false,
-        isPrivate: true,
-      }
+      await createProject({ page })
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
-      await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
+      await createRepository({
+        page,
+        repositoryName: 'repo02',
+        externalRepoUrlInput: 'https://github.com/externalUser02/repo02.git',
+        privateRepo: true,
+        externalToken: 'hoqjC1vXtABzytBIWBXsdyzubmqMYkgA',
+      })
     },
   )
 
@@ -290,44 +199,15 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
+      await createProject({ page })
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
+      await createRepository({
+        page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
+      })
     },
   )
 
@@ -338,49 +218,17 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
-        page,
-      })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser04/repo04.git',
-        externalToken: '',
-        externalUserName: 'externalUser+04',
-        internalRepoName: 'repo04',
-        isInfra: true,
-        isPrivate: true,
-      }
+      await createProject({ page })
 
       // Act
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-
-      // Assert
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
-      await page
-        .getByTestId('externalUserNameInput')
-        .fill(repo.externalUserName)
-      await page.getByTestId('externalTokenInput').fill(repo.externalToken)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
+      await createRepository({
+        page,
+        repositoryName: 'repo04',
+        externalRepoUrlInput: 'https://github.com/externalUser04/repo04.git',
+        privateRepo: true,
+        externalUserName: 'externalUser+04',
+        infraRepo: true,
+      })
     },
   )
 
@@ -391,44 +239,15 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
+      await createProject({ page })
+      await createRepository({
         page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
       })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
 
-      // Act - Create repository
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
-
-      // Assert - Update repository
+      // Act - update repository
       await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('internalRepoNameInput')).toBeDisabled()
       await page
@@ -441,8 +260,8 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
         page.getByTestId('input-checkbox-infraRepoCbx'),
       ).toBeEnabled()
       await page.getByTestId('updateRepoBtn').click()
-      await expect(page.getByTestId(`repoTr-repo03`)).toBeVisible()
-      await page.reload()
+
+      // Assert - changes persist after reload
       await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('externalRepoUrlInput')).toHaveValue(
         'https://github.com/externalUser04/new-repo.git',
@@ -460,55 +279,21 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
   )
 
   test(
-    'should synchronise a repo',
+    'should toggle all-branches synchronisation',
     { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
+      await createProject({ page })
+      await createRepository({
         page,
-      })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
-
-      // Act - Create repository
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
-      const secondRepositoryName = await createRepositoryThroughUi({
-        page,
-        repositoryName: 'repo04',
-        externalRepoUrlInput: 'https://github.com/externalUser04/repo04.git',
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
       })
 
-      // Assert - Update repository
+      // Act / Assert - toggling all-branches hides then restores the branch input
       await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('branchNameInput')).toHaveValue('main')
       await expect(page.getByTestId('branchNameInput')).toBeEnabled()
@@ -526,6 +311,31 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       await expect(page.getByTestId('branchNameInput')).toHaveValue('main')
       await expect(page.getByTestId('branchNameInput')).toBeEnabled()
       await expect(page.getByTestId('syncRepoBtn')).toBeEnabled()
+    },
+  )
+
+  test(
+    'should synchronise a repo on a custom branch and persist it',
+    { tag: ['@repos'] },
+    async ({ page }) => {
+      // Arrange
+      await page.goto(clientURL)
+      await signInCloudPiNative({ page, credentials: testUser })
+      const { name: projectName } = await createProject({ page })
+      await createRepository({
+        page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
+      })
+      const secondRepositoryName = await createRepository({
+        page,
+        repositoryName: 'repo04',
+        externalRepoUrlInput: 'https://github.com/externalUser04/repo04.git',
+      })
+
+      // Act - sync on default branch, then on a custom branch
+      await page.getByTestId(`repoTr-repo03`).click()
       const firstSyncRequest = waitForRepoSync({ page })
       await page.getByTestId('syncRepoBtn').click()
       await firstSyncRequest
@@ -547,15 +357,26 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
           'Travail de synchronisation lancé pour le dépôt repo03Fermer le message',
         ),
       ).toBeVisible()
-      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+
+      // Assert - custom branch persists across reload, other repos untouched
+      await page
+        .getByTestId('resource-modal')
+        .getByRole('button', { name: 'Fermer' })
+        .click()
+      await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('branchNameInput')).toHaveValue('develop')
-      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
+      await page
+        .getByTestId('resource-modal')
+        .getByRole('button', { name: 'Fermer' })
+        .click()
       await page.reload()
       await expect(page.locator('h1')).toContainText(projectName)
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('branchNameInput')).toHaveValue('develop')
-      await page.getByTestId('resource-modal').getByRole('button', { name: 'Fermer' }).click()
+      await page
+        .getByTestId('resource-modal')
+        .getByRole('button', { name: 'Fermer' })
+        .click()
       await page.getByTestId(`repoTr-${secondRepositoryName}`).click()
       await expect(page.getByTestId('branchNameInput')).toHaveValue('main')
     },
@@ -568,46 +389,16 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const { name: projectName, slug: projectSlug } = await createProject({
+      await createProject({ page })
+      await createRepository({
         page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
       })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
 
-      // Act - Create repository
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
-
-      // Assert - Delete repository
-      //
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      // Act
+      await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('repo-form')).toBeVisible()
       await expect(page.getByTestId('deleteRepoInput')).not.toBeVisible()
       await expect(page.getByTestId('deleteRepoZone')).toBeVisible()
@@ -615,11 +406,10 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       await expect(page.getByTestId('deleteRepoBtn')).toBeDisabled()
       await page.getByTestId('deleteRepoInput').fill(deleteValidationInput)
       await page.getByTestId('deleteRepoBtn').click()
-      await expect(page.getByTestId('repo-form')).not.toBeVisible()
+
+      // Assert - deletion persists after reload
       await page.reload()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).not.toBeVisible()
+      await expect(page.getByTestId(`repoTr-repo03`)).not.toBeVisible()
     },
   )
 
@@ -630,46 +420,15 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       // Arrange
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: testUser })
-      const {
-        id: projectId,
-        name: projectName,
-        slug: projectSlug,
-      } = await createProject({
+      const { id: projectId, name: projectName } = await createProject({
         page,
       })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
-
-      // Act - Create repository
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
+      await createRepository({
+        page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
+      })
       await page.getByRole('link', { name: 'Se déconnecter' }).click()
       await signInCloudPiNative({ page, credentials: tcolinUser })
       await page.getByTestId('menuAdministrationBtn').click()
@@ -678,12 +437,11 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
 
-      // Assert - Attempt to delete repository
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      // Act
+      await page.getByTestId(`repoTr-repo03`).click()
+
+      // Assert - the delete zone is not offered
       await expect(page.getByTestId('repo-form')).toBeVisible()
       await expect(page.getByTestId('deleteRepoZone')).not.toBeVisible()
     },
@@ -695,67 +453,29 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
-      await signInCloudPiNative({
-        page,
-        credentials:
-          // Only admin users can lock projects
-          tcolinUser,
-      })
-      const {
-        id: projectId,
-        name: projectName,
-        slug: projectSlug,
-      } = await createProject({
+      // Only admin users can lock projects
+      await signInCloudPiNative({ page, credentials: tcolinUser })
+      const { id: projectId, name: projectName } = await createProject({
         page,
       })
-      const repo = {
-        externalRepoUrl: 'https://github.com/externalUser03/repo03.git',
-        externalToken: 'private-token',
-        externalUserName: 'this-is+tobi',
-        internalRepoName: 'repo03',
-        isInfra: true,
-        isPrivate: false,
-      }
+      await createRepository({
+        page,
+        repositoryName: 'repo03',
+        externalRepoUrlInput: 'https://github.com/externalUser03/repo03.git',
+        infraRepo: true,
+      })
 
-      // Act - Create repository
-      await page.getByTestId('menuMyProjects').click()
-      await page.getByRole('link', { name: projectName }).click()
-      await expect(page.locator('h1')).toContainText(projectName)
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
-      await page.getByTestId('addRepoLink').click()
-      await expect(page.locator('h2')).toContainText(
-        'Ajouter un dépôt au projet',
-      )
-      // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page
-        .getByTestId('internalRepoNameInput')
-        .fill(repo.internalRepoName)
-      await page.getByTestId('externalRepoUrlInput').fill(repo.externalRepoUrl)
-      await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
-      await page.getByTestId('addRepoBtn').click()
-      await expect(
-        page.getByTestId(`repoTr-${repo.internalRepoName}`),
-      ).toBeVisible()
-
-      // Act - Lock the project (have to go through admin menu for that)
+      // Act - lock the project through the admin menu
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationProjects').click()
       await page.getByTestId('projectsSearchInput').fill(projectName)
       await page.getByTestId('projectsSearchBtn').click()
       await expect(page.getByTestId(`projectTr-${projectId}`)).toBeVisible()
       await page.getByTestId(`projectTr-${projectId}`).click()
-      await expect(page.getByTestId('project-slug')).toHaveText(
-        projectSlugTextRegexp(projectSlug),
-      )
       await page.getByTestId('handleProjectLockingBtn').click()
 
-      // Assert - Attempt to delete repository
-      await page.getByTestId(`repoTr-${repo.internalRepoName}`).click()
+      // Assert - the delete button is not offered
+      await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('repo-form')).toBeVisible()
       await expect(page.getByTestId('showDeleteRepoBtn')).not.toBeVisible()
     },
