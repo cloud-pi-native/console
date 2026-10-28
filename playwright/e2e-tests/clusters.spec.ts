@@ -6,17 +6,21 @@ import { createEnvironment } from '../helpers/environment'
 import { openClustersAdministration } from '../helpers/navigation'
 import { createProject } from '../helpers/project'
 
-test.describe('Clusters page', () => {
-  test('should create a public cluster', { tag: '@e2e' }, async ({ page }) => {
+test.describe('Clusters page', { tag: '@e2e' }, () => {
+  test('should create a public cluster', async ({ page }) => {
+    // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
+
+    // Act
     const clusterName = await createCluster({
       page,
       zone: 'publique',
       confidentiality: 'public',
       associateStage: 'first',
     })
-    // Validate
+
+    // Assert
     await expect(page.getByTestId(`clusterZone-${clusterName}`)).toContainText(
       'publique',
     )
@@ -25,7 +29,7 @@ test.describe('Clusters page', () => {
     )
   })
 
-  test('should not create a cluster with a non RFC 1123 label', { tag: '@e2e' }, async ({ page }) => {
+  test('should not create a cluster with a non RFC 1123 label', async ({ page }) => {
     const invalidLabels = ['Cluster-Tools', '-cluster', 'cluster-', 'cluster.tools']
 
     await page.goto(clientURL)
@@ -41,7 +45,7 @@ test.describe('Clusters page', () => {
     }
   })
 
-  test('should update a public cluster', { tag: '@e2e' }, async ({ page }) => {
+  test('should update a public cluster', async ({ page }) => {
     const clusterName2 = faker.string.alpha(10).toLowerCase()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
@@ -64,7 +68,8 @@ test.describe('Clusters page', () => {
     await page.getByTestId('cpuInput').fill('1')
     await page.getByTestId('gpuInput').fill('1')
     await page.getByTestId('updateClusterBtn').click()
-    // Validate
+
+    // Assert
     await expect(page.getByTestId(`clusterResources-${clusterName2}`)).toContainText(
       '1GiB 1CPU 1GPU',
     )
@@ -72,16 +77,16 @@ test.describe('Clusters page', () => {
 
   test(
     'should create a dedicated cluster',
-    { tag: '@e2e' },
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
-      // Create
+      // Act
       const clusterName = await createCluster({
         page,
         confidentiality: 'dedicated',
       })
-      // Validate
+
+      // Assert
       await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
         'Dédié',
       )
@@ -90,7 +95,6 @@ test.describe('Clusters page', () => {
 
   test(
     'should associate a project to a dedicated cluster',
-    { tag: '@e2e' },
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
@@ -121,7 +125,8 @@ test.describe('Clusters page', () => {
         page.locator('#projects-select .fr-tag--dismiss'),
       ).toHaveCount(1)
       await page.getByTestId('updateClusterBtn').click()
-      // Validate
+
+      // Assert
       await expect(page.getByTestId(`clusterPrivacy-${clusterName}`)).toContainText(
         'Dédié',
       )
@@ -138,7 +143,6 @@ test.describe('Clusters page', () => {
 
   test(
     'should create a cluster even if given informations is longer than 200 chars but shorter than 1001 chars',
-    { tag: '@e2e' },
     async ({ page }) => {
       const informations = faker.string.alpha(1000).toLowerCase()
       await page.goto(clientURL)
@@ -148,7 +152,7 @@ test.describe('Clusters page', () => {
         confidentiality: 'dedicated',
         informations,
       })
-      // Validate
+      // Assert
       await page.getByTestId(`clusterLink-${clusterName}`).click()
       await expect(page.getByTestId('infosInput')).toHaveValue(informations)
     },
@@ -156,8 +160,8 @@ test.describe('Clusters page', () => {
 
   test(
     'should NOT create a cluster when given informations is longer than 1000 chars',
-    { tag: '@e2e' },
     async ({ page }) => {
+      // Arrange
       const clusterName = faker.string.alpha(10).toLowerCase()
       const informations = faker.string.alpha(1001).toLowerCase()
       await page.goto(clientURL)
@@ -165,23 +169,29 @@ test.describe('Clusters page', () => {
       await page.getByTestId('menuAdministrationBtn').click()
       await page.getByTestId('menuAdministrationClusters').click()
       await page.getByTestId('addClusterLink').click()
+
+      // Act
       await page.getByTestId('labelInput').fill(clusterName)
       await page.getByTestId('infosInput').fill(informations)
+
+      // Assert
       await expect(page.getByTestId('addClusterBtn')).toBeDisabled()
     },
   )
 
-  test('should delete a cluster', { tag: '@e2e' }, async ({ page }) => {
+  test('should delete a cluster', async ({ page }) => {
+    // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
-    // Create
     const clusterName = await createCluster({
       page,
       confidentiality: 'dedicated',
     })
-    // Delete
+
+    // Act
     await deleteCluster({ page, clusterName })
-    // Validate
+
+    // Assert
     await page.getByTestId('projectsSearchInput').fill(clusterName)
     await expect(page.getByTestId('noClusterMsg')).toBeVisible()
     await expect(page.getByTestId('noClusterMsg')).toHaveText(
@@ -191,7 +201,6 @@ test.describe('Clusters page', () => {
 
   test(
     'should NOT delete a cluster with associated environment',
-    { tag: '@e2e' },
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
@@ -232,7 +241,6 @@ test.describe('Clusters page', () => {
 
   test(
     'should NOT update the cluster label if it has associated environment',
-    { tag: '@e2e' },
     async ({ page }) => {
       await page.goto(clientURL)
       await signInCloudPiNative({ page, credentials: adminUser })
