@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import { clientURL, signInCloudPiNative, tcolinUser } from 'config/console'
-import { setCheckbox } from 'helpers/checkbox'
+import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
+import { setCheckbox } from '../helpers/checkbox'
 
-test.describe('Administration Roles', () => {
+test.describe('Administration Roles', { tag: '@e2e' }, () => {
   test(
-    'Should list admin roles',
-    { tag: ['@e2e', '@need-rework'] },
+    'should list admin roles',
+    { tag: ['@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -28,7 +28,7 @@ test.describe('Administration Roles', () => {
     },
   )
 
-  test('Should add a new OIDC role', { tag: '@e2e' }, async ({ page }) => {
+  test('should add a new OIDC role', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -82,7 +82,7 @@ test.describe('Administration Roles', () => {
     await expect(membershipCheckbox).toBeChecked()
   })
 
-  test('Should add a new non-OIDC role', { tag: '@e2e' }, async ({ page }) => {
+  test('should add a new non-OIDC role', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -109,7 +109,7 @@ test.describe('Administration Roles', () => {
     await expect(page.getByTestId('role-list')).toContainText(newRole.name)
   })
 
-  test('Should add a user to a role', { tag: '@e2e' }, async ({ page }) => {
+  test('should add a user to a role', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -159,7 +159,7 @@ test.describe('Administration Roles', () => {
     await expect(membershipCheckbox).toBeChecked()
   })
 
-  test('Should remove OIDC role', { tag: '@e2e' }, async ({ page }) => {
+  test('should remove OIDC role', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
@@ -195,7 +195,7 @@ test.describe('Administration Roles', () => {
     )
   })
 
-  test('Should remove non-OIDC role', { tag: '@e2e' }, async ({ page }) => {
+  test('should remove non-OIDC role', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })

@@ -32,7 +32,7 @@ export async function createGroup(page: Page, groupsToDelete: string[]) {
   return groupName
 }
 
-test.describe('Keycloak', () => {
+test.describe('Keycloak', { tag: '@e2e' }, () => {
   // Serial mode keeps the module-level usersToDelete/groupsToDelete arrays
   // complete in a single worker.
   test.describe.configure({ mode: 'serial' })
@@ -41,7 +41,7 @@ test.describe('Keycloak', () => {
     await signInKeycloak(page)
   })
 
-  test('should sign in to master realm', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
+  test('should sign in to master realm', { tag: ['@integ'] }, async ({ page }) => {
     // expect also exists in sign in fuction but we check it explicitely here
     // for documentation purposes
     await expect(page.getByRole('link', { name: 'Logo' })).toBeVisible()
@@ -49,7 +49,7 @@ test.describe('Keycloak', () => {
     await expect(page.getByRole('menuitem', { name: keycloakConfig.realm })).toBeVisible()
   })
 
-  test('should have a CπN realm', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
+  test('should have a CπN realm', { tag: ['@integ'] }, async ({ page }) => {
     await page.getByTestId('realmSelector').click()
     await expect(
       page.getByRole('menuitem', { name: keycloakConfig.realm }),
@@ -62,7 +62,7 @@ test.describe('Keycloak', () => {
       await page.getByRole('menuitem', { name: keycloakConfig.realm }).click()
     })
 
-    test('should have required Clients', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
+    test('should have required Clients', { tag: ['@integ'] }, async ({ page }) => {
       await page.getByTestId('realmSelector').click()
       await page.getByRole('menuitem', { name: keycloakConfig.realm }).click()
       await page.getByRole('link', { name: 'Clients' }).click()
@@ -72,20 +72,20 @@ test.describe('Keycloak', () => {
       await expect(page.getByRole('link', { name: 'generic' })).toBeVisible()
     })
 
-    test('should have required Clients scopes', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
+    test('should have required Clients scopes', { tag: ['@integ'] }, async ({ page }) => {
       await page.getByRole('link', { name: 'Client scopes' }).click()
       await expect(page.getByRole('link', { name: 'generic' })).toBeVisible()
     })
 
-    test('should create a user', { tag: '@e2e' }, async ({ page }) => {
+    test('should create a user', async ({ page }) => {
       await createUser(page, usersToDelete)
     })
 
-    test('should create a group', { tag: '@e2e' }, async ({ page }) => {
+    test('should create a group', async ({ page }) => {
       await createGroup(page, groupsToDelete)
     })
 
-    test('should link a user to a group', { tag: ['@e2e', '@integ'] }, async ({ page }) => {
+    test('should link a user to a group', { tag: ['@integ'] }, async ({ page }) => {
       const username = await createUser(page, usersToDelete)
       const groupName = await createGroup(page, groupsToDelete)
       await page
@@ -112,7 +112,7 @@ test.describe('Keycloak', () => {
       await expect(page.getByText('user added to the group')).toBeVisible()
     })
 
-    test('should delete a group', { tag: '@e2e' }, async ({ page }) => {
+    test('should delete a group', async ({ page }) => {
       const groupName = await createGroup(page, groupsToDelete)
       await page
         .getByTestId('searchForGroups')
@@ -130,7 +130,7 @@ test.describe('Keycloak', () => {
       await page.getByTestId('confirm').click()
     })
 
-    test('should delete a user', { tag: '@e2e' }, async ({ page }) => {
+    test('should delete a user', async ({ page }) => {
       await createUser(page, usersToDelete)
       await page.getByTestId('action-dropdown').click()
       await page.getByRole('menuitem', { name: 'Delete' }).click()

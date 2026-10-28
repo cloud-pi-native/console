@@ -7,10 +7,9 @@ import {
 } from '../config/console'
 import { createProject } from '../helpers/project'
 
-test.describe('Project logs page', () => {
+test.describe('Project logs page', { tag: '@e2e' }, () => {
   test(
-    'Should display project logs as owner',
-    { tag: '@e2e' },
+    'should display project logs as owner',
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -27,8 +26,7 @@ test.describe('Project logs page', () => {
   )
 
   test(
-    'Should display additional logs after reprovisionning a project',
-    { tag: '@e2e' },
+    'should display additional logs after reprovisionning a project',
     async ({ page }) => {
       const readLogsTotal = async () => {
         const text = await page.getByTestId('positionInfo').first().textContent()
@@ -60,8 +58,7 @@ test.describe('Project logs page', () => {
   )
 
   test(
-    'Should display project logs as project manager as well as a project member',
-    { tag: '@e2e' },
+    'should display project logs as project manager as well as a project member',
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)

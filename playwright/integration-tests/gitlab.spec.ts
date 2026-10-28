@@ -9,7 +9,7 @@ const developerRoleRegexp = /developer/i
 
 test.describe('GitLab', () => {
   test(
-    'Should create project and have infra-apps + mirror repos in GitLab',
+    'should create project and have infra-apps + mirror repos in GitLab',
     { tag: ['@integ', '@replayable'] },
     async ({ page }) => {
       await page.goto(clientURL)
@@ -65,7 +65,7 @@ test.describe('GitLab', () => {
   )
 
   test(
-    'Should reflect console role assignment in GitLab builtin role',
+    'should reflect console role assignment in GitLab builtin role',
     { tag: ['@e2e', '@integ', '@replayable'] },
     async ({ page }) => {
       await page.goto(clientURL)
