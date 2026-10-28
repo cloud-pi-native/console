@@ -283,6 +283,17 @@ onMounted(() => {
           <DsfrSideMenuListItem>
             <DsfrSideMenuLink
               class="menu-link-icon"
+              data-testid="menuAdministrationExperimentalFeatures"
+              :active="routeName === 'ExperimentalFeatures'"
+              to="/admin/experimental-features"
+            >
+              <v-icon name="ri:flask-line" />
+              Expérimentations
+            </DsfrSideMenuLink>
+          </DsfrSideMenuListItem>
+          <DsfrSideMenuListItem>
+            <DsfrSideMenuLink
+              class="menu-link-icon"
               data-testid="menuAdministrationToken"
               :active="routeName === 'AdminTokens'"
               to="/admin/tokens"
