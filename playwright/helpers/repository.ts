@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect } from '@playwright/test'
+import { setCheckbox } from './checkbox'
 import { repoSyncTimeoutMs } from './constants'
 import { waitForSnackbar } from './snackbar'
 
@@ -41,18 +42,37 @@ export async function createRepository({
   repositoryName,
   externalRepoUrlInput,
   infraRepo,
+  standaloneRepo,
+  privateRepo,
+  externalUserName,
+  externalToken,
 }: {
   page: Page
   repositoryName?: string
   externalRepoUrlInput?: string
   infraRepo?: boolean
+  standaloneRepo?: boolean
+  privateRepo?: boolean
+  externalUserName?: string
+  externalToken?: string
 }) {
   repositoryName = repositoryName ?? faker.string.alpha(10).toLowerCase()
   await openAddRepositoryForm(page)
+  // The double-fill is desired, because the first one often fails ¯\_(ツ)_/¯
   await page.getByTestId('internalRepoNameInput').fill(repositoryName)
-  await fillRepositoryUrl(page, externalRepoUrlInput)
+  await page.getByTestId('internalRepoNameInput').fill(repositoryName)
+  if (standaloneRepo)
+    await setCheckbox(page.getByTestId('standaloneRepoSwitch').locator('input'))
+  else await fillRepositoryUrl(page, externalRepoUrlInput)
+  if (privateRepo) {
+    await setCheckbox(page.getByTestId('input-checkbox-privateRepoCbx'))
+    if (externalUserName)
+      await page.getByTestId('externalUserNameInput').fill(externalUserName)
+    if (externalToken)
+      await page.getByTestId('externalTokenInput').fill(externalToken)
+  }
   if (infraRepo)
-    await page.getByText('Dépôt contenant du code d\'').click()
+    await setCheckbox(page.getByTestId('input-checkbox-infraRepoCbx'))
   await page.getByTestId('addRepoBtn').click()
   await expect(page.getByTestId(`repoTr-${repositoryName}`)).toContainText(
     repositoryName,

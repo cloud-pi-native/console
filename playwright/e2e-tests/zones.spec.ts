@@ -1,33 +1,28 @@
+import type { ZoneInfos } from '../helpers/zone'
 import { faker } from '@faker-js/faker'
-
 import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
-import { deleteValidationInput } from '../helpers/constants'
+import { createZone, deleteZone } from '../helpers/zone'
+
+function fakeZoneInfos(): ZoneInfos {
+  return {
+    slug: faker.string.alpha(10).toLowerCase(),
+    label: 'Zone à Défendre',
+    argocdUrl: 'https://vousetesici.fr',
+    description: 'Il faut défendre cette zone.',
+  }
+}
 
 test.describe('Zone page', { tag: '@e2e' }, () => {
   // @TODO: Add clusters to this test to ensure this part of the feature
   test('should create a zone', { tag: ['@need-rework'] }, async ({ page }) => {
     // Arrange
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: tcolinUser })
-    const zone = {
-      slug: faker.string.alpha(10).toLowerCase(),
-      label: 'Zone à Défendre',
-      argocdUrl: 'https://vousetesici.fr',
-      description: 'Il faut défendre cette zone.',
-    }
+    const zone = fakeZoneInfos()
 
     // Act
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationZones').click()
-    await page.getByTestId('createZoneLink').click()
-    await page.getByTestId('slugInput').fill(zone.slug)
-    await page.getByTestId('labelInput').fill(zone.label)
-    await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
-    await page.getByTestId('descriptionInput').fill(zone.description)
-    await expect(page.locator('#clusters-select')).not.toBeVisible()
-    await page.getByTestId('addZoneBtn').click()
-
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+    await createZone({ page, zone })
     await page.reload()
 
     // Assert
@@ -54,28 +49,15 @@ test.describe('Zone page', { tag: '@e2e' }, () => {
 
   test('should update a zone', async ({ page }) => {
     // Arrange
-    await page.goto(clientURL)
-    await signInCloudPiNative({ page, credentials: tcolinUser })
-    const zone = {
-      slug: faker.string.alpha(10).toLowerCase(),
-      label: 'Zone à Défendre',
-      argocdUrl: 'https://vousetesici.fr',
-      description: 'Il faut défendre cette zone.',
-    }
+    const zone = fakeZoneInfos()
     const updatedZone = {
       label: 'Zone Mise à Jour',
       argocdUrl: 'https://vousnetesplusici.fr',
       description: 'Cette zone a été mise à jour.',
     }
-    // Zone creation (for later update)
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationZones').click()
-    await page.getByTestId('createZoneLink').click()
-    await page.getByTestId('slugInput').fill(zone.slug)
-    await page.getByTestId('labelInput').fill(zone.label)
-    await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
-    await page.getByTestId('descriptionInput').fill(zone.description)
-    await page.getByTestId('addZoneBtn').click()
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: tcolinUser })
+    await createZone({ page, zone })
 
     // Act
     await page.locator(`#zoneTile-${zone.slug}`).click()
@@ -108,26 +90,12 @@ test.describe('Zone page', { tag: '@e2e' }, () => {
 
   test('should not create a zone if slug is already taken', async ({ page }) => {
     // Arrange
+    const zone = fakeZoneInfos()
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
-    const zone = {
-      slug: faker.string.alpha(10).toLowerCase(),
-      label: 'Zone à Défendre',
-      argocdUrl: 'https://vousetesici.fr',
-      description: 'Il faut défendre cette zone.',
-    }
-    // Create the zone
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationZones').click()
-    await page.getByTestId('createZoneLink').click()
-    await page.getByTestId('slugInput').fill(zone.slug)
-    await page.getByTestId('labelInput').fill(zone.label)
-    await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
-    await page.getByTestId('descriptionInput').fill(zone.description)
-    await page.getByTestId('addZoneBtn').click()
+    await createZone({ page, zone })
 
     // Act - attempt to create a zone with the same slug
-    await page.getByTestId('menuAdministrationZones').click()
     await page.getByTestId('createZoneLink').click()
     await page.getByTestId('slugInput').fill(zone.slug)
     await page.getByTestId('labelInput').fill(`${zone.label}bis`)
@@ -143,10 +111,9 @@ test.describe('Zone page', { tag: '@e2e' }, () => {
   })
 
   test('should not delete a zone if associated clusters', async ({ page }) => {
-    // Arrange
+    // Arrange - no data to arrange, a public zone is present by default
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
-    // No data to arrange, a public zone is present by default (I guess ?)
 
     // Act
     await page.getByTestId('menuAdministrationBtn').click()
@@ -162,29 +129,11 @@ test.describe('Zone page', { tag: '@e2e' }, () => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
-    const zone = {
-      slug: faker.string.alpha(10).toLowerCase(),
-      label: 'Zone à Défendre',
-      argocdUrl: 'https://vousetesici.fr',
-      description: 'Il faut défendre cette zone.',
-    }
-    // Create the zone
-    await page.getByTestId('menuAdministrationBtn').click()
-    await page.getByTestId('menuAdministrationZones').click()
-    await page.getByTestId('createZoneLink').click()
-    await page.getByTestId('slugInput').fill(zone.slug)
-    await page.getByTestId('labelInput').fill(zone.label)
-    await page.getByTestId('argocdUrlInput').fill(zone.argocdUrl)
-    await page.getByTestId('descriptionInput').fill(zone.description)
-    await page.getByTestId('addZoneBtn').click()
+    const zone = await createZone({ page })
     // @TODO: Add clusters to this test to ensure we can't delete a zone that has clusters
 
     // Act
-    await page.getByTestId('menuAdministrationZones').click()
-    await page.locator(`#zoneTile-${zone.slug}`).click()
-    await page.getByTestId('showDeleteZoneBtn').click()
-    await page.getByTestId('deleteZoneInput').fill(deleteValidationInput)
-    await page.getByTestId('deleteZoneBtn').click()
+    await deleteZone({ page, zoneName: zone.slug })
 
     // Assert
     await page.getByTestId('menuAdministrationZones').click()
