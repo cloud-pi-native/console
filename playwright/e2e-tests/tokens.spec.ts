@@ -3,12 +3,12 @@ import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
 
-test.describe('Admin Tokens page', () => {
+test.describe('Admin Tokens page', { tag: '@e2e' }, () => {
   // @TODO The original test did actually test whether the generated token worked.
   // Add a dedicated test to do exactly that.
   test(
-    'Should create tokens, when logged in as an admin',
-    { tag: ['@e2e', '@need-rework'] },
+    'should create tokens, when logged in as an admin',
+    { tag: ['@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)

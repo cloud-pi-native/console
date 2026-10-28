@@ -15,7 +15,7 @@ async function goToAdminLogs(page: Page) {
 }
 
 test.describe('Administration logs', { tag: '@e2e' }, () => {
-  test('Should display logs list, logged in as admin', async ({ page }) => {
+  test('should display logs list, logged in as admin', async ({ page }) => {
     await goToAdminLogs(page)
 
     const logCountText = await page.getByTestId('logCountInfo').textContent()
@@ -56,7 +56,7 @@ test.describe('Administration logs', { tag: '@e2e' }, () => {
     }
   })
 
-  test('Should toggle compact logs display, logged in as admin', async ({ page }) => {
+  test('should toggle compact logs display, logged in as admin', async ({ page }) => {
     await goToAdminLogs(page)
 
     await expect(page.locator('h1')).toContainText(

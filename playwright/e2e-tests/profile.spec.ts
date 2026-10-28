@@ -7,31 +7,35 @@ import {
   tcolinUser,
 } from '../config/console'
 
-test.describe('Profile page', () => {
-  test('Should display name once logged', { tag: '@e2e' }, async ({ page }) => {
+test.describe('Profile page', { tag: '@e2e' }, () => {
+  test('should display name once logged', async ({ page }) => {
+    // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: cnolletUser })
 
+    // Assert
     await expect(page.getByTestId('menuUserList')).toContainText(
       `${cnolletUser.firstName} ${cnolletUser.lastName}`,
     )
   })
 
-  test('Should display profile infos', { tag: '@e2e' }, async ({ page }) => {
+  test('should display profile infos', async ({ page }) => {
+    // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })
     await page.goto(`${clientURL}/profile/info`)
 
-    const locator = expect(page.getByTestId('profileInfos'))
-    await locator.toContainText(
+    // Assert
+    const locator = page.getByTestId('profileInfos')
+    await expect(locator).toContainText(
       `${tcolinUser.lastName}, ${tcolinUser.firstName}`,
     )
-    await locator.toContainText(tcolinUser.id)
-    await locator.toContainText('Admin')
-    await locator.toContainText(tcolinUser.email)
+    await expect(locator).toContainText(tcolinUser.id)
+    await expect(locator).toContainText('Admin')
+    await expect(locator).toContainText(tcolinUser.email)
   })
 
-  test('Should create a PAT', { tag: '@e2e' }, async ({ page }) => {
+  test('should create a PAT', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: tcolinUser })

@@ -16,11 +16,11 @@ import {
 import { createProject, projectSlugTextRegexp } from '../helpers/project'
 import { createRepository as createRepositoryThroughUi, waitForRepoSync } from '../helpers/repository'
 
-test.describe('Repositories', () => {
+test.describe('Repositories', { tag: '@e2e' }, () => {
   // @TODO: Rework this Cypress-inherited test (use of following-sibling is a
   // good hint that something is very very wrong)
   test(
-    'Should handle repository form validation',
+    'should handle repository form validation',
     { tag: ['@e2e', '@repos', '@need-rework'] },
     async ({ page }) => {
       // Arrange
@@ -142,8 +142,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should add a standalone public repo',
-    { tag: ['@e2e', '@repos'] },
+    'should add a standalone public repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -188,8 +188,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should add an external public repo',
-    { tag: ['@e2e', '@repos'] },
+    'should add an external public repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -235,8 +235,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should add an external private repo',
-    { tag: ['@e2e', '@repos'] },
+    'should add an external private repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -284,8 +284,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should add an external public infra repo',
-    { tag: ['@e2e', '@repos'] },
+    'should add an external public infra repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -332,8 +332,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should add an external private infra repo',
-    { tag: ['@e2e', '@repos'] },
+    'should add an external private infra repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -385,8 +385,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should update a repo',
-    { tag: ['@e2e', '@repos'] },
+    'should update a repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -460,8 +460,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should synchronise a repo',
-    { tag: ['@e2e', '@repos'] },
+    'should synchronise a repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -562,8 +562,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should delete a repo',
-    { tag: ['@e2e', '@repos'] },
+    'should delete a repo',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -624,8 +624,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should not be able to delete a repository if not owner',
-    { tag: ['@e2e', '@repos'] },
+    'should not be able to delete a repository if not owner',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -690,8 +690,8 @@ test.describe('Repositories', () => {
   )
 
   test(
-    'Should not be able to delete a repository if project locked',
-    { tag: ['@e2e', '@repos'] },
+    'should not be able to delete a repository if project locked',
+    { tag: ['@repos'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)

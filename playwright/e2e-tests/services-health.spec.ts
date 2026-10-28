@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, testUser } from '../config/console'
 
 test.describe('Services health', { tag: '@e2e' }, () => {
-  test('Should display the platform services health', async ({ page }) => {
+  test('should display the platform services health', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })

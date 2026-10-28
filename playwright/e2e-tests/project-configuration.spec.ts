@@ -4,7 +4,7 @@ import { clientURL, signInCloudPiNative, testUser } from '../config/console'
 import { createProject } from '../helpers/project'
 
 test.describe('Project configuration', { tag: '@e2e' }, () => {
-  test('Should configure bounded resources on a limitless project', async ({ page }) => {
+  test('should configure bounded resources on a limitless project', async ({ page }) => {
     // Arrange - a project created without resources is limitless
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })

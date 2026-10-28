@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test'
 import { faker } from '@faker-js/faker'
 import { expect, test } from '@playwright/test'
-import { setCheckbox, unsetCheckbox } from 'helpers/checkbox'
 import { clientURL, cnolletUser, signInCloudPiNative, testUser } from '../config/console'
+import { setCheckbox, unsetCheckbox } from '../helpers/checkbox'
 import { createEnvironment } from '../helpers/environment'
 import { createProject, deleteProject } from '../helpers/project'
 import { createRepository } from '../helpers/repository'
@@ -111,7 +111,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     }
   })
 
-  test('Should not grant perms', async ({ page }) => {
+  test('should not grant perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: cnolletUser })
     await openProjectByName({ page, projectName })
@@ -158,7 +158,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     await expect(page.getByTestId('snackbar')).toContainText('Rôle mis à jour')
   })
 
-  test('Should assign view perms', async ({ page }) => {
+  test('should assign view perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
     await openProjectByName({ page, projectName })
@@ -169,7 +169,7 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     })
   })
 
-  test('Should grant view perms', async ({ page }) => {
+  test('should grant view perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: cnolletUser })
     await openProjectByName({ page, projectName })

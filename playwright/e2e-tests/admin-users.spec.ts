@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
-import { setCheckbox, unsetCheckbox } from 'helpers/checkbox'
 import { clientURL, signInCloudPiNative, tcolinUser } from '../config/console'
+import { setCheckbox, unsetCheckbox } from '../helpers/checkbox'
 
 interface ApiUser {
   id: string
@@ -24,7 +24,7 @@ async function goToAdminUsers(page: Page) {
 }
 
 test.describe('Administration users', { tag: '@e2e' }, () => {
-  test('Should display admin users, logged in as admin', async ({ page }) => {
+  test('should display admin users, logged in as admin', async ({ page }) => {
     const usersResponse = page.waitForResponse((res) => {
       return (
         res.request().method() === 'GET'

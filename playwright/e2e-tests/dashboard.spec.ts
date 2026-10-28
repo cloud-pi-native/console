@@ -7,10 +7,9 @@ import {
 } from '../config/console'
 import { createProject, projectSlugTextRegexp } from '../helpers/project'
 
-test.describe('Dashboard page', () => {
+test.describe('Dashboard page', { tag: '@e2e' }, () => {
   test(
-    'Should display a project statuses',
-    { tag: '@e2e' },
+    'should display a project statuses',
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -37,8 +36,7 @@ test.describe('Dashboard page', () => {
   )
 
   test(
-    'Should add, display and edit description',
-    { tag: '@e2e' },
+    'should add, display and edit description',
     async ({ page, browserName }) => {
       // Arrange
       await page.goto(clientURL)
@@ -79,7 +77,7 @@ test.describe('Dashboard page', () => {
     },
   )
 
-  test('Should show project secrets', { tag: '@e2e' }, async ({ page }) => {
+  test('should show project secrets', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
@@ -101,7 +99,7 @@ test.describe('Dashboard page', () => {
     )
   })
 
-  test('Should replay hooks for project', { tag: '@e2e' }, async ({ page }) => {
+  test('should replay hooks for project', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
@@ -122,8 +120,7 @@ test.describe('Dashboard page', () => {
   })
 
   test(
-    'Should not be able to access project secrets if not owner',
-    { tag: '@e2e' },
+    'should not be able to access project secrets if not owner',
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -158,8 +155,8 @@ test.describe('Dashboard page', () => {
   // pass, we reversed this test's expectation: You indeed can (and therefore should be able to)
   // archive someone else's project !
   test(
-    'Should be able to archive a project if not owner',
-    { tag: ['@e2e', '@need-rework'] },
+    'should be able to archive a project if not owner',
+    { tag: ['@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)

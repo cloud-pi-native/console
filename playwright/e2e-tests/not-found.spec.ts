@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { clientURL, signInCloudPiNative, testUser } from '../config/console'
 
 test.describe('Page non trouvée', { tag: '@e2e' }, () => {
-  test('Should display a 404 page for an unknown route', async ({ page }) => {
+  test('should display a 404 page for an unknown route', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })
