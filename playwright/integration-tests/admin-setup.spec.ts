@@ -16,7 +16,7 @@ test.describe('Integration tests for admin', { tag: '@integ' }, () => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: adminUser })
     await page.getByTestId('menuAdministrationBtn').click()
-    const zoneName = await createZone({ page })
+    const zoneName = (await createZone({ page })).slug
     zonesToDelete.push(zoneName)
     // we need to attains 7 stages to be able to use associateStageNames argument in createCluster
     await page.getByRole('link', { name: 'Console Cloud π Native' }).click()
