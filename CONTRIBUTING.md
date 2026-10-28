@@ -107,6 +107,12 @@ client, les hooks Husky et la CI. Les messages de commit suivent Conventional
 Commits et sont rédigés en anglais. Rebasez votre branche sur `origin/main`
 avant la demande de fusion.
 
+Les contributions issues d'un fork s'exécutent avec un jeton en lecture
+seule : la CI construit chaque image localement pour la valider, sans
+publication sur le registre, qui reste réservée aux branches du dépôt et à
+la file de fusion. Un build vert sur une PR de fork est donc une validation
+complète du code, et non un échec.
+
 ## Documents de référence
 
 Consultez et citez les références appropriées dans le ticket :

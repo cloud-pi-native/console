@@ -104,6 +104,7 @@ jobs:
       ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
 
   build-label:
+    if: ${{ needs.build.outputs.publish == 'true' }}
     uses: ./.github/workflows/job-label.yml
     needs:
       - expose-vars
@@ -112,6 +113,7 @@ jobs:
       CONF_PATH: ./.github/labeler/build.yml
 
   scan-vuln:
+    if: ${{ needs.build.outputs.publish == 'true' }}
     uses: ./.github/workflows/job-scan.yml
     needs:
       - expose-vars
