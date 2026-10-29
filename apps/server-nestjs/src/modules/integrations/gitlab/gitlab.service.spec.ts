@@ -822,7 +822,7 @@ describe('gitlabService', () => {
       expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
 
       await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
-        oidcGroup: '/console/readonly',
+        oidcGroup: '/console/reader',
         members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
       }))
       expect(gitlab.ensureUser).toHaveBeenLastCalledWith(expect.objectContaining({ auditor: true, admin: undefined }), expect.anything())

@@ -176,11 +176,11 @@ async function ensureInfraEnvValues(
       roGroup,
       rwGroup,
       platformAdminGroup: platformAdminGroupPath,
-      platformReaderGroup: platformReaderGroupPath,
+      platformReadonlyGroup: platformReaderGroupPath,
       projectAdminGroup: `/${project.slug}${projectAdminGroupSuffix}`,
       projectDevopsGroup: `/${project.slug}${projectDevopsGroupSuffix}`,
       projectDevelopperGroup: `/${project.slug}${projectDevelopperGroupSuffix}`,
-      projectReaderGroup: `/${project.slug}${projectReaderGroupSuffix}`,
+      projectReadonlyGroup: `/${project.slug}${projectReaderGroupSuffix}`,
     },
     application: {
       quota: {
