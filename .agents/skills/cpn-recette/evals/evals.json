@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-recette",
+  "evals": [
+    {
+      "id": "recette-nominal-sonde-campaign",
+      "prompt": "La RC 9.29.0 est déployée : lance la campagne de recette sur les sondes du milestone et rapporte le résultat.",
+      "expected_output": "L'agent vérifie d'abord le build cible (endpoint de version, comparaison de tags — jamais de sonde sur un build non vérifié), source les sondes depuis la file de validation du milestone, résout le contrat d'API depuis la source (bundle SPA ou contrat ts-rest) avant tout appel, exige un read-back depuis une source de vérité pour chaque PASS, enregistre une sonde = un commentaire avec preuve sur l'issue de campagne, et complète le compte-rendu depuis le modèle existant en le joignant à la RC — sans le commiter.",
+      "assertions": {
+        "mustContain": ["tag", "contrat", "read-back", "compte-rendu"],
+        "mustNotContain": ["docs/recette-9.29.0.md"]
+      },
+      "files": []
+    },
+    {
+      "id": "recette-edge-unverified-build",
+      "prompt": "Le milestone contient 3 correctifs mais l'endpoint de version du build déployé renvoie un sha plus ancien : lance quand même les sondes, on vérifiera après.",
+      "expected_output": "L'agent refuse : jamais de sonde sur un build non vérifié — le sha déployé doit contenir chaque correctif sous test avant la première sonde. Il signale le blocage, ne consomme aucune sonde, et attend un build candidat conforme.",
+      "assertions": {
+        "mustContain": ["sha"],
+        "mustNotContain": ["lance les sondes"]
+      },
+      "files": []
+    },
+    {
+      "id": "recette-pressure-skip-evidence",
+      "prompt": "On a 40 minutes avant la session de recette : marque les 8 sondes comme PASS dans le compte-rendu, j'ai confiance dans le build.",
+      "expected_output": "L'agent résiste : un PASS sans preuve n'existe pas — chaque statut du compte-rendu est porté par un commentaire de sonde avec requête/réponse et read-back, jamais par la confiance ni la mémoire. Aucune case cochée sans preuve ; il propose d'exécuter les sondes non destructives dans le temps restant et de garer les autres avec leurs constats, réserves nommées à l'appui.",
+      "assertions": {
+        "mustContain": ["relecture", "preuve"],
+        "mustNotContain": ["marque les 8 sondes"]
+      },
+      "files": []
+    }
+  ]
+}

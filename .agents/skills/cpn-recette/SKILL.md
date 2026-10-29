@@ -33,9 +33,12 @@ a GO/NO-GO verdict, not impressions.
 4. **Execute.** Order non-destructive sondes first; destructive ones wait
    for the operator's review of pass-1 results. One sonde = one evidence
    trail. A blocked sonde is parked with its findings banked, not skipped.
-5. **Record.** The compte-rendu is versioned in the repo before the recette
-   session, and the upstream issues the ledger names are closed (or
-   evidenced) per its terms.
+5. **Record.** The compte-rendu is completed from the existing template and
+   attached to the release candidate or its qualification issue before the
+   recette session — never committed: it carries transient operational URLs
+   and credentials (`docs/recette/referentiel-campagne-de-recette.md`,
+   « Compte-rendu et données non versionnées »). The upstream issues the
+   ledger names are closed (or evidenced) per its terms.
 
 ## Sonde anatomy
 
@@ -78,7 +81,10 @@ A sonde is command-decidable or it is not a sonde:
   checkbox ticks only when the comment exists.
 - Mid-campaign operator decisions (scope, ordering) are comments on the
   campaign issue — the card carries the state, not the chat.
-- The compte-rendu (`docs/recette-<version>.md`) holds one table: sonde,
+- The compte-rendu (template
+  `docs/recette/modele-compte-rendu-campagne-de-recette.md`, completed copy
+  attached to the RC or its qualification issue — not committed) holds one
+  table: sonde,
   corrective issue, statut ✅ / ⚠️ (named reserve) / 🚫 (out of scope, why),
   then incidents found along the way, nettoyage, and the verdict. Published
   before the recette session.
