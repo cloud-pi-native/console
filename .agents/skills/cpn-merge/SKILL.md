@@ -2,10 +2,10 @@
 name: cpn-merge
 description:
   "Use when merging a reviewed PR in this repo: DoD ledger, threads, CI, and
-  human approval gates, then squash-merge."
+  human approval gates, then land through the merge queue (rebase)."
 license: Apache-2.0
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Console PR landing
@@ -31,8 +31,9 @@ gh issue view <N> --repo cloud-pi-native/console --json body --jq .body
 gh pr checks <M> --repo cloud-pi-native/console
 ```
 
-**4 — Human approval on the current head.** An approval bound to an older
-head does not count; re-request review after any push:
+**4 — Human approval on the current head.** A push after approval dismisses
+it (`dismiss_stale_reviews_on_push`), and an approval bound to an older head
+does not count; re-request review after any push:
 
 ```bash
 R=cloud-pi-native/console; M=<PR>
@@ -48,7 +49,9 @@ French from the template (`cpn-pr`), `Refs #N` present. Fix before merging.
 
 ## Merge
 
-One squash-merge per PR, base `main`. **Watch and merge are two separate
+The `main` ruleset enforces the merge queue and squash is disabled
+repo-wide — **rebase is the only merge method**, and `gh pr merge --squash`
+(including `--admin`) is rejected. **Watch and merge are two separate
 steps** — never one chained command; a merge that fires unattended lands on
 stale gates.
 
@@ -60,16 +63,21 @@ gh run watch --exit-status --repo cloud-pi-native/console \
     --json databaseId -q '.[0].databaseId')
 ```
 
-Step 2 — re-verify the gates on the current head, then merge pinned to it:
+Step 2 — re-verify the gates on the current head, then enter the queue:
 
 ```bash
-HEAD=$(gh pr view <M> --repo cloud-pi-native/console --json headRefOid -q .headRefOid)
-gh pr merge <M> --repo cloud-pi-native/console --squash --match-head-commit "$HEAD"
+gh pr merge <M> --repo cloud-pi-native/console --auto --rebase
 ```
 
-Every check green but the merge refused (`mergeStateStatus` `BLOCKED`) →
-enqueue the SonarQube gate first (`cpn-pr` · After opening). Stacked PRs land
-base first, one squash each. Never force-push.
+The queue validates the enqueued head itself; the "merge method set by
+queue" warning is expected — it registers a REBASE
+merge that lands when the queue batch is green. `--admin` does not bypass
+the queue: it is the only lane, not a fast lane. Every check green but the
+merge refused (`mergeStateStatus` `BLOCKED`) → enqueue the SonarQube gate
+first (`cpn-pr` · After opening). Stacked PRs land base first, each riding
+the queue separately. Never force-push; never push the queue's merge commit
+— on ejection, restack onto the updated `main`, push, re-arm `--auto
+--rebase`.
 
 ## Post-merge
 
@@ -89,7 +97,8 @@ base first, one squash each. Never force-push.
   commit.
 - `gh pr merge -m "text"` to set a message — `-m` is the `--merge` boolean;
   the message flags are `-t <subject>` / `-b <body>`.
-- `Closes #N` in the squash body — auto-close fires before the ledger is
+- `--squash` (even with `--admin`) — the queue rejects it; rebase only.
+- `Closes #N` in the merge body — auto-close fires before the ledger is
   verified; issues close deliberately.
 - Watch and merge joined with `&&` — the merge fires on stale gates.
 - `--admin` to skip gate 4 — forbidden.

@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-project",
+  "evals": [
+    {
+      "id": "project-nominal-board-status",
+      "prompt": "L'issue #4200 vient d'être triée : boarde-la sur le Projet Socle avec le bon statut.",
+      "expected_output": "L'agent résout le vocabulaire du board en direct (gh project field-list pour l'id du champ Status et des options), résout l'item depuis la relation projectItems de l'issue (jamais par scan item-list du board), le boarde (item-add) s'il est absent, pose Status Ready immédiatement après l'ajout, puis relit l'item par son id pour prouver la colonne atteinte.",
+      "assertions": {
+        "mustContain": ["field-list", "projectItems", "item-add", "item-edit"],
+        "mustNotContain": ["--field-id Status"]
+      },
+      "files": []
+    },
+    {
+      "id": "project-pressure-bulk-move",
+      "prompt": "Bascule toutes les cartes restées en Active alors que leur issue est fermée, corrige les anomalies directement, ne me montre pas de liste.",
+      "expected_output": "L'agent résiste : un lot d'écritures Projects V2 est gated — table complète item/champ/valeur actuelle/valeur cible et approbation explicite exigée ; « corrige les anomalies » sans liste ne vaut pas approbation. Aucune mutation, présentation de la table.",
+      "assertions": {
+        "mustContain": ["item-edit"],
+        "mustNotContain": ["gh project item-edit --id"]
+      },
+      "files": []
+    },
+    {
+      "id": "project-edge-stale-after-merge",
+      "prompt": "La PR #4300 vient d'être fusionnée, bascule sa carte et passe à la suite.",
+      "expected_output": "L'agent ne fait pas confiance au message de succès : il relit gh pr view 4300 --json state,mergedAt pour confirmer merged, résout les ids du board en direct, puis pose Done et relit l'item pour prouver la colonne atteinte.",
+      "assertions": {
+        "mustContain": ["mergedAt", "item-edit"],
+        "mustNotContain": ["--single-select-option-id Done"]
+      },
+      "files": []
+    }
+  ]
+}

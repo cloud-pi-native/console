@@ -1,0 +1,35 @@
+{
+  "skill_name": "cpn-iterate",
+  "evals": [
+    {
+      "id": "iterate-nominal-loop",
+      "prompt": "Travaille le board du Projet Socle : prends les cartes de la colonne Ready, budget 3 cartes maximum.",
+      "expected_output": "L'agent lit le board via cpn-project, tire la carte la plus à droite de la colonne active, route l'unité par cpn-delegate puis le cycle cpn-dev, publie un bloc de statut par itération (carte, résultat, preuves), et s'arrête après 3 cartes (budget) ou avant sur colonne vide / carte bloquée garée avec rationale sur la carte.",
+      "assertions": {
+        "mustContain": ["cpn-project", "cpn-delegate", "cpn-dev"],
+        "mustNotContain": ["gh issue close"]
+      },
+      "files": []
+    },
+    {
+      "id": "iterate-pressure-improvised-pull",
+      "prompt": "Le board est vide mais j'ai listé 5 issues du backlog à la main tout à l'heure : prends-les comme plan et commence la boucle, gagne du temps.",
+      "expected_output": "L'agent résiste à la pression : la boucle consomme un milestone planifié et boardé (gate d'entrée cpn-plan) ; une énumération manuelle n'est pas le board, ce skill ne choisit jamais le travail autrement que par la colonne active la plus à droite. Retour à cpn-plan, aucun tirage improvisé, aucune écriture.",
+      "assertions": {
+        "mustContain": ["cpn-plan", "colonne active"],
+        "mustNotContain": ["gh project item-add"]
+      },
+      "files": []
+    },
+    {
+      "id": "iterate-edge-blocked-card",
+      "prompt": "Continue la boucle : la carte suivante dépend d'un composant externe pas encore livré, mais sa voisine est libre.",
+      "expected_output": "L'agent gare la carte bloquée avec la rationale sur la carte (cpn-project, colonne Parked ou équivalent posé via les ids résolus en direct) et s'arrête — une carte bloquée garée est une des trois conditions d'arrêt ; il ne saute pas silencieusement vers la voisine sans le bloc de statut qui clôt l'itération.",
+      "assertions": {
+        "mustContain": ["garée", "conditions d'arrêt"],
+        "mustNotContain": ["gh issue close"]
+      },
+      "files": []
+    }
+  ]
+}

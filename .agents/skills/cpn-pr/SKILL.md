@@ -5,7 +5,7 @@ description:
   template, draft-first, origin-only, review-gated."
 license: Apache-2.0
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # Console pull requests
@@ -70,7 +70,9 @@ Set each empty, determinable field, additively (`--add-label` /
 - **labels** — from `gh label list`, never from memory. Conventional type →
   matching label; doc changes → `docs` (this repo's real label;
   `documentation` does not exist).
-- **assignee** — the author, if empty.
+- **assignee** — if empty and the work is machine-routable (no human
+  credentials, hardware, or spending): the author; otherwise leave empty
+  with a recorded reason.
 - **milestone** — bug → highest open patch of the current minor line;
   feature → next minor/major.
 - **reviewers** — one collaborator if none requested; otherwise skip.
