@@ -9,7 +9,7 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
-import { isAdminRole } from '../../integrations/keycloak/keycloak.utils'
+import { isAdminRole, isOwnerRole } from '../../integrations/keycloak/keycloak.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
@@ -354,11 +354,11 @@ export class ProjectService {
       throw new BadRequestException('Seuls les comptes humains peuvent être propriétaire de projets')
     }
 
-    const adminRole = project.roles.find(role => isAdminRole(project, role))
+    const ownerRole = project.roles.find(role => isOwnerRole(project, role))
     const oldOwner = project.members.find(member => member.userId === project.ownerId)
     await upsertProjectMember(tx, project.id, {
       userId: project.ownerId,
-      roles: [...new Set([...oldOwner?.roleIds ?? [], adminRole?.id].filter(roleId => roleId !== undefined))],
+      roles: [...new Set([...oldOwner?.roleIds ?? [], ownerRole?.id].filter(roleId => roleId !== undefined))],
     })
 
     await deleteProjectMember(tx, project.id, ownerIdCandidate)
