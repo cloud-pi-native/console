@@ -83,7 +83,7 @@ export class AdminRoleService {
           id: dbRole.id,
           data: {
             name: matchingRole.name ?? dbRole.name,
-            permissions: matchingRole.permissions === undefined ? dbRole.permissions : BigInt(matchingRole.permissions),
+            permissions: matchingRole.permissions ?? dbRole.permissions,
             position: matchingRole.position ?? dbRole.position,
             oidcGroup: matchingRole.oidcGroup ?? dbRole.oidcGroup,
             type: matchingRole.type ?? dbRole.type,

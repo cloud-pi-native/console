@@ -68,7 +68,7 @@ export class ProjectRolesService {
         ...role,
         projectId,
         position: dbMaxPosRole + 1,
-        permissions: BigInt(role.permissions),
+        permissions: role.permissions,
         oidcGroup: role.oidcGroup ? `/${project.slug}${role.oidcGroup}` : undefined,
       },
     })

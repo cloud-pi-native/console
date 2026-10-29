@@ -2,7 +2,7 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
-import { CoerceBooleanSchema } from '../schemas/_utils.js'
+import { CoerceBooleanSchema, permissionLevelInputSchema } from '../schemas/_utils.js'
 import { AdminTokenSchema, ExposedAdminTokenSchema } from '../schemas/token.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
@@ -26,7 +26,7 @@ export const adminTokenContract = contractInstance.router({
   createAdminToken: {
     method: 'POST',
     path: '',
-    body: AdminTokenSchema.pick({ name: true, permissions: true, expirationDate: true }).required(),
+    body: AdminTokenSchema.pick({ name: true, permissions: true, expirationDate: true }).extend({ permissions: permissionLevelInputSchema }).required(),
     responses: {
       201: ExposedAdminTokenSchema,
       400: ErrorSchema,

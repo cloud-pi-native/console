@@ -2,6 +2,7 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
+import { permissionLevelInputSchema } from '../schemas/_utils.js'
 import { ProjectSchemaV2 } from '../schemas/project.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
@@ -132,7 +133,8 @@ export const projectContract = contractInstance.router({
         prodCpu: true,
         prodGpu: true,
       })
-      .partial(),
+      .partial()
+      .extend({ everyonePerms: permissionLevelInputSchema.optional() }),
     responses: {
       200: ProjectSchemaV2.omit({ name: true }).extend({ name: z.string() }),
       500: ErrorSchema,

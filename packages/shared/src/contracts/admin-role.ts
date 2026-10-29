@@ -2,6 +2,7 @@ import type { ClientInferRequest } from '@ts-rest/core'
 import { ContractNoBody } from '@ts-rest/core'
 import { z } from 'zod'
 import { apiPrefix, contractInstance } from '../api-client.js'
+import { permissionLevelInputSchema } from '../schemas/_utils.js'
 import { AdminRoleSchema } from '../schemas/role.js'
 import { baseHeaders, ErrorSchema } from './_utils.js'
 
@@ -34,7 +35,7 @@ export const adminRoleContract = contractInstance.router({
   patchAdminRoles: {
     method: 'PATCH',
     path: '',
-    body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true, type: true }).array(),
+    body: AdminRoleSchema.partial({ name: true, permissions: true, position: true, oidcGroup: true, type: true }).extend({ permissions: permissionLevelInputSchema.optional() }).array(),
     responses: {
       200: AdminRoleSchema.array(),
       400: ErrorSchema,

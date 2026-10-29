@@ -1,4 +1,3 @@
-import type { ExposedAdminToken } from '@cpn-console/shared'
 import type { AdminToken } from '@prisma/client'
 import { ADMIN_PERMS, adminTokenContract } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
@@ -72,21 +71,15 @@ describe('test adminTokenContract', () => {
         createdAt: (new Date(Date.now())).toISOString(),
         status: 'active',
       }
-      const tokenData: ExposedAdminToken = {
-        name: newToken.name,
-        permissions: newToken.permissions,
-        expirationDate: null,
-      }
-
       authUserMock.mockResolvedValueOnce(user)
       businessCreateTokenMock.mockResolvedValueOnce(newToken)
 
       const response = await app.inject()
         .post(adminTokenContract.createAdminToken.path)
-        .body(tokenData)
+        .body({ name: newToken.name, permissions: '2', expirationDate: null })
         .end()
 
-      expect(businessCreateTokenMock).toHaveBeenCalledWith(tokenData)
+      expect(businessCreateTokenMock).toHaveBeenCalledWith({ name: newToken.name, permissions: 2n, expirationDate: null })
       expect(response.json()).toEqual(newToken)
       expect(response.statusCode).toEqual(201)
     })

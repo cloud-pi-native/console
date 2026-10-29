@@ -48,7 +48,7 @@ export async function patchRoles(projectId: Project['id'], roles: typeof project
       updatedRoles.push({
         id: dbRole.id,
         name: matchingRole.name ?? dbRole.name,
-        permissions: matchingRole.permissions ? BigInt(matchingRole.permissions) : dbRole.permissions,
+        permissions: matchingRole.permissions ?? dbRole.permissions,
         position: matchingRole.position ?? dbRole.position,
         oidcGroup: matchingRole.oidcGroup ? `/${project.slug}${matchingRole.oidcGroup}` : dbRole.oidcGroup,
         type: matchingRole.type ?? dbRole.type,
@@ -87,7 +87,7 @@ export async function createRole(projectId: Project['id'], role: typeof projectR
       ...role,
       projectId,
       position: dbMaxPosRole + 1,
-      permissions: BigInt(role.permissions),
+      permissions: role.permissions,
       oidcGroup: role.oidcGroup ? `/${project.slug}${role.oidcGroup}` : undefined,
     },
   })

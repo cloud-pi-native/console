@@ -161,7 +161,7 @@ export async function updateProject(
     await updateProjectQuery(projectId, {
       description,
       locked,
-      ...everyonePerms && { everyonePerms: BigInt(everyonePerms) },
+      ...everyonePerms !== undefined && { everyonePerms },
       ...data,
     })
   }

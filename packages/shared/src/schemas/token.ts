@@ -1,6 +1,6 @@
 import type Zod from 'zod'
 import { z } from 'zod'
-import { dateToString, ExpirationDateSchema, permissionLevelSchema } from './_utils.js'
+import { dateToString, ExpirationDateSchema, permissionLevelInputSchema, permissionLevelSchema } from './_utils.js'
 import { UserSchema } from './user.js'
 
 export const TokenSchema = z.object({
@@ -32,6 +32,7 @@ export const ExposedAdminTokenSchema = AdminTokenSchema.extend({
 export const CreateAdminTokenBodySchema = AdminTokenSchema
   .pick({ name: true, permissions: true, expirationDate: true })
   .extend({
+    permissions: permissionLevelInputSchema,
     expirationDate: z.preprocess(
       value => value === '' ? null : value,
       ExpirationDateSchema.nullable(),
@@ -39,6 +40,7 @@ export const CreateAdminTokenBodySchema = AdminTokenSchema
   })
   .required()
 
+export type CreateAdminTokenBodyParsed = Zod.infer<typeof CreateAdminTokenBodySchema>
 export type AdminToken = Zod.infer<typeof AdminTokenSchema>
 export type ExposedAdminToken = Zod.infer<typeof ExposedAdminTokenSchema>
 

@@ -26,9 +26,7 @@ export function makePatchAdminRoleBody(
   return {
     id: role.id,
     name: overrides.name ?? role.name,
-    permissions:
-      overrides.permissions
-      ?? (typeof role.permissions === 'bigint' ? role.permissions.toString() : String(role.permissions)),
+    permissions: overrides.permissions ?? BigInt(role.permissions),
     position: overrides.position ?? role.position,
     oidcGroup: overrides.oidcGroup ?? role.oidcGroup,
     type: overrides.type ?? role.type,
