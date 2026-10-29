@@ -11,7 +11,7 @@ const snackbarStore = useSnackbarStore()
 const projectStore = useProjectStore()
 const isReplaying = computed(
   () =>
-    props.project.operationsInProgress.some(ope => ope.startsWith('update')),
+    props.project.operationsInProgress.some(ope => ope.startsWith('replay')),
 )
 const isDeleting = computed(
   () =>
