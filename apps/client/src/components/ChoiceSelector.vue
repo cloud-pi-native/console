@@ -117,7 +117,7 @@ const groups: Group[] = [
     <button
       type="button"
       class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
-      :aria-expanded="isWrapped"
+      :aria-expanded="!isWrapped"
       @click="isWrapped = !isWrapped"
     >
       <span
@@ -222,7 +222,7 @@ const groups: Group[] = [
     <button
       type="button"
       class="cursor-pointer bg-transparent border-none p-0 flex items-center text-left"
-      :aria-expanded="isWrapped"
+      :aria-expanded="!isWrapped"
       @click="isWrapped = !isWrapped"
     >
       <span class="mb-1 inline-block fr-label">

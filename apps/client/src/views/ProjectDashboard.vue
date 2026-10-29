@@ -8,6 +8,7 @@ import ProjectSettings from '@/components/ProjectSettings.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { useClusterStore } from '@/stores/cluster.js'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
@@ -26,6 +27,7 @@ const props = withDefaults(
 )
 
 const projectStore = useProjectStore()
+const snackbarStore = useSnackbarStore()
 const zoneStore = useZoneStore()
 const clusterStore = useClusterStore()
 const userStore = useUserStore()
@@ -194,24 +196,31 @@ watch(activeTab, (tabIndex) => {
 const {
   pending: isSaving,
   run: saveProject,
-} = useAsyncAction(async (description?: string) => {
-  const current = project.value
-  if (!current) return
-  try {
-    await projectStore.updateProject(current.id, {
-      description: description ?? current.description,
-      limitless: current.limitless,
-      hprodMemory: current.hprodMemory,
-      hprodCpu: current.hprodCpu,
-      hprodGpu: current.hprodGpu,
-      prodMemory: current.prodMemory,
-      prodCpu: current.prodCpu,
-      prodGpu: current.prodGpu,
-    })
-  } finally {
-    await projectStore.refreshProject(current.id)
-  }
-})
+} = useAsyncAction(
+  async (description?: string) => {
+    const current = project.value
+    if (!current) return
+    try {
+      await projectStore.updateProject(current.id, {
+        description: description ?? current.description,
+        limitless: current.limitless,
+        hprodMemory: current.hprodMemory,
+        hprodCpu: current.hprodCpu,
+        hprodGpu: current.hprodGpu,
+        prodMemory: current.prodMemory,
+        prodCpu: current.prodCpu,
+        prodGpu: current.prodGpu,
+      })
+    } finally {
+      await projectStore.refreshProject(current.id)
+    }
+  },
+  {
+    onError: (error) => {
+      snackbarStore.setMessage(error.message, 'error')
+    },
+  },
+)
 </script>
 
 <template>
