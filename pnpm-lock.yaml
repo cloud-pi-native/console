@@ -198,6 +198,9 @@ catalogs:
     date-fns:
       specifier: ^4.1.0
       version: 4.1.0
+    effect:
+      specifier: ^4.0.7
+      version: 4.0.7
     fastify:
       specifier: ^5.12.5
       version: 5.12.7
@@ -374,9 +377,9 @@ catalogs:
       version: 7.16.0
 
 overrides:
-  postcss-html>postcss: 8.5.26
-  '@nestjs/platform-fastify@11>fastify': '>=5.12.5 <6'
+  '@fastify/static@9.1.3': '>=10.1.2 <11'
   '@grpc/grpc-js@1.14.3': '>=1.14.4 <2'
+  '@nestjs/platform-fastify@11>fastify': '>=5.12.5 <6'
   '@opentelemetry/core@2.5.1': '>=2.8.0 <3'
   '@opentelemetry/core@2.6.0': '>=2.8.0 <3'
   '@opentelemetry/core@2.7.1': '>=2.8.0 <3'
@@ -387,30 +390,29 @@ overrides:
   brace-expansion@1.1.12: '>=1.1.17 <2'
   brace-expansion@2.1.1: '>=2.1.3 <3'
   brace-expansion@5.0.6: '>=5.0.7 <6'
-  defu@6.1.4: '>=6.1.5 <7'
   deepmerge-ts@7.1.5: '>=8.0.2 <9'
+  defu@6.1.4: '>=6.1.5 <7'
   dompurify@3.3.2: '>=3.4.12 <4'
-  effect@3.18.4: '>=3.20.0 <4'
+  esbuild@0.27.3: '>=0.28.1 <1'
+  fast-jwt@5.0.6: '>=6.2.4 <7'
   fast-uri@3.1.2: '>=3.1.5 <4'
   file-type@21.3.0: '>=21.3.2 <22'
   find-my-way@9.6.0: '>=9.7.0 <10'
+  js-yaml: '>=4.3.1 <5'
   lodash@4.17.23: '>=4.18.1 <5'
   multer@2.1.1: '>=2.2.0 <3'
+  nanoid@3.3.17: '>=3.3.18 <4'
   path-to-regexp@8.3.0: '>=8.4.2 <9'
   picomatch@4.0.2: '>=4.0.4 <5'
+  postcss-html>postcss: 8.5.26
   postcss@8.5.15: '>=8.5.18 <9'
   protobufjs@7.6.4: '>=7.6.5 <8'
   protobufjs@8.0.0: '>=8.6.6 <9'
   protobufjs@8.0.1: '>=8.6.6 <9'
-  nanoid@3.3.17: '>=3.3.18 <4'
-  vite@8.0.11: '>=8.0.16 <9'
-  js-yaml: '>=4.3.1 <5'
-  '@fastify/static@9.1.3': '>=10.1.2 <11'
-  esbuild@0.27.3: '>=0.28.1 <1'
-  fast-jwt@5.0.6: '>=6.2.4 <7'
   serialize-javascript@6.0.2: '>=7.0.5 <8'
   uuid@8.3.2: '>=11.1.1 <12'
   uuid@9.0.1: '>=11.1.1 <12'
+  vite@8.0.11: '>=8.0.16 <9'
 
 importers:
 
@@ -859,6 +861,9 @@ importers:
       date-fns:
         specifier: catalog:runtime
         version: 4.1.0
+      effect:
+        specifier: catalog:runtime
+        version: 4.0.7
       fastify:
         specifier: catalog:runtime
         version: 5.12.7
@@ -3785,6 +3790,7 @@ packages:
   '@opentelemetry/propagator-jaeger@2.10.0':
     resolution: {integrity: sha512-yw/IX8DL470dSMZJoE82ScfYGp7JWZ/G8kFJo35ZILUVTB2jFPTOaioN+8s09pH0RHsWNhweVZb+ZnjJJpCChg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Package no longer supported. See https://github.com/open-telemetry/opentelemetry-js/pull/7077
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -3891,30 +3897,35 @@ packages:
   '@opentelemetry/sdk-trace-base@2.10.0':
     resolution: {integrity: sha512-GuYQQT7QD2EeO8lcZLRQzcbOyhqAzL+6WWTKTU9mSUBYBazkEDl+VrQcXQhbB08OWM9anD1aHleVadzulpOaUQ==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-base@2.6.0':
     resolution: {integrity: sha512-g/OZVkqlxllgFM7qMKqbPV9c1DUPhQ7d4n3pgZFcrnrNft9eJXZM2TNHTPYREJBrtNdRytYyvwjgL5geDKl3EQ==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-base@2.7.1':
     resolution: {integrity: sha512-NAYIlsF8MPUsKqJMiDQJTMPOmlbawC1Iz/omMLygZ1C9am8fTKYjTaI+OZM+WTY3t3Glo0wnOg/6/pac6RGPPw==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.10.0':
     resolution: {integrity: sha512-GZK/G6oZyBLGlH1pUgeDch7D91KoHd2uotUGIkWCPi9GI5T9X0p4L7nNAMDR1BQjkRYoDqo+ddfVx9t5Uhys+Q==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.7.1':
     resolution: {integrity: sha512-pCpQxU68lV+I9s9svqMyVu5iHdDDUnqUpSxqwyCU8A9ejEsSnMPCbearwsUO4yk08ZJzAIUCFuReMdVQvHrdvg==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -5858,8 +5869,11 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  effect@3.22.1:
-    resolution: {integrity: sha512-TNoXushmPOBAjJlthF5d2QwnX2xBPEtcNJr5XKNKbRLbDvBcOYkXlYDfvGfSA0zriwLFuCll5MDtNMAdZL17PQ==}
+  effect@3.18.4:
+    resolution: {integrity: sha512-b1LXQJLe9D11wfnOKAk3PKxuqYshQ0Heez+y5pnkd3jLj1yx9QhM72zZ9uUrOQyNvrs2GZZd/3maL0ZV18YuDA==}
+
+  effect@4.0.7:
+    resolution: {integrity: sha512-47CiUzNAmeLr40pDT9vKMxxtB8o3bdpZEKU4IUM3fVxsK2GYzPsV7fQoZP0I41A308BZd71nMxqJ0KRh3s9u2g==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -12852,7 +12866,7 @@ snapshots:
     dependencies:
       c12: 3.1.0(magicast@0.3.5)
       deepmerge-ts: 8.0.2
-      effect: 3.22.1
+      effect: 3.18.4
       empathic: 2.0.0
     transitivePeerDependencies:
       - magicast
@@ -14828,10 +14842,12 @@ snapshots:
   ee-first@1.1.1:
     optional: true
 
-  effect@3.22.1:
+  effect@3.18.4:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
+
+  effect@4.0.7: {}
 
   ejs@3.1.10:
     dependencies:

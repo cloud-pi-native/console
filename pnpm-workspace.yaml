@@ -52,7 +52,6 @@ overrides:
   deepmerge-ts@7.1.5: ">=8.0.2 <9"
   defu@6.1.4: ">=6.1.5 <7"
   dompurify@3.3.2: ">=3.4.12 <4"
-  effect@3.18.4: ">=3.20.0 <4"
   esbuild@0.27.3: ">=0.28.1 <1"
   fast-jwt@5.0.6: ">=6.2.4 <7"
   fast-uri@3.1.2: ">=3.1.5 <4"
@@ -141,6 +140,7 @@ catalogs:
     cache-manager: ^7.2.8
     cron-validator: ^1.4.0
     date-fns: ^4.1.0
+    effect: ^4.0.7
     fastify: ^5.12.5
     fastify-keycloak-adapter: ^3.0.0
     javascript-time-ago: ^2.6.4
