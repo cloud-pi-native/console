@@ -43,8 +43,21 @@ export function makeAdminRole(project: Pick<ProjectWithDetails, 'id' | 'slug'>, 
     id: faker.string.uuid(),
     name: 'Administrateur',
     permissions: PROJECT_PERMS.MANAGE,
-    position: 0,
+    position: 1,
     oidcGroup: `/${project.slug}/console/admin`,
+    type: 'system:managed',
+    projectId: project.id,
+    ...overrides,
+  }
+}
+
+export function makeOwnerRole(project: Pick<ProjectWithDetails, 'id' | 'slug'>, overrides: Partial<ProjectWithDetails['roles'][number]> = {}): ProjectWithDetails['roles'][number] {
+  return {
+    id: faker.string.uuid(),
+    name: 'Propriétaire',
+    permissions: PROJECT_PERMS.MANAGE,
+    position: 0,
+    oidcGroup: `/${project.slug}/console/owner`,
     type: 'system:managed',
     projectId: project.id,
     ...overrides,
