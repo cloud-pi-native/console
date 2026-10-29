@@ -4,9 +4,9 @@
     {
       "id": "project-nominal-board-status",
       "prompt": "L'issue #4200 vient d'être triée : boarde-la sur le Projet Socle avec le bon statut.",
-      "expected_output": "L'agent résout le vocabulaire du board en direct (gh project field-list pour l'id du champ Status et des options), vérifie l'item avec gh project item-list --limit 200, le boarde (item-add) s'il est absent, pose Status Ready immédiatement après l'ajout, puis relit l'item pour prouver la colonne atteinte.",
+      "expected_output": "L'agent résout le vocabulaire du board en direct (gh project field-list pour l'id du champ Status et des options), résout l'item depuis la relation projectItems de l'issue (jamais par scan item-list du board), le boarde (item-add) s'il est absent, pose Status Ready immédiatement après l'ajout, puis relit l'item par son id pour prouver la colonne atteinte.",
       "assertions": {
-        "mustContain": ["field-list", "item-list", "item-add", "item-edit"],
+        "mustContain": ["field-list", "projectItems", "item-add", "item-edit"],
         "mustNotContain": ["--field-id Status"]
       },
       "files": []

@@ -71,14 +71,28 @@ quelle option le mouvement suivant vise.
 
 ### 1. Résoudre l'item
 
+Le Projet Socle couvre plusieurs dépôts — un numéro seul est ambigu, et la
+pagination ne garantit rien sur un board de plusieurs milliers d'items.
+Résoudre la carte depuis l'issue/PR elle-même, jamais par scan du board :
+
 ```bash
-gh project item-list <NUMÉRO> --owner cloud-pi-native --limit 200 \
-  --format json \
-  --jq '.items[] | select(.content.number == <N>) | {id, status, title}'
+gh api graphql -f query='
+  query($owner:String!,$repo:String!,$num:Int!){
+    repository(owner:$owner,name:$repo){
+      issueOrPullRequest(number:$num){
+        ... on Issue       { projectItems(first:100){nodes{id project{number title}}}}
+        ... on PullRequest { projectItems(first:100){nodes{id project{number title}}}}
+      }
+    }
+  }' -f owner=cloud-pi-native -f repo=<DÉPÔT> -F num=<N>
 ```
 
-**Toujours `--limit 200`** — le défaut 30 tronque et renvoie « no item »
-pour de vraies cartes. Absent du résultat = carte non boardée → étape 2.
+Filtrer sur `project.number` du Projet Socle, exiger **exactement une**
+correspondance — le même numéro existe dans plusieurs dépôts, un scan
+`item-list --jq '.items[] | select(.content.number == <N>)'` peut rendre la
+carte d'un autre dépôt, et un board tronqué la fait passer pour absente.
+
+Absent du résultat = carte non boardée → étape 2.
 
 ### 2. Boarder si absent
 
@@ -107,10 +121,20 @@ dernière commande lancée : `gh pr view <N> --json state,mergedAt` décide
 
 ### 4. Relire
 
+Par l'id d'item résolu à l'étape 1 — un `fieldValueByName` à `null` = statut
+non posé :
+
 ```bash
-gh project item-list <NUMÉRO> --owner cloud-pi-native --limit 200 \
-  --format json \
-  --jq '.items[] | select(.content.number == <N>) | .status'
+gh api graphql -f query='
+  query($id:ID!){
+    node(id:$id){
+      ... on ProjectV2Item {
+        fieldValueByName(name:"Status"){
+          ... on ProjectV2ItemFieldSingleSelectValue { name }
+        }
+      }
+    }
+  }' -f id=<ITEM_ID>
 ```
 
 Le statut imprimé égale la colonne visée, sinon le mouvement n'a pas eu
@@ -148,7 +172,14 @@ l'item avant de la re-proposer.
 ## Vérification
 
 ```bash
-gh project item-list <NUMÉRO> --owner cloud-pi-native --limit 200 \
-  --format json \
-  --jq '.items[] | select(.content.number == <N>) | .status'
+gh api graphql -f query='
+  query($id:ID!){
+    node(id:$id){
+      ... on ProjectV2Item {
+        fieldValueByName(name:"Status"){
+          ... on ProjectV2ItemFieldSingleSelectValue { name }
+        }
+      }
+    }
+  }' -f id=<ITEM_ID>
 ```

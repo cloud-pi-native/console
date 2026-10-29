@@ -171,8 +171,8 @@ clôture est délibérée (`cpn-issue`).
 - `--paginate` obligatoire sur l'énumération : au-delà de 100 items, le reste
   disparaît silencieusement.
 - `gh project item-list` tronque vers 1000 lignes : l'absence d'un item ne
-  prouve rien — croiser avec le total du board (mécanique :
-  `cpn-project`).
+  prouve rien — résoudre par la relation `projectItems` de l'issue/PR
+  (mécanique : `cpn-project`).
 - Bodies et payloads passent par fichiers (`--body-file`, `--input`), jamais
   en argument inline — l'expansion shell mutille les backticks et les `$`.
 - Un commentaire de piste manquant sur une requalification est le défaut que
