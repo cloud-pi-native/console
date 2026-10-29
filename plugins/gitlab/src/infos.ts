@@ -3,10 +3,10 @@ import { DISABLED, ENABLED } from '@cpn-console/shared'
 import config from './config.js'
 
 export const DEFAULT_ADMIN_GROUP_PATH = '/console/admin'
-export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
+export const DEFAULT_AUDITOR_GROUP_PATH = '/console/reader'
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer,/console/devops'
-export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
+export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/reader'
 
 const infos = {
   name: 'gitlab',
