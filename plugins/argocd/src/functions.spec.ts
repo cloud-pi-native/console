@@ -144,11 +144,11 @@ describe('argocd functions', () => {
         roGroup: '/ro',
         rwGroup: '/rw',
         platformAdminGroup: '/console/admin',
-        platformReaderGroup: '/console/reader',
+        platformReadonlyGroup: '/console/reader',
         projectAdminGroup: `/${mockProject.slug}/console/admin`,
         projectDevopsGroup: `/${mockProject.slug}/console/devops`,
         projectDevelopperGroup: `/${mockProject.slug}/console/developer`,
-        projectReaderGroup: `/${mockProject.slug}/console/reader`,
+        projectReadonlyGroup: `/${mockProject.slug}/console/reader`,
       },
       application: {
         quota: {
