@@ -31,10 +31,20 @@ WHERE pr."type" = 'system:managed'
   AND pr."id" <> c.keep_id;
 
 -- 1b. Repointer chaque référence membre d'une perdante vers la canonique.
+--     UPDATE ... FROM ne met à jour chaque ligne cible qu'une fois : on
+--     reconstruit le tableau en appliquant TOUTES les correspondances
+--     lose→keep (plusieurs perdantes par membre, occurrences multiples).
 UPDATE "ProjectMembers" pm
-SET "roleIds" = array_replace(pm."roleIds", l.lose_id::text, l.keep_id::text)
-FROM _dedup_losers l
-WHERE pm."roleIds" @> ARRAY[l.lose_id]::text[];
+SET "roleIds" = ARRAY(
+  SELECT COALESCE(l.keep_id::text, rid)::text
+  FROM unnest(pm."roleIds") AS rid
+  LEFT JOIN _dedup_losers l ON l.lose_id::text = rid
+)
+WHERE EXISTS (
+  SELECT 1
+  FROM _dedup_losers l
+  WHERE pm."roleIds" @> ARRAY[l.lose_id]::text[]
+);
 
 -- 1c. Supprimer les perdantes.
 DELETE FROM "ProjectRole" pr
