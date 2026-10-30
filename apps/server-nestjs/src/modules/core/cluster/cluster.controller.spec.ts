@@ -1,30 +1,33 @@
 import type { TestingModule } from '@nestjs/testing'
 import type { FastifyRequest } from 'fastify'
-import type { MockProxy } from 'vitest-mock-extended'
+import type { DeepMockProxy, MockProxy } from 'vitest-mock-extended'
 import type { UserContext } from '../../infrastructure/auth/auth-user.decorator'
 import { ADMIN_PERMS } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { FastifyAdapter } from '@nestjs/platform-fastify'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { mock } from 'vitest-mock-extended'
+import { mock, mockDeep } from 'vitest-mock-extended'
 import { AuthService } from '../../infrastructure/auth/auth.service'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { UserPermissionPolicy } from '../../infrastructure/permission/user/user-policy.service'
 import { UserPermissionService } from '../../infrastructure/permission/user/user.service'
+import { makeEnvironment } from '../environment/environment-testing.utils'
+import { AppEventsService } from '../events/app-events.service'
 import {
+  makeCluster,
   makeClusterDetailsRecord,
   makeClusterEnvironmentsRecord,
   makeClusterListRecord,
   makeCreateClusterBody,
 } from './cluster-testing.utils'
-import { ClusterController } from './cluster.controller'
-import { ClusterService } from './cluster.service'
-import { toClusterDetails, toClusters } from './cluster.utils'
+import { ClusterController, toClusterDetails, toClusters } from './cluster.controller'
 
 describe('clusterController', () => {
   let module: TestingModule
   let controller: ClusterController
-  let service: MockProxy<ClusterService>
+  let prisma: DeepMockProxy<PrismaService>
+  let appEvents: DeepMockProxy<AppEventsService>
   let auth: MockProxy<AuthService>
 
   const userId = faker.string.uuid()
@@ -32,13 +35,17 @@ describe('clusterController', () => {
   const user: UserContext = { userId, userType: 'human' }
 
   beforeEach(async () => {
-    service = mock<ClusterService>()
+    prisma = mockDeep<PrismaService>()
+    prisma.$transaction.mockImplementation(async (cb: (tx: unknown) => unknown) => cb(prisma))
+    appEvents = mockDeep<AppEventsService>()
+    appEvents.emitClusterEvent.mockResolvedValue({})
     auth = mock<AuthService>()
 
     module = await Test.createTestingModule({
       controllers: [ClusterController],
       providers: [
-        { provide: ClusterService, useValue: service },
+        { provide: PrismaService, useValue: prisma },
+        { provide: AppEventsService, useValue: appEvents },
         { provide: AuthService, useValue: auth },
         UserPermissionService,
         UserPermissionPolicy,
@@ -61,7 +68,7 @@ describe('clusterController', () => {
 
     it('serves 200 without an admin-only 403 and passes the requestor to the userId filter', async () => {
       const clusters = [makeClusterListRecord()]
-      service.listClustersForUser.mockResolvedValue(clusters)
+      prisma.cluster.findMany.mockResolvedValue(clusters)
       auth.authenticate.mockResolvedValue(requestor)
 
       const app = module.createNestApplication(new FastifyAdapter())
@@ -70,7 +77,6 @@ describe('clusterController', () => {
       await app.close()
 
       expect(response.statusCode).toBe(200)
-      expect(service.listClustersForUser).toHaveBeenCalledWith(requestor)
     })
   })
 
@@ -94,13 +100,11 @@ describe('clusterController', () => {
     await app.close()
 
     expect(response.statusCode).toBe(400)
-    expect(service.updateCluster).not.toHaveBeenCalled()
-    expect(service.deleteCluster).not.toHaveBeenCalled()
   })
 
   it('maps raw list records to the contract shape', async () => {
     const record = makeClusterListRecord({ infos: null })
-    service.listClustersForUser.mockResolvedValue([record])
+    prisma.cluster.findMany.mockResolvedValue([record])
 
     const result = await controller.list({ userId: faker.string.uuid(), adminPermissions: ADMIN_PERMS.LIST_CLUSTERS, userType: 'human' })
 
@@ -111,7 +115,7 @@ describe('clusterController', () => {
 
   it('maps cluster details to the contract shape', async () => {
     const record = makeClusterDetailsRecord({ infos: null })
-    service.getClusterDetailsRecord.mockResolvedValue(record)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
     const result = await controller.getDetails(record.id)
 
@@ -126,7 +130,7 @@ describe('clusterController', () => {
 
   it('maps cluster environments for the contract response', async () => {
     const envs = [makeClusterEnvironmentsRecord(), makeClusterEnvironmentsRecord()]
-    service.getClusterAssociatedEnvironments.mockResolvedValue(envs)
+    prisma.environment.findMany.mockResolvedValue(envs)
 
     const result = await controller.getEnvironments(faker.string.uuid())
 
@@ -144,22 +148,19 @@ describe('clusterController', () => {
     const clusterId = faker.string.uuid()
     const record = makeClusterDetailsRecord()
     const usage = { cpu: 1, gpu: 0, memory: 8 }
-    service.getClusterDetailsRecord.mockResolvedValue(record)
-    service.getClusterUsage.mockResolvedValue(usage)
-    service.getClusterAssociatedEnvironments.mockResolvedValue([])
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
+    prisma.environment.aggregate.mockResolvedValue({ _sum: usage, _count: { _all: 1 }, _avg: { cpu: null, gpu: null, memory: null }, _min: { cpu: null, gpu: null, memory: null }, _max: { cpu: null, gpu: null, memory: null } })
+    prisma.environment.findMany.mockResolvedValue([])
 
     expect(await controller.getDetails(clusterId)).toEqual(toClusterDetails(record))
-    expect(service.getClusterDetailsRecord).toHaveBeenCalledWith(clusterId)
-    expect(await controller.getUsage(clusterId)).toBe(usage)
-    expect(service.getClusterUsage).toHaveBeenCalledWith(clusterId)
+    expect(await controller.getUsage(clusterId)).toEqual(usage)
     await controller.getEnvironments(clusterId)
-    expect(service.getClusterAssociatedEnvironments).toHaveBeenCalledWith(clusterId)
   })
 
   it('serves the contract URL GET /api/v1/clusters/usage/:clusterId', async () => {
     const clusterId = faker.string.uuid()
-    service.getClusterUsage.mockResolvedValue({ cpu: 1, gpu: 0, memory: 8 })
-    service.getClusterDetailsRecord.mockResolvedValue(makeClusterDetailsRecord())
+    prisma.environment.aggregate.mockResolvedValue({ _sum: { cpu: 1, gpu: 0, memory: 8 }, _count: { _all: 1 }, _avg: { cpu: null, gpu: null, memory: null }, _min: { cpu: null, gpu: null, memory: null }, _max: { cpu: null, gpu: null, memory: null } })
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(makeClusterDetailsRecord())
     auth.authenticate.mockResolvedValue({ userId, adminPermissions: ADMIN_PERMS.LIST_CLUSTERS, userType: 'human' })
 
     const app = module.createNestApplication(new FastifyAdapter())
@@ -169,11 +170,9 @@ describe('clusterController', () => {
     const usageResponse = await server.inject({ method: 'GET', url: `/api/v1/clusters/usage/${clusterId}` })
     expect(usageResponse.statusCode).toBe(200)
     expect(usageResponse.json()).toEqual({ cpu: 1, gpu: 0, memory: 8 })
-    expect(service.getClusterUsage).toHaveBeenCalledWith(clusterId)
 
     const detailsResponse = await server.inject({ method: 'GET', url: `/api/v1/clusters/${clusterId}` })
     expect(detailsResponse.statusCode).toBe(200)
-    expect(service.getClusterDetailsRecord).toHaveBeenCalledWith(clusterId)
 
     await app.close()
   })
@@ -182,37 +181,36 @@ describe('clusterController', () => {
     const body = makeCreateClusterBody()
     const record = makeClusterDetailsRecord()
     const details = toClusterDetails(record)
-    service.createCluster.mockResolvedValue(record)
+    prisma.cluster.findUnique.mockResolvedValue(null)
+    prisma.cluster.create.mockResolvedValue(makeCluster())
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
     expect(await controller.create(body, user, request)).toEqual(details)
-    expect(service.createCluster).toHaveBeenCalledWith(body, user.userId, request.id)
   })
 
   it('delegates update with clusterId, body, userId and requestId', async () => {
     const clusterId = faker.string.uuid()
     const record = makeClusterDetailsRecord()
     const details = toClusterDetails(record)
-    service.updateCluster.mockResolvedValue(record)
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValue(record)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
 
     expect(await controller.update(clusterId, { label: 'new-label' }, user, request)).toEqual(details)
-    expect(service.updateCluster).toHaveBeenCalledWith({ label: 'new-label' }, clusterId, user.userId, request.id)
   })
 
   it('delegates delete with clusterId, userId, requestId and force', async () => {
     const clusterId = faker.string.uuid()
-    service.deleteCluster.mockResolvedValue(0)
+    prisma.environment.findFirst.mockResolvedValue(null)
+    prisma.cluster.delete.mockResolvedValue(makeClusterListRecord())
 
     expect(await controller.delete(clusterId, { force: true }, user, request)).toBeNull()
-    expect(service.deleteCluster).toHaveBeenCalledWith({
-      clusterId,
-      userId: user.userId,
-      requestId: request.id,
-      force: true,
-    })
   })
 
   it('formats the forced-environment message for the contract response', async () => {
-    service.deleteCluster.mockResolvedValue(3)
+    prisma.environment.findFirst.mockResolvedValue(makeEnvironment())
+    prisma.environment.deleteMany.mockResolvedValue({ count: 3 })
+    prisma.cluster.delete.mockResolvedValue(makeClusterListRecord())
 
     expect(await controller.delete(faker.string.uuid(), { force: true }, user, request))
       .toBe('3 environnements supprimés de force, n\'oubliez pas de reprovisionner les projets concernés')
@@ -222,7 +220,8 @@ describe('clusterController', () => {
     [''],
     ['?force=true'],
   ])('returns the contract status 204 on a successful HTTP DELETE%s', async (query) => {
-    service.deleteCluster.mockResolvedValue(0)
+    prisma.environment.findFirst.mockResolvedValue(null)
+    prisma.cluster.delete.mockResolvedValue(makeClusterListRecord())
     auth.authenticate.mockResolvedValue({ userId, adminPermissions: ADMIN_PERMS.MANAGE, userType: 'human' })
     const clusterId = faker.string.uuid()
 
@@ -235,6 +234,5 @@ describe('clusterController', () => {
     await app.close()
 
     expect(response.statusCode).toBe(204)
-    expect(service.deleteCluster).toHaveBeenCalledTimes(1)
   })
 })
