@@ -2,24 +2,25 @@
 import type { AdminToken } from '@cpn-console/shared'
 import type { SimpleToken } from '@/components/TokenForm.vue'
 import { getAdminPermLabelsByValue } from '@cpn-console/shared'
+import { DsfrDataTable } from '@gouvminint/vue-dsfr'
 import { onMounted } from 'vue'
 import { useAdminTokenStore } from '@/stores/admin-token.js'
-import { clickInDialog } from '@/utils/func.js'
+import { clickInDialog, getRandomId } from '@/utils/func.js'
 
 const statusWording: Record<AdminToken['status'], string> = {
   active: 'Actif',
   revoked: 'Révoqué',
   inactive: 'Inactif',
 }
-const headers = [
-  'Nom',
-  'Permissions',
-  'Créateur',
-  'Date de création',
-  'Date d\'expiration',
-  'Dernière utilisation',
-  'État',
-  'Révoquer',
+const columns = [
+  { key: 'name', label: 'Nom' },
+  { key: 'permissions', label: 'Permissions' },
+  { key: 'owner', label: 'Créateur' },
+  { key: 'createdAt', label: 'Date de création' },
+  { key: 'expirationDate', label: 'Date d\'expiration' },
+  { key: 'lastUse', label: 'Dernière utilisation' },
+  { key: 'status', label: 'État' },
+  { key: 'revoke', label: 'Révoquer' },
 ]
 const adminTokenStore = useAdminTokenStore()
 
@@ -28,6 +29,23 @@ const displayRevoked = ref(false)
 const displayNewTokenForm = ref(false)
 const deleteTokenId = ref('')
 const deleteModalOpened = ref(false)
+const tableKey = ref(getRandomId('table'))
+
+function tokenDate(iso: string | null | undefined) {
+  return iso ? new Date(iso).toLocaleString() : 'Jamais'
+}
+
+function compareTokens(a: AdminToken, b: AdminToken) {
+  const aUse = a.lastUse
+  const bUse = b.lastUse
+  if (aUse === bUse)
+    return 0
+  if (aUse === null)
+    return 1
+  if (bUse === null)
+    return -1
+  return aUse.localeCompare(bUse)
+}
 
 async function deleteToken() {
   await adminTokenStore.deleteToken(deleteTokenId.value)
@@ -35,32 +53,6 @@ async function deleteToken() {
   deleteModalOpened.value = false
   await getAllTokens()
 }
-
-const rows = computed(() => tokens.value.length
-  ? tokens.value.map(token => ([
-      token.name,
-      getAdminPermLabelsByValue(token.permissions).join(', '),
-      token.owner?.email ?? '-',
-      (new Date(token.createdAt)).toLocaleString(),
-      token.expirationDate ? (new Date(token.expirationDate)).toLocaleString() : 'Jamais',
-      token.lastUse ? (new Date(token.lastUse)).toLocaleString() : 'Jamais',
-      statusWording[token.status],
-      {
-        cellAttrs: {
-          class: `fr-fi-close-line justify-center ${token.status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'}`,
-          title: 'Supprimer',
-          onClick: () => { deleteModalOpened.value = true; deleteTokenId.value = token.id },
-        },
-      },
-    ]))
-  : [[{
-      field: 'string',
-      text: 'Aucune clé d\'api existante',
-      cellAttrs: {
-        colspan: headers.length,
-      },
-    }]],
-)
 
 async function getAllTokens() {
   tokens.value = await adminTokenStore.listTokens({ withRevoked: displayRevoked.value })
@@ -116,14 +108,62 @@ function closeModal() {
       @reset="resetForm"
     />
   </div>
-  <div>
-    <DsfrTable
-      title=""
-      data-testid="tokenTable"
-      :headers="headers"
-      :rows="rows as string[][]"
-    />
-  </div>
+  <span
+    v-if="!tokens.length"
+    data-testid="noTokenMsg"
+  >
+    Aucune clé d'api existante
+  </span>
+  <DsfrDataTable
+    v-else
+    :key="tableKey"
+    title=""
+    data-testid="tokenTable"
+    :headers-row="columns"
+    :rows="tokens"
+    :sortable-rows="['lastUse']"
+    :sort-fn="compareTokens"
+  >
+    <template #cell="{ colKey, cell }">
+      <template v-if="colKey === 'name'">
+        {{ (cell as AdminToken).name }}
+      </template>
+      <template v-else-if="colKey === 'permissions'">
+        {{ getAdminPermLabelsByValue((cell as AdminToken).permissions).join(', ') }}
+      </template>
+      <template v-else-if="colKey === 'owner'">
+        {{ (cell as AdminToken).owner?.email ?? '-' }}
+      </template>
+      <template v-else-if="colKey === 'createdAt'">
+        <span :title="(cell as AdminToken).createdAt">
+          {{ tokenDate((cell as AdminToken).createdAt) }}
+        </span>
+      </template>
+      <template v-else-if="colKey === 'expirationDate'">
+        <span :title="(cell as AdminToken).expirationDate ?? undefined">
+          {{ tokenDate((cell as AdminToken).expirationDate) }}
+        </span>
+      </template>
+      <template v-else-if="colKey === 'lastUse'">
+        <span :title="(cell as AdminToken).lastUse ?? undefined">
+          {{ tokenDate((cell as AdminToken).lastUse) }}
+        </span>
+      </template>
+      <template v-else-if="colKey === 'status'">
+        {{ statusWording[(cell as AdminToken).status] }}
+      </template>
+      <template v-else>
+        <button
+          type="button"
+          data-testid="revokeBtn"
+          class="fr-fi-close-line justify-center"
+          :class="(cell as AdminToken).status === 'active' ? 'cursor-pointer fr-text-default--warning' : 'cursor-not-allowed'"
+          title="Supprimer"
+          @click="() => { deleteModalOpened = true; deleteTokenId = (cell as AdminToken).id }"
+        />
+      </template>
+    </template>
+  </DsfrDataTable>
   <DsfrButton
     :label="displayRevoked ? 'Masquer les jetons révoqués' : 'Voir les jetons révoqués'"
     class="mt-5"
