@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-import type { ProjectV2 } from '@cpn-console/shared'
 import { AdminAuthorized } from '@cpn-console/shared'
-import router from '@/router/index.js'
+import { useAsyncAction } from '@/composables/useAsyncAction.js'
 import { useProjectStore } from '@/stores/project.js'
 import { useUserStore } from '@/stores/user.js'
+import { collectionViewState } from '@/utils/list-state.js'
 
 const projectStore = useProjectStore()
 const userStore = useUserStore()
+const router = useRouter()
 
 const canCreateProject = computed(() => {
   return AdminAuthorized.ManageProjects(userStore.adminPerms)
@@ -24,23 +25,37 @@ const projectList = computed(() => projectStore.myProjects
     return p1.slug.localeCompare(p2.slug)
   }))
 
-async function setSelectedProject(slug: ProjectV2['slug']) {
-  router.push({
-    name: 'Project',
-    params: { slug },
-  })
-}
+const projectCountLabel = computed(() => {
+  const count = projectList.value.length
+  return `${count} projet${count > 1 ? 's' : ''}`
+})
+
+const {
+  pending,
+  error: loadError,
+  run: loadProjects,
+} = useAsyncAction(async () => projectStore.listMyProjects())
+
+const viewState = computed(() => collectionViewState({
+  loading: pending.value,
+  error: loadError.value,
+  count: projectList.value.length,
+}))
 
 function goToCreateProject() {
   router.push({ name: 'CreateProject' })
 }
 
-onBeforeMount(async () => {
-  await projectStore.listMyProjects()
+onMounted(async () => {
+  await loadProjects()
 })
 </script>
 
 <template>
+  <h1 class="fr-h3">
+    Mes projets
+  </h1>
+
   <div
     class="flex <md:flex-col-reverse items-center justify-between pb-5"
   >
@@ -55,33 +70,68 @@ onBeforeMount(async () => {
       @click="goToCreateProject()"
     />
   </div>
-  <div
-    class="gap-8 flex flex-wrap"
-  >
-    <div
-      v-for="project in projectList"
-      id="project-list"
-      :key="project.id"
-      class="min-w-75 h-45"
+
+  <Loader v-if="viewState === 'loading'" />
+
+  <DsfrAlert
+    v-else-if="viewState === 'error' && loadError"
+    data-testid="projectsLoadError"
+    type="error"
+    title="Impossible de charger vos projets"
+    :description="`${loadError.message} Réessayez dans quelques instants.`"
+  />
+
+  <template v-else>
+    <p
+      v-if="viewState === 'ready'"
+      class="fr-text--sm fr-mb-2w"
+      data-testid="projectCount"
     >
-      <DsfrTile
-        class="h-full"
-        v-bind="project"
-        :title="project.name"
-        :data-testid="`projectTile-${project.slug}`"
-        :to="`/projects/${project.slug}`"
-        horizontal
-        @click.stop="setSelectedProject(project.slug)"
+      {{ projectCountLabel }}
+    </p>
+
+    <div
+      class="gap-8 flex flex-wrap"
+    >
+      <div
+        v-for="project in projectList"
+        id="project-list"
+        :key="project.id"
+        class="min-w-75 h-45"
+      >
+        <DsfrTile
+          class="h-full"
+          v-bind="project"
+          :title="project.name"
+          :data-testid="`projectTile-${project.slug}`"
+          :to="`/projects/${project.slug}`"
+          horizontal
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="viewState === 'empty'"
+      data-testid="projectsEmptyState"
+      class="fr-py-6w"
+    >
+      <p class="fr-text--lg fr-mb-1w">
+        Vous ne faites pas encore partie d’un projet.
+      </p>
+      <p class="fr-text--sm fr-mb-3w">
+        Un projet regroupe vos environnements, dépôts et déploiements.
+        Créez-en un pour démarrer, ou demandez à un propriétaire de projet de vous inviter.
+      </p>
+      <DsfrButton
+        v-if="canCreateProject"
+        label="Créer mon premier projet"
+        data-testid="createFirstProjectLink"
+        primary
+        icon="ri:add-line"
+        @click="goToCreateProject()"
       />
     </div>
-    <template
-      v-if="!projectList.length"
-    >
-      <div>
-        Vous ne faites parti d'aucun projet pour l'instant
-      </div>
-    </template>
-  </div>
+  </template>
 </template>
 
 <style>

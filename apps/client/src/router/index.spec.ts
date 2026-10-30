@@ -1,10 +1,18 @@
 import type { ProjectV2 } from '@cpn-console/shared'
+import type { RouteRecordRaw } from 'vue-router'
 import { faker } from '@faker-js/faker'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import { useUserStore } from '@/stores/user.js'
-import { createAppRouter, detectProjectslug } from './index.js'
+import { createAppRouter, detectProjectslug, routes } from './index.js'
+
+function flattenRoutes(records: readonly RouteRecordRaw[]): RouteRecordRaw[] {
+  return records.flatMap(record => [
+    record,
+    ...(record.children ? flattenRoutes(record.children) : []),
+  ])
+}
 
 describe('router index', () => {
   beforeEach(() => {
@@ -97,6 +105,17 @@ describe('router index', () => {
       await router.isReady()
 
       expect(router.currentRoute.value.matched.some(r => r.name === 'Projects')).toBe(true)
+    })
+  })
+
+  describe('route metadata', () => {
+    it('declares a title for every named route', () => {
+      const routesWithoutTitle = flattenRoutes(routes)
+        .filter(route => typeof route.name === 'string')
+        .filter(route => !route.meta?.title)
+        .map(route => route.name)
+
+      expect(routesWithoutTitle).toEqual([])
     })
   })
 })

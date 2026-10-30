@@ -95,9 +95,9 @@ function closeModal() {
 </script>
 
 <template>
-  <h3>
+  <h1 class="fr-h3">
     Jetons d'API
-  </h3>
+  </h1>
   <div
     class="w-full"
   >

@@ -169,6 +169,7 @@ async function clickRetry(id: ServiceChain['id']) {
     <div class="w-full flex justify-end">
       <DsfrButton
         title="Revenir à la liste des Chaînes de Services"
+        aria-label="Revenir à la liste des Chaînes de Services"
         data-testid="goBackBtn"
         secondary
         icon-only

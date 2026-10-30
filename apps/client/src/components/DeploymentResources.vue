@@ -2,6 +2,7 @@
 import type { Cluster, Deployment, Environment, Repo, Stage, Zone } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { AdminAuthorized, ProjectAuthorized } from '@cpn-console/shared'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useUserStore } from '@/stores/user.js'
 
@@ -16,6 +17,7 @@ const emit = defineEmits<{ changed: [] }>()
 
 const snackbarStore = useSnackbarStore()
 const userStore = useUserStore()
+const projectStore = useProjectStore()
 
 const deployments = ref<Deployment[]>([])
 const repoOptions = computed(() => props.repositories.map(repo => ({
@@ -58,7 +60,7 @@ function onDeploymentChanged() {
 }
 
 async function loadDeployments() {
-  deployments.value = await props.project.Deployments.list()
+  deployments.value = await projectStore.listDeployments(props.project.id)
 }
 
 onMounted(loadDeployments)
