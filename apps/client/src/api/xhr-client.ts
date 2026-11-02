@@ -4,31 +4,29 @@ import { apiPrefix, getApiClient } from '@cpn-console/shared'
 import { tsRestFetchApi } from '@ts-rest/core'
 import { getKeycloak } from '@/utils/keycloak/keycloak.js'
 
-export const apiClient = await getApiClient(
-  '',
-  {},
-  async (args: ApiFetcherArgs): Promise<{ status: number, body: { status: number, error: string } | unknown, headers: Headers }> => {
-    // Paths that do not require token
-    const validPaths = [`${apiPrefix}/version`, '/login', `${apiPrefix}/services`]
-    if (validPaths.some(validPath => args.path?.startsWith(validPath))) {
-      return tsRestFetchApi(args)
-    }
-
-    // Envs that do not require token
-    if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
-      return tsRestFetchApi(args)
-    }
-
-    // Generate token
-    const keycloak = getKeycloak()
-    const token = keycloak.token
-    if (token) {
-      args.headers.Authorization = `Bearer ${token}`
-    }
-
+export async function consoleApiFetcher(args: ApiFetcherArgs): Promise<{ status: number, body: unknown, headers: Headers }> {
+  // Paths that do not require token
+  const validPaths = [`${apiPrefix}/version`, '/login', `${apiPrefix}/services`]
+  if (validPaths.some(validPath => args.path?.startsWith(validPath))) {
     return tsRestFetchApi(args)
-  },
-)
+  }
+
+  // Envs that do not require token
+  if (process.env.NODE_ENV === 'test' && process.env.CT === 'true') {
+    return tsRestFetchApi(args)
+  }
+
+  // Generate token
+  const keycloak = getKeycloak()
+  const token = keycloak.token
+  if (token) {
+    args.headers.Authorization = `Bearer ${token}`
+  }
+
+  return tsRestFetchApi(args)
+}
+
+export const apiClient = await getApiClient('', {}, consoleApiFetcher)
 
 export function extractData<T extends { status: number, body: unknown, headers: Headers }, S extends T['status']>(response: T, expectedStatus: S): Extract<T, { status: S }>['body'] {
   if (response.status === 401) {
