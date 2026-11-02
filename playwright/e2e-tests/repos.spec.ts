@@ -21,7 +21,7 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
   // good hint that something is very very wrong)
   test(
     'should handle repository form validation',
-    { tag: ['@need-rework'] },
+    { tag: ['@repos', '@need-rework'] },
     async ({ page }) => {
       // Arrange
       await page.goto(clientURL)
@@ -262,6 +262,7 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       await page.getByTestId('updateRepoBtn').click()
 
       // Assert - changes persist after reload
+      await page.reload()
       await page.getByTestId(`repoTr-repo03`).click()
       await expect(page.getByTestId('externalRepoUrlInput')).toHaveValue(
         'https://github.com/externalUser04/new-repo.git',
@@ -406,6 +407,7 @@ test.describe('Repositories', { tag: '@e2e' }, () => {
       await expect(page.getByTestId('deleteRepoBtn')).toBeDisabled()
       await page.getByTestId('deleteRepoInput').fill(deleteValidationInput)
       await page.getByTestId('deleteRepoBtn').click()
+      await expect(page.getByTestId('repo-form')).not.toBeVisible()
 
       // Assert - deletion persists after reload
       await page.reload()
