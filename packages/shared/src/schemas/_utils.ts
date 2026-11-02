@@ -11,7 +11,11 @@ export const AtDatesToStringExtend = {
   updatedAt: dateToString,
   createdAt: dateToString,
 }
+// Permissions travel as a decimal string on the wire. Rejecting anything else
+// here makes every contract that derives from this schema answer 400 instead
+// of letting `BigInt()` blow up with a 500 downstream.
 export const permissionLevelSchema = z.coerce.string()
+  .refine(value => /^\d+$/.test(value), { message: 'Permissions doit être un entier' })
 
 export const UuidOrCsvUuidSchema = z.string()
   .refine((value) => {
