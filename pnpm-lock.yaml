@@ -393,6 +393,7 @@ overrides:
   deepmerge-ts@7.1.5: '>=8.0.2 <9'
   defu@6.1.4: '>=6.1.5 <7'
   dompurify@3.3.2: '>=3.4.12 <4'
+  effect@3.18.4: '>=3.20.0 <4'
   esbuild@0.27.3: '>=0.28.1 <1'
   fast-jwt@5.0.6: '>=6.2.4 <7'
   fast-uri@3.1.2: '>=3.1.5 <4'
@@ -5869,8 +5870,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  effect@3.18.4:
-    resolution: {integrity: sha512-b1LXQJLe9D11wfnOKAk3PKxuqYshQ0Heez+y5pnkd3jLj1yx9QhM72zZ9uUrOQyNvrs2GZZd/3maL0ZV18YuDA==}
+  effect@3.22.4:
+    resolution: {integrity: sha512-RNshu7AXVxxDh6aS4lothhJ+QoZ4xSykbWNaaVdvDN72RMyVwhCGdALkyl1TbEydgAmRIdD1eTyJqBUGwSBGDA==}
 
   effect@4.0.7:
     resolution: {integrity: sha512-47CiUzNAmeLr40pDT9vKMxxtB8o3bdpZEKU4IUM3fVxsK2GYzPsV7fQoZP0I41A308BZd71nMxqJ0KRh3s9u2g==}
@@ -12866,7 +12867,7 @@ snapshots:
     dependencies:
       c12: 3.1.0(magicast@0.3.5)
       deepmerge-ts: 8.0.2
-      effect: 3.18.4
+      effect: 3.22.4
       empathic: 2.0.0
     transitivePeerDependencies:
       - magicast
@@ -14842,7 +14843,7 @@ snapshots:
   ee-first@1.1.1:
     optional: true
 
-  effect@3.18.4:
+  effect@3.22.4:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2
