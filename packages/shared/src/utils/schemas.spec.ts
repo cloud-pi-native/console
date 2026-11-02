@@ -389,4 +389,9 @@ describe('schemas utils', () => {
     const accepted = projectRoleContract.createProjectRole.body.safeParse({ name: 'role', permissions: '256' })
     expect(accepted.success && accepted.data.permissions).toBe('256')
   })
+
+  it('should default a missing permission level to zero', () => {
+    const result = projectRoleContract.createProjectRole.body.safeParse({ name: 'role' })
+    expect(result.success && result.data.permissions).toBe('0')
+  })
 })
