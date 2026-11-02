@@ -189,6 +189,23 @@ export class VaultService {
     return await this.getAdminOrProjectPluginConfig(project, PROJECT_SECURITY_GROUP_PATH_SUFFIX_PLUGIN_KEY) ?? DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX
   }
 
+  private async getProjectRoleGroupPaths(project: ProjectWithDetails) {
+    const [maintainer, devops, developer, reporter, security] = await Promise.all([
+      this.getProjectMaintainerGroupPathSuffix(project),
+      this.getProjectDevopsGroupPathSuffix(project),
+      this.getProjectDeveloperGroupPathSuffix(project),
+      this.getProjectReporterGroupPathSuffix(project),
+      this.getProjectSecurityGroupPathSuffix(project),
+    ])
+    return {
+      admin: generateProjectRoleGroupPaths(project, maintainer),
+      devops: generateProjectRoleGroupPaths(project, devops),
+      developer: generateProjectRoleGroupPaths(project, developer),
+      readonly: generateProjectRoleGroupPaths(project, reporter),
+      security: generateProjectRoleGroupPaths(project, security),
+    }
+  }
+
   @StartActiveSpan()
   private async reconcileZones(zones: ZoneWithDetails[]) {
     const span = trace.getActiveSpan()
@@ -306,31 +323,18 @@ export class VaultService {
     const projectSecurityPolicyName = generateProjectPolicyName(project, 'security')
     await this.ensureMount(project.slug)
 
-    const [
-      adminGroupPath,
-      auditorGroupPath,
-      securityGroupPath,
-      maintainerGroupPathSuffix,
-      devopsGroupPathSuffix,
-      developerGroupPathSuffix,
-      reporterGroupPathSuffix,
-      securityGroupPathSuffix,
-    ] = await Promise.all([
+    const [adminGroupPath, auditorGroupPath, securityGroupPath, projectRoleGroupPaths] = await Promise.all([
       this.getAdminGroupPath(project),
       this.getAuditorGroupPath(project),
       this.getSecurityGroupPath(project),
-      this.getProjectMaintainerGroupPathSuffix(project),
-      this.getProjectDevopsGroupPathSuffix(project),
-      this.getProjectDeveloperGroupPathSuffix(project),
-      this.getProjectReporterGroupPathSuffix(project),
-      this.getProjectSecurityGroupPathSuffix(project),
+      this.getProjectRoleGroupPaths(project),
     ])
 
-    const projectAdminGroupPaths = generateProjectRoleGroupPaths(project, maintainerGroupPathSuffix)
-    const projectDevopsGroupPaths = generateProjectRoleGroupPaths(project, devopsGroupPathSuffix)
-    const projectDeveloperGroupPaths = generateProjectRoleGroupPaths(project, developerGroupPathSuffix)
-    const projectReadOnlyGroupPaths = generateProjectRoleGroupPaths(project, reporterGroupPathSuffix)
-    const projectSecurityGroupPaths = generateProjectRoleGroupPaths(project, securityGroupPathSuffix)
+    const projectAdminGroups = generateProjectRoleGroups(project, 'admin', projectRoleGroupPaths.admin)
+    const projectDevopsGroups = generateProjectRoleGroups(project, 'devops', projectRoleGroupPaths.devops)
+    const projectDeveloperGroups = generateProjectRoleGroups(project, 'developer', projectRoleGroupPaths.developer)
+    const projectReadOnlyGroups = generateProjectRoleGroups(project, 'readonly', projectRoleGroupPaths.readonly)
+    const projectSecurityGroups = generateProjectRoleGroups(project, 'security', projectRoleGroupPaths.security)
 
     await Promise.all([
       this.ensureAppAdminPolicy(appPolicyName, project.slug),
@@ -345,16 +349,16 @@ export class VaultService {
       this.ensureIdentityGroup(CONSOLE_ADMIN_GROUP_NAME, [PLATFORM_ADMIN_POLICY_NAME], adminGroupPath),
       this.ensureIdentityGroup(CONSOLE_READONLY_GROUP_NAME, [PLATFORM_READONLY_POLICY_NAME], auditorGroupPath),
       this.ensureIdentityGroup(CONSOLE_SECURITY_GROUP_NAME, [PLATFORM_SECURITY_POLICY_NAME], securityGroupPath),
-      ...projectAdminGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'admin'), [appPolicyName], groupPath)),
-      ...projectDevopsGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'devops'), [projectDevopsPolicyName], groupPath)),
-      ...projectDeveloperGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'developer'), [projectDeveloperPolicyName], groupPath)),
-      ...projectReadOnlyGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'readonly'), [projectReadOnlyPolicyName], groupPath)),
-      ...projectSecurityGroupPaths.map(groupPath =>
-        this.ensureIdentityGroup(generateProjectGroupName(project, 'security'), [projectSecurityPolicyName], groupPath)),
+      ...projectAdminGroups.map(({ name, groupPath }) =>
+        this.ensureIdentityGroup(name, [appPolicyName], groupPath)),
+      ...projectDevopsGroups.map(({ name, groupPath }) =>
+        this.ensureIdentityGroup(name, [projectDevopsPolicyName], groupPath)),
+      ...projectDeveloperGroups.map(({ name, groupPath }) =>
+        this.ensureIdentityGroup(name, [projectDeveloperPolicyName], groupPath)),
+      ...projectReadOnlyGroups.map(({ name, groupPath }) =>
+        this.ensureIdentityGroup(name, [projectReadOnlyPolicyName], groupPath)),
+      ...projectSecurityGroups.map(({ name, groupPath }) =>
+        this.ensureIdentityGroup(name, [projectSecurityPolicyName], groupPath)),
       this.client.ensureAuthApproleRole(project.slug, generateApproleRoleBody([techPolicyName, appPolicyName])),
       this.ensureGitlabMirrorSecrets(project),
     ])
@@ -392,6 +396,15 @@ export class VaultService {
     const projectReadOnlyPolicyName = generateProjectPolicyName(project, 'readonly')
     const projectSecurityPolicyName = generateProjectPolicyName(project, 'security')
 
+    const projectRoleGroupPaths = await this.getProjectRoleGroupPaths(project)
+    const projectRoleGroupNames = [
+      ...generateProjectRoleGroups(project, 'admin', projectRoleGroupPaths.admin),
+      ...generateProjectRoleGroups(project, 'devops', projectRoleGroupPaths.devops),
+      ...generateProjectRoleGroups(project, 'developer', projectRoleGroupPaths.developer),
+      ...generateProjectRoleGroups(project, 'readonly', projectRoleGroupPaths.readonly),
+      ...generateProjectRoleGroups(project, 'security', projectRoleGroupPaths.security),
+    ].map(({ name }) => name)
+
     await this.deleteMount(project.slug)
 
     const settled = await Promise.allSettled([
@@ -402,11 +415,7 @@ export class VaultService {
       this.client.deleteSysPoliciesAcl(projectReadOnlyPolicyName),
       this.client.deleteSysPoliciesAcl(projectSecurityPolicyName),
       this.client.deleteAuthApproleRole(project.slug),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'admin')),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'devops')),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'developer')),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'readonly')),
-      this.client.deleteIdentityGroupName(generateProjectGroupName(project, 'security')),
+      ...projectRoleGroupNames.map(groupName => this.client.deleteIdentityGroupName(groupName)),
     ])
     for (const result of settled) {
       if (result.status !== 'rejected') continue
@@ -593,6 +602,35 @@ function generateProjectPolicyName(project: ProjectWithDetails, scope: ProjectSc
 
 function generateProjectGroupName(project: ProjectWithDetails, scope: ProjectScope) {
   return `project-${project.slug}-${scope}`
+}
+
+interface ProjectRoleGroup {
+  name: string
+  groupPath: string
+}
+
+/**
+ * A Vault identity group holds a single alias per auth mount: two alias paths
+ * sharing a group would make the second alias replace the first one instead of
+ * adding to it. Each alias path therefore gets its own group, sharing the same
+ * policy. The canonical path keeps the historical `project-<slug>-<scope>`
+ * name; additional paths are suffixed with their own path.
+ */
+function generateProjectRoleGroups(
+  project: ProjectWithDetails,
+  scope: ProjectScope,
+  groupPaths: string[],
+): ProjectRoleGroup[] {
+  const canonicalPath = `/${project.slug}/console/${scope}`
+  const primaryPath = groupPaths.includes(canonicalPath) ? canonicalPath : groupPaths[0]
+  const primaryName = generateProjectGroupName(project, scope)
+  return groupPaths.map((groupPath) => {
+    if (groupPath === primaryPath) return { name: primaryName, groupPath }
+    const suffix = groupPath.startsWith(`/${project.slug}/`)
+      ? groupPath.slice(project.slug.length + 2)
+      : groupPath.replace(/^\//, '')
+    return { name: `${primaryName}-${suffix.replace(/\//g, '-')}`, groupPath }
+  })
 }
 
 function generateProjectRoleGroupPaths(project: ProjectWithDetails, rawGroupPathSuffixes: string) {
