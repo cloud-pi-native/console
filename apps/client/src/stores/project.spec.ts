@@ -91,4 +91,49 @@ describe('project Store', () => {
     expect(apiClientPost).toHaveBeenCalledTimes(1)
     expect(projectStore.myProjects).toHaveLength(1)
   })
+
+  it('stores plain project state, not a command-bearing class', async () => {
+    const projectStore = useProjectStore()
+    const randomDbSetup = createRandomDbSetup({})
+    delete randomDbSetup.project.clusters
+
+    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [randomDbSetup.project], headers: {} }))
+    await projectStore.listProjects()
+
+    const project = projectStore.projects[0]
+    expect(project).not.toHaveProperty('Commands')
+    expect(project).not.toHaveProperty('Environments')
+    expect(project.operationsInProgress).toEqual([])
+    expect(project.environments).toEqual([])
+    expect(project.repositories).toEqual([])
+  })
+
+  it('updates a project through the store and clears the operation flag', async () => {
+    const projectStore = useProjectStore()
+    const randomDbSetup = createRandomDbSetup({})
+    delete randomDbSetup.project.clusters
+
+    listProjects.mockReturnValueOnce(Promise.resolve({ status: 200, body: [randomDbSetup.project], headers: {} }))
+    await projectStore.listProjects()
+
+    const updateProject = vi.spyOn(apiClient.Projects, 'updateProject')
+    updateProject.mockReturnValueOnce(Promise.resolve({
+      status: 200,
+      body: { ...randomDbSetup.project, description: 'Nouvelle description' },
+      headers: {},
+    }))
+
+    const updated = await projectStore.updateProject(randomDbSetup.project.id, { description: 'Nouvelle description' })
+
+    expect(updated.description).toBe('Nouvelle description')
+    expect(updated.operationsInProgress).toEqual([])
+    expect(projectStore.projectsBySlug[randomDbSetup.project.slug].description).toBe('Nouvelle description')
+  })
+
+  it('rejects an unknown project instead of mutating an arbitrary entry', async () => {
+    const projectStore = useProjectStore()
+
+    await expect(projectStore.updateProject('unknown-project', { description: 'x' }))
+      .rejects.toThrow('Projet introuvable')
+  })
 })

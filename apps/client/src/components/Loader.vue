@@ -5,8 +5,10 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <div
+  <output
     data-testid="cpin-loader"
+    aria-live="polite"
+    aria-busy="true"
     :class="`flex items-center justify-center ${cover ? 'absolute top-0 bottom-0 left-0 right-0 bg-[#5555] bg-blend-luminosity' : ''}`"
   >
     <span class="text-xl">
@@ -14,8 +16,9 @@ withDefaults(defineProps<{
         name="ri:loader-4-line"
         animation="spin"
         scale="1.5"
+        aria-hidden="true"
       />
       Chargement...
     </span>
-  </div>
+  </output>
 </template>

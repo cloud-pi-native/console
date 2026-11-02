@@ -63,6 +63,7 @@ const activeAccordion = ref<number>()
 </script>
 
 <template>
+  <PageHeading title="Liste des plugins" visually-hidden />
   <div
     v-if="!services.length"
     id="servicesTable"

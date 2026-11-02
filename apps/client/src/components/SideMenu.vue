@@ -12,8 +12,17 @@ const serviceStore = useServiceStore()
 const routeName = computed(() => route.name)
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 
-const isDarkScheme = ref<boolean>()
-const selectedScheme = computed<string | undefined>(() =>
+const THEME_STORAGE_KEY = 'cpn-console-theme'
+
+function initialDarkScheme(): boolean {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY)
+  if (stored === 'dark') return true
+  if (stored === 'light') return false
+  return globalThis.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+const isDarkScheme = ref<boolean>(initialDarkScheme())
+const selectedScheme = computed<'dark' | 'light'>(() =>
   isDarkScheme.value ? 'dark' : 'light',
 )
 
@@ -41,19 +50,32 @@ watch(route, (currentRoute) => {
 })
 
 onMounted(() => {
-  // @ts-ignore
-  const { scheme, setScheme } = useScheme()
-
-  isDarkScheme.value = scheme.value === 'dark'
   isCDSActivated.value = openCDSEnabled === 'true'
+
+  const schemeApi = useScheme()
+  if (!schemeApi) return
+  const { scheme, setScheme } = schemeApi
+
+  // A stored preference wins; otherwise follow the DSFR (OS) scheme.
+  const stored = localStorage.getItem(THEME_STORAGE_KEY)
+  isDarkScheme.value = stored ? stored === 'dark' : scheme.value === 'dark'
 
   watchEffect(() => setScheme(selectedScheme.value))
 })
+
+watch(isDarkScheme, (dark) => {
+  localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light')
+})
+
+function toggleScheme() {
+  isDarkScheme.value = !isDarkScheme.value
+}
 </script>
 
 <template>
   <DsfrSideMenu
     id="mainMenu"
+    aria-label="Menu principal"
     data-testid="mainMenu"
     heading-title=""
     button-label="Menu"
@@ -65,21 +87,25 @@ onMounted(() => {
       :expanded="isExpanded.mainMenu"
     >
       <DsfrSideMenuListItem>
-        <DsfrSideMenuLink
-          to=""
-          class="flex flex-row gap-2"
-          @click="isDarkScheme = !isDarkScheme"
+        <button
+          type="button"
+          data-testid="themeToggle"
+          class="fr-sidemenu__link flex flex-row gap-2 w-full"
+          :title="isDarkScheme ? 'Activer le thème clair' : 'Activer le thème sombre'"
+          :aria-pressed="isDarkScheme"
+          @click="toggleScheme"
         >
-          {{ isDarkScheme ? 'Thème clair' : 'Thème sombre' }}
+          Thème sombre
           <v-icon
             :name="isDarkScheme ? 'ri:sun-line' : 'ri:moon-clear-line'"
+            aria-hidden="true"
             :fill="
               isDarkScheme
                 ? 'var(--yellow-moutarde-sun-348-moon-860)'
                 : 'var(--blue-france-sun-113-625)'
             "
           />
-        </DsfrSideMenuLink>
+        </button>
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>
         <DsfrSideMenuLink
@@ -300,12 +326,14 @@ onMounted(() => {
           to="/services-health"
           class="flex flex-row space-between"
         >
-          <span class="grow"> Status des services </span>
+          <span class="grow">État des services</span>
           <v-icon
             :fill="serviceStore.servicesHealth.dotColor"
             name="ri:checkbox-blank-circle-fill"
             class="h-3"
+            aria-hidden="true"
           />
+          <span class="fr-sr-only">{{ serviceStore.servicesHealth.message }}</span>
         </DsfrSideMenuLink>
       </DsfrSideMenuListItem>
       <DsfrSideMenuListItem>

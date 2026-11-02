@@ -1,18 +1,20 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
+import { useProjectStore } from '@/stores/project.js'
 import { clickInDialog, copyContent } from '@/utils/func.js'
 
 const props = defineProps<{
   project: Project
 }>()
 
+const projectStore = useProjectStore()
 const isSecretShown = ref(false)
 const projectSecrets = ref<Record<string, Record<string, string>> | null>(null)
 
 async function handleSecretDisplay() {
   isSecretShown.value = !isSecretShown.value
   if (isSecretShown.value && projectSecrets.value == null) {
-    projectSecrets.value = await props.project.Services.getSecrets()
+    projectSecrets.value = await projectStore.getProjectSecrets(props.project.id)
   }
 }
 
@@ -31,9 +33,7 @@ function closeModal(e?: MouseEvent | TouchEvent) {
     data-testid="showSecretsBtn"
     :label="`${isSecretShown ? 'Cacher' : 'Afficher'} les secrets des services`"
     :icon="
-      (project.operationsInProgress as unknown as ProjectOperations[]).includes(
-        'searchSecret',
-      )
+      project.operationsInProgress.includes('searchSecret')
         ? { name: 'ri:refresh-line', animation: 'spin' }
         : isSecretShown
           ? 'ri:eye-off-line'
@@ -41,7 +41,7 @@ function closeModal(e?: MouseEvent | TouchEvent) {
     "
     :disabled="
       project.locked
-        || (project.operationsInProgress as unknown as ProjectOperations[]).includes('searchSecret')
+        || project.operationsInProgress.includes('searchSecret')
     "
     @click="handleSecretDisplay"
   />
@@ -78,13 +78,17 @@ function closeModal(e?: MouseEvent | TouchEvent) {
         <tr
           v-for="secret in Object.values(secrets)"
           :key="secret"
-          @click="copyContent(secret)"
         >
           <td>
-            <pre
+            <button
+              type="button"
               title="Copier la valeur"
-              class="fr-text-default--info text-xs cursor-pointer m-1"
-            >{{ secret }}</pre>
+              aria-label="Copier la valeur du secret"
+              class="fr-text-default--info text-xs cursor-pointer m-1 bg-transparent border-none p-0 text-left whitespace-pre-wrap"
+              @click="copyContent(secret)"
+            >
+              <code>{{ secret }}</code>
+            </button>
           </td>
         </tr>
       </DsfrTable>

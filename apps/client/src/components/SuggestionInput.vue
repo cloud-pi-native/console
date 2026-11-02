@@ -9,9 +9,11 @@ interface Suggestion {
 const props = withDefaults(defineProps<{
   modelValue: string
   suggestions: Suggestion[]
+  label?: string
 }>(), {
   modelValue: '',
   suggestions: () => [],
+  label: 'Recherche',
 })
 
 const emit = defineEmits<{
@@ -35,6 +37,7 @@ function updateValue() {
       v-bind="$attrs"
       v-model="localValue"
       :value="props.modelValue"
+      :label="props.label"
       list="suggestionList"
       @update:model-value="updateValue()"
     />

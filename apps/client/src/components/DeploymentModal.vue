@@ -11,6 +11,7 @@ import type {
 import type { DsfrRadioButtonProps } from '@gouvminint/vue-dsfr'
 import type { Project } from '@/utils/project-utils.js'
 import { CreateDeploymentSchema, DeploymentSchema, longestDeploymentName, UpdateDeploymentSchema } from '@cpn-console/shared'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar'
 import { toDeploymentDraft } from '@/utils/deployment-draft'
 import { scrollToFirstError } from '@/utils/func'
@@ -27,6 +28,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [], changed: [] }>()
 
 const snackbarStore = useSnackbarStore()
+const projectStore = useProjectStore()
 
 const { opened } = toRefs(props)
 
@@ -93,8 +95,8 @@ function upsertDeployment() {
   }
 
   const request = id
-    ? props.project.Deployments.update(id, body.data)
-    : props.project.Deployments.create(body.data)
+    ? projectStore.updateDeployment(props.project.id, id, body.data)
+    : projectStore.createDeployment(props.project.id, body.data)
 
   isLoading.value = true
   request
@@ -111,7 +113,7 @@ function deleteDeployment() {
   if (isDeleting.value || !deployment.value.id) return
 
   isDeleting.value = true
-  props.project.Deployments.delete(deployment.value.id)
+  projectStore.deleteDeployment(props.project.id, deployment.value.id)
     .then(() => {
       emit('changed')
       closeModal()

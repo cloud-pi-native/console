@@ -80,6 +80,7 @@ const headers = [
 </script>
 
 <template>
+  <PageHeading title="Liste des clusters" visually-hidden />
   <div
     class="flex justify-between gap-5 w-full items-end mb-5"
   >

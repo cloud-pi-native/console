@@ -7,6 +7,7 @@ import { AdminAuthorized, defaultBranchName, ProjectAuthorized, projectIsLockedI
 import TimeAgo from 'javascript-time-ago'
 import fr from 'javascript-time-ago/locale/fr'
 import { useClusterStore } from '@/stores/cluster.js'
+import { useProjectStore } from '@/stores/project.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
@@ -25,6 +26,7 @@ const props = defineProps<{
 
 const zoneStore = useZoneStore()
 const clusterStore = useClusterStore()
+const projectStore = useProjectStore()
 const snackbarStore = useSnackbarStore()
 const stageStore = useStageStore()
 const userStore = useUserStore()
@@ -44,8 +46,8 @@ const branchName = ref<string>(defaultBranchName)
 const environmentsCtKey = ref(getRandomId('environment'))
 const repositoriesCtKey = ref(getRandomId('repository'))
 
-const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date']
-const headerRepos = ['Nom', 'Type', 'Source', 'Date']
+const headerEnvs = ['Nom', 'Type', 'Ressources', 'Localisation', 'Date', 'Actions']
+const headerRepos = ['Nom', 'Type', 'Source', 'Date', 'Actions']
 const repositoriesId = 'repositoriesTable'
 const environmentsId = 'environmentsTable'
 const syncFormId = 'syncFormId'
@@ -75,7 +77,7 @@ watch(selectedRepo, () => {
 async function putEnvironment(environment: UpdateEnvironment, envId: Environment['id']) {
   selectedEnv.value = undefined
   if (!props.project.locked) {
-    props.project.Environments.update(envId, environment)
+    projectStore.updateEnvironment(props.project.id, envId, environment)
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   }
@@ -84,7 +86,7 @@ async function putEnvironment(environment: UpdateEnvironment, envId: Environment
 async function deleteEnvironment(environmentId: Environment['id']) {
   selectedEnv.value = undefined
   if (!props.project.locked) {
-    props.project.Environments.delete(environmentId)
+    projectStore.deleteEnvironment(props.project.id, environmentId)
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   }
@@ -93,7 +95,7 @@ async function deleteEnvironment(environmentId: Environment['id']) {
 async function addEnvironment(environment: CreateEnvironment) {
   newResource.value = undefined
   if (!props.project.locked) {
-    props.project.Environments.create(environment)
+    projectStore.createEnvironment(props.project.id, environment)
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   }
@@ -105,11 +107,11 @@ async function saveRepo(repo: RepoFormResult) {
   selectedRepo.value = undefined
   newResource.value = undefined
   if (repo.id) {
-    props.project.Repositories.update(repo.id, toUpdateRepositoryBody(repo))
+    projectStore.updateRepository(props.project.id, repo.id, toUpdateRepositoryBody(repo))
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   } else {
-    props.project.Repositories.create(toCreateRepositoryBody(repo))
+    projectStore.createRepository(props.project.id, toCreateRepositoryBody(repo))
       .catch(reason => snackbarStore.setMessage(reason, 'error'))
       .finally(reload)
   }
@@ -117,7 +119,7 @@ async function saveRepo(repo: RepoFormResult) {
 
 async function deleteRepo(repoId: Repo['id']) {
   selectedRepo.value = undefined
-  props.project.Repositories.delete(repoId)
+  projectStore.deleteRepository(props.project.id, repoId)
     .catch(reason => snackbarStore.setMessage(reason, 'error'))
     .finally(reload)
 }
@@ -129,7 +131,7 @@ async function syncRepository() {
   const syncRequest: SyncRepositoryBodyV2 = isAllSyncing.value
     ? { syncAllBranches: true }
     : { syncAllBranches: false, branchName: branchName.value }
-  await props.project.Repositories.sync(repo.id, syncRequest)
+  await projectStore.syncRepository(props.project.id, repo.id, syncRequest)
   if (!syncRequest.syncAllBranches) {
     repositories.value = repositories.value.map(repository =>
       repository.id === repo.id
@@ -148,7 +150,7 @@ const timeAgo = new TimeAgo('fr-FR')
 
 async function reload() {
   environmentsLoaded.value = false
-  environments.value = await props.project.Environments.list()
+  environments.value = await projectStore.listEnvironments(props.project.id)
     .then(envs => envs.map((environment: EnvironmentWithDeploymentsCount) => {
       const cluster = clusterStore.clusters.find(cluster => cluster.id === environment.clusterId)
       const zone = zoneStore.zones.find(zone => zone.id === cluster?.zoneId)
@@ -161,7 +163,7 @@ async function reload() {
       }
     }))
   environmentsLoaded.value = true
-  repositories.value = await props.project.Repositories.list()
+  repositories.value = await projectStore.listRepositories(props.project.id)
     .then((repos) => {
       return repos.map((repo: Repo) => {
         let source: Source
@@ -176,7 +178,7 @@ async function reload() {
         }
       })
     })
-  logger.debug({ projectSlug: props.project.slug, environmentsCount: props.project.environments?.value?.length }, 'Loaded project resources')
+  logger.debug({ projectSlug: props.project.slug, environmentsCount: props.project.environments?.length }, 'Loaded project resources')
 }
 onMounted(reload)
 
@@ -221,19 +223,19 @@ async function copyToClipboard(text: string) {
       >
         <template #header>
           <tr>
-            <td
+            <th
               v-for="header in headerEnvs"
               :key="header"
+              scope="col"
             >
               {{ header }}
-            </td>
+            </th>
           </tr>
         </template>
         <tr
           v-for="env in environments?.sort((e1, e2) => Number(e1.name) - Number(e2.name))"
           :key="env.id"
           :data-testid="`environmentTr-${env.name}`"
-          @click="selectedEnv = env"
         >
           <td>{{ env.name }}</td>
           <td>{{ stageStore.stages.find(stage => stage.id === env.stageId)?.name ?? 'Type inconnu...' }}</td>
@@ -256,6 +258,15 @@ async function copyToClipboard(text: string) {
             :title="(new Date(env.createdAt)).toLocaleString()"
           >
             <span>{{ timeAgo.format(new Date(env.createdAt)) }}</span>
+          </td>
+          <td>
+            <DsfrButton
+              label="Configurer"
+              tertiary
+              size="sm"
+              :aria-label="`Configurer l’environnement ${env.name}`"
+              @click="selectedEnv = env"
+            />
           </td>
         </tr>
         <tr
@@ -299,19 +310,19 @@ async function copyToClipboard(text: string) {
     >
       <template #header>
         <tr>
-          <td
+          <th
             v-for="header in headerRepos"
             :key="header"
+            scope="col"
           >
             {{ header }}
-          </td>
+          </th>
         </tr>
       </template>
       <tr
         v-for="repo in repositories?.toSorted((a, b) => a.internalRepoName.localeCompare(b.internalRepoName))"
         :key="repo.id"
         :data-testid="`repoTr-${repo.internalRepoName}`"
-        @click="selectedRepo = repo"
       >
         <td>{{ repo.internalRepoName }}</td>
         <td
@@ -360,6 +371,15 @@ async function copyToClipboard(text: string) {
           :title="(new Date(repo.createdAt)).toLocaleString()"
         >
           {{ timeAgo.format(new Date(repo.createdAt)) }}
+        </td>
+        <td>
+          <DsfrButton
+            label="Configurer"
+            tertiary
+            size="sm"
+            :aria-label="`Configurer le dépôt ${repo.internalRepoName}`"
+            @click="selectedRepo = repo"
+          />
         </td>
       </tr>
       <tr
