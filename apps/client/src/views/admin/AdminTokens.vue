@@ -12,15 +12,18 @@ const statusWording: Record<AdminToken['status'], string> = {
   revoked: 'Révoqué',
   inactive: 'Inactif',
 }
+// DsfrDataTable hands `row[colKey] ?? row` to the `cell` slot: a key that also
+// exists on the token (or a nullish value) swaps the row for a raw value. The
+// `Cell` suffix keeps every column on the row, as ListClusters already does.
 const columns = [
-  { key: 'name', label: 'Nom' },
-  { key: 'permissions', label: 'Permissions' },
-  { key: 'owner', label: 'Créateur' },
-  { key: 'createdAt', label: 'Date de création' },
-  { key: 'expirationDate', label: 'Date d\'expiration' },
-  { key: 'lastUse', label: 'Dernière utilisation' },
-  { key: 'status', label: 'État' },
-  { key: 'revoke', label: 'Révoquer' },
+  { key: 'nameCell', label: 'Nom' },
+  { key: 'permissionsCell', label: 'Permissions' },
+  { key: 'ownerCell', label: 'Créateur' },
+  { key: 'createdAtCell', label: 'Date de création' },
+  { key: 'expirationDateCell', label: 'Date d\'expiration' },
+  { key: 'lastUseCell', label: 'Dernière utilisation' },
+  { key: 'statusCell', label: 'État' },
+  { key: 'revokeCell', label: 'Révoquer' },
 ]
 const adminTokenStore = useAdminTokenStore()
 
@@ -121,35 +124,35 @@ function closeModal() {
     data-testid="tokenTable"
     :headers-row="columns"
     :rows="tokens"
-    :sortable-rows="['lastUse']"
+    :sortable-rows="['lastUseCell']"
     :sort-fn="compareTokens"
   >
     <template #cell="{ colKey, cell }">
-      <template v-if="colKey === 'name'">
+      <template v-if="colKey === 'nameCell'">
         {{ (cell as AdminToken).name }}
       </template>
-      <template v-else-if="colKey === 'permissions'">
+      <template v-else-if="colKey === 'permissionsCell'">
         {{ getAdminPermLabelsByValue((cell as AdminToken).permissions).join(', ') }}
       </template>
-      <template v-else-if="colKey === 'owner'">
+      <template v-else-if="colKey === 'ownerCell'">
         {{ (cell as AdminToken).owner?.email ?? '-' }}
       </template>
-      <template v-else-if="colKey === 'createdAt'">
+      <template v-else-if="colKey === 'createdAtCell'">
         <span :title="(cell as AdminToken).createdAt">
           {{ tokenDate((cell as AdminToken).createdAt) }}
         </span>
       </template>
-      <template v-else-if="colKey === 'expirationDate'">
+      <template v-else-if="colKey === 'expirationDateCell'">
         <span :title="(cell as AdminToken).expirationDate ?? undefined">
           {{ tokenDate((cell as AdminToken).expirationDate) }}
         </span>
       </template>
-      <template v-else-if="colKey === 'lastUse'">
+      <template v-else-if="colKey === 'lastUseCell'">
         <span :title="(cell as AdminToken).lastUse ?? undefined">
           {{ tokenDate((cell as AdminToken).lastUse) }}
         </span>
       </template>
-      <template v-else-if="colKey === 'status'">
+      <template v-else-if="colKey === 'statusCell'">
         {{ statusWording[(cell as AdminToken).status] }}
       </template>
       <template v-else>
