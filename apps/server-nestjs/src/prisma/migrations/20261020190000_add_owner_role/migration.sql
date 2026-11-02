@@ -1,13 +1,15 @@
 -- Backfill the 'Propriétaire' system role on existing projects, mirroring the
 -- TS seeding in project.utils.ts (permissions 2 = MANAGE, position 0,
--- oidcGroup '/<slug>/console/owner'); existing managed roles shift down one.
+-- oidcGroup '/<slug>/console/owner'). Every managed role shifts down one,
+-- including the position 0 'Administrateur', so a migrated project ends up
+-- with the same ordering as a newly seeded one.
 -- The oidcGroup anti-joins make both statements idempotent on replay.
 
 UPDATE "ProjectRole" r
 SET "position" = r."position" + 1
 FROM "Project" p
 WHERE r."projectId" = p."id"
-  AND r."position" >= 1
+  AND r."position" >= 0
   AND r."type" = 'system:managed'
   AND NOT EXISTS (
     SELECT 1 FROM "ProjectRole" po
