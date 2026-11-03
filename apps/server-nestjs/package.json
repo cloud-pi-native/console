@@ -23,6 +23,7 @@
     "start": "nest start",
     "start:debug": "nest start --debug --watch",
     "start:dev": "nest start --watch",
+    "integ": "INTEGRATION=true pnpm run start:dev",
     "start:prod": "node dist/main",
     "pretest": "pnpm run db:generate",
     "test": "vitest run",

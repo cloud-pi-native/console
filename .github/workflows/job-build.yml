@@ -141,7 +141,7 @@ jobs:
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ matrix.images.name == 'server' && format('buildx-{0}-{1}-{2}-{3}', runner.os, runner.arch, matrix.images.name, hashFiles(format('apps/{0}/**', matrix.images.name),'packages/shared/**','plugins/**')) || format('buildx-{0}-{1}-{2}-{3}', runner.os, runner.arch, matrix.images.name, hashFiles(format('apps/{0}/**', matrix.images.name),'packages/shared/**')) }}
+          key: ${{ format('buildx-{0}-{1}-{2}-{3}', runner.os, runner.arch, matrix.images.name, hashFiles(format('apps/{0}/**', matrix.images.name),'packages/shared/**')) }}
           restore-keys: |
             buildx-${{ runner.os }}-${{ runner.arch }}-${{ matrix.images.name }}-
 
