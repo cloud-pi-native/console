@@ -609,13 +609,10 @@ interface ProjectRoleGroup {
   groupPath: string
 }
 
-/**
- * A Vault identity group holds a single alias per auth mount: two alias paths
- * sharing a group would make the second alias replace the first one instead of
- * adding to it. Each alias path therefore gets its own group, sharing the same
- * policy. The canonical path keeps the historical `project-<slug>-<scope>`
- * name; additional paths are suffixed with their own path.
- */
+// Un groupe d'identité Vault ne porte qu'un alias par auth mount : chaque
+// chemin d'alias obtient son propre groupe (même policy). Chemin canonique ->
+// nom historique ; chemin additionnel -> feuille du chemin (`/x/console/owner`
+// -> `project-<slug>-owner`).
 function generateProjectRoleGroups(
   project: ProjectWithDetails,
   scope: ProjectScope,
@@ -626,10 +623,8 @@ function generateProjectRoleGroups(
   const primaryName = generateProjectGroupName(project, scope)
   return groupPaths.map((groupPath) => {
     if (groupPath === primaryPath) return { name: primaryName, groupPath }
-    const suffix = groupPath.startsWith(`/${project.slug}/`)
-      ? groupPath.slice(project.slug.length + 2)
-      : groupPath.replace(/^\//, '')
-    return { name: `${primaryName}-${suffix.replace(/\//g, '-')}`, groupPath }
+    const leaf = groupPath.split('/').filter(Boolean).pop()
+    return { name: `project-${project.slug}-${leaf}`, groupPath }
   })
 }
 
