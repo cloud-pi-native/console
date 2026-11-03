@@ -1,6 +1,9 @@
 # Base / dev stage ----------------------------------------------------------------
 FROM docker.io/node:26.12.1-trixie-slim AS dev
 
+# Invalide le cache des couches docker : blob 7ea1279e28a4 corrompu dans le cache registry
+ARG CACHEBUST=1
+
 RUN mkdir /app && chown -R node:node /app
 
 USER node
