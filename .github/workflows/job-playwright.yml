@@ -19,7 +19,7 @@ on:
         required: true
         type: string
       TAG:
-        description: Container images version to use for console client and server/server-nestjs
+        description: Container images version to use for console client and server-nestjs
         required: true
         type: string
         default: latest
@@ -45,7 +45,7 @@ jobs:
           GHCR_CACHE: registry-cache-ghcr:5000
         run: |
           ./ci/scripts/init-env.sh
-          for img in server nginx-strangler server-nestjs client opencds-mockoon; do
+          for img in server-nestjs client opencds-mockoon; do
             docker pull "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
             docker tag  "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}" "dso-console/${img}:ci"
           done
@@ -61,7 +61,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           docker compose -f ./docker/docker-compose.ci.yml ps -a
-          for service in keycloak postgres fixtures server server-nestjs client nginx-strangler opencds-mockoon; do
+          for service in keycloak postgres fixtures server-nestjs client opencds-mockoon; do
             echo -e "\nInspecting ${service}..."
             docker compose -f ./docker/docker-compose.ci.yml logs --no-color ${service}
             docker inspect dso-console_${service} --format '{{json .State}}'

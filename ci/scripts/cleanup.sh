@@ -49,11 +49,11 @@ fi
 if docker image inspect dso-console/client:prod > /dev/null 2>&1; then
   docker image rm dso-console/client:prod
 fi
-if docker image inspect dso-console/server:dev > /dev/null 2>&1; then
-  docker image rm dso-console/server:dev
+if docker image inspect dso-console/server-nestjs:dev > /dev/null 2>&1; then
+  docker image rm dso-console/server-nestjs:dev
 fi
-if docker image inspect dso-console/server:prod > /dev/null 2>&1; then
-  docker image rm dso-console/server:prod
+if docker image inspect dso-console/server-nestjs:ci > /dev/null 2>&1; then
+  docker image rm dso-console/server-nestjs:ci
 fi
 
 if docker volume inspect docker_dso-postgres-data-dev > /dev/null 2>&1; then

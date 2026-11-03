@@ -30,11 +30,8 @@
           "type": "json",
           "path": "apps/client/package.json",
           "jsonpath": "$.version"
-        }, {
-          "type": "json",
-          "path": "apps/server/package.json",
-          "jsonpath": "$.version"
-        }, {
+        },
+        {
           "type": "json",
           "path": "apps/server-nestjs/package.json",
           "jsonpath": "$.version"
