@@ -16,7 +16,7 @@
     "format": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./ --fix --cache",
     "format:style": "stylelint ./src/**/*.{css,vue} --fix",
     "icons": "./scripts/generate-icons.sh",
-    "integ": "vite --mode=integration",
+    "integ": "INTEGRATION=true vite --mode=integration",
     "lint": "pnpm run --parallel \"/^lint:.*/\"",
     "lint:style": "stylelint ./src/**/*.{css,vue}",
     "lint:ts": "NODE_OPTIONS='--no-warnings=ExperimentalWarning' eslint ./",

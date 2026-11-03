@@ -42,6 +42,10 @@ E2E=true FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
   pnpm --dir apps/server-nestjs exec vitest run src/config/fixtures.config.spec.ts src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
 ```
 
+## Historique du portage
+
+Les sections suivantes retracent les objectifs et vagues de migration. Leurs anciens chemins de modules ne constituent pas un guide de démarrage ; la configuration actuelle est décrite dans [ENVIRONMENTS.md](../../ENVIRONMENTS.md).
+
 ## Objectifs
 
 Rappel : L'objectif principal de cette démarche est de préparer l'extraction de
@@ -419,16 +423,8 @@ l'API externe OpenCDS (gestion des chaînes de service réseau).
 ### Flux de proxying OpenCDS
 
 ```
-┌──────────┐     ┌─────────────────┐     ┌──────────────────┐     ┌──────────────┐
-│  Client   │────▶│ nginx-strangler │────▶│  server-nestjs   │────▶│  API OpenCDS │
-│ (browser/ │     │                 │     │                  │     │  (externe)   │
-│  script)  │     │ /api/v1/        │     │ ServiceChain     │     │              │
-│           │◀────│ service-chains  │◀────│ Controller       │◀────│ /requests    │
-│           │     │ ──▶ nestjs      │     │  ──▶ Service     │     │ /validate    │
-└──────────┘     │                 │     │      ──▶ axios   │     │ /flows       │
-                 │ /api/* (reste)  │     └──────────────────┘     └──────────────┘
-                 │ ──▶ legacy      │
-                 └─────────────────┘
+Client → proxy Vite ou Nginx client → server-nestjs → API OpenCDS
+                                      /api/v1/service-chains
 ```
 
 ### Structure du module

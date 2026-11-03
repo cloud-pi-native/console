@@ -23,7 +23,7 @@ pnpm install
 printf "\n${red}${i}.${no_color} Generate Prisma client\n"
 i=$(($i + 1))
 
-pnpm --filter=server run db:generate
+pnpm --filter=@cpn-console/server-nestjs run db:generate
 
 
 printf "\n${red}${i}.${no_color} Build packges\n"
@@ -38,7 +38,7 @@ i=$(($i + 1))
 pnpm run docker:dev:build
 
 
-printf "\n${red}${i}.${no_color} Build docker prod images\n"
+printf "\n${red}${i}.${no_color} Build docker CI images\n"
 i=$(($i + 1))
 
-pnpm run docker:prod:build
+pnpm run docker:ci:build

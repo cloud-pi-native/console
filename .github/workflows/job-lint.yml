@@ -56,5 +56,5 @@ jobs:
         run: |
           ./ci/scripts/run-tests.sh -l
 
-      - name: Validate nginx-strangler config and routing without legacy traffic
-        run: bash ci/scripts/test-strangler-routing.sh
+      - name: Validate client routing directly to NestJS
+        run: bash ci/scripts/test-client-routing.sh
