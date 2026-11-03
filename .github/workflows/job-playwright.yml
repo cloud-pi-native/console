@@ -49,6 +49,8 @@ jobs:
             docker pull "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}"
             docker tag  "${GHCR_CACHE}/cloud-pi-native/console/${img}:${{ inputs.TAG }}" "dso-console/${img}:ci"
           done
+          # Test-only target built from this checkout; never published as a production image.
+          docker compose -f ./docker/docker-compose.ci.yml build fixtures
           docker compose -f ./docker/docker-compose.ci.yml up --no-build -d --remove-orphans
 
       # See https://playwright.dev/docs/test-sharding for how Playwright handles test sharding
@@ -59,13 +61,14 @@ jobs:
         if: ${{ failure() }}
         run: |
           docker compose -f ./docker/docker-compose.ci.yml ps -a
-          for service in keycloak postgres server server-nestjs client nginx-strangler opencds-mockoon; do
+          for service in keycloak postgres fixtures server server-nestjs client nginx-strangler opencds-mockoon; do
             echo -e "\nInspecting ${service}..."
             docker compose -f ./docker/docker-compose.ci.yml logs --no-color ${service}
             docker inspect dso-console_${service} --format '{{json .State}}'
           done
 
       - name: Clean up docker resources (containers, volumes)
+        if: ${{ always() }}
         run: docker compose -f ./docker/docker-compose.ci.yml down -v --remove-orphans
 
       - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
