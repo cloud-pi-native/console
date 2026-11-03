@@ -14,7 +14,7 @@
     "build": "nest build",
     "db:deploy": "prisma migrate deploy",
     "db:generate": "prisma generate",
-    "db:fixtures": "node test/fixtures/fixtures.ts",
+    "db:fixtures": "node src/prisma/fixtures.ts",
     "db:migrate": "prisma migrate dev --name dso",
     "db:reset": "prisma migrate reset",
     "format": "eslint ./ --fix --cache",
