@@ -2,6 +2,40 @@
 
 Ce dossier contient une nouvelle version de `server`, basée sur NestJS.
 
+## Fixtures de développement et de test
+
+**Cette commande efface les données de la base ciblée. Utiliser uniquement une base jetable.**
+Arrêter les backends avant une réinitialisation manuelle pour éviter des écritures concurrentes.
+Elle ne charge aucun fichier `.env` : fournir explicitement `DB_URL`, `NODE_ENV=development`
+ou `NODE_ENV=test`, et l’argument `--reset`. Les modes production et intégration sont refusés,
+y compris avec `CI=true`.
+
+Depuis la racine, après installation des dépendances et génération du client Prisma :
+
+```bash
+# Base locale jetable, préalablement démarrée.
+DOCKER=true INTEGRATION=false DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
+  pnpm --dir apps/server-nestjs run db:deploy
+NODE_ENV=test DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
+  pnpm --dir apps/server-nestjs run db:fixtures --reset
+```
+
+Les données proviennent de `packages/test-utils/src/imports/data.ts`. Leur remplacement est
+transactionnel : une erreur annule l’ensemble des suppressions et des insertions.
+Le démarrage normal du backend ne déclenche jamais cet import.
+
+La stack CI utilise le service ponctuel `fixtures`, construit depuis la cible Docker de test
+homonyme, avant de démarrer les backends. Il applique les migrations NestJS puis importe les
+données ; le legacy ne les initialise plus. `pnpm docker:e2e-ci` construit cette cible même
+lorsque les images applicatives sont fournies par `TAG`. Cette image de test n’est pas publiée.
+
+Pour rejouer les tests PostgreSQL sur une base jetable où les migrations ont été appliquées :
+
+```bash
+FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
+  pnpm --dir apps/server-nestjs exec vitest run test/fixtures
+```
+
 ## Objectifs
 
 Rappel : L'objectif principal de cette démarche est de préparer l'extraction de
