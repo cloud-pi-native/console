@@ -28,7 +28,7 @@ cd console
   - [Plugin compose >= v2.35](https://github.com/docker/compose) (attention à ne pas avoir une vieille version qui traînerait dans `~/.docker/cli-plugins/` !). Permet de composer plusieurs conteneurs Docker
   - [Plugin buildx](https://github.com/docker/buildx) Permet d'étendre les capacités de Docker à l'aide de BuildKit
 - [Node.js >= v26](https://nodejs.org/en/download/) Environnement d'exécution JavaScript
-- [PnPM >= v10](https://pnpm.io/installation) Gestionnaire de paquets pour JavaScript
+- [PnPM >= v11.8](https://pnpm.io/installation) Gestionnaire de paquets pour JavaScript
 
 #### Prérequis de configuration du projet
 
@@ -36,8 +36,8 @@ Afin de pouvoir démarrer l'application, il vous faudra également récupérer (
 
 - `apps/client/.env.docker`
 - `apps/client/.env.integ`
-- `apps/server/.env.docker`
-- `apps/server/.env.integ`
+- `apps/server-nestjs/.env.docker`
+- `apps/server-nestjs/.env.integ`
 
 Si vous ne les avez pas déjà, référez-vous à [`ENVIRONMENTS.md`](./ENVIRONMENTS.md) (singulier) qui est la documentation consacrée au sujet.
 
@@ -70,9 +70,9 @@ Le serveur et le client sont livrés sous forme d'images [Docker](https://www.do
 
 ### API
 
-Le serveur est construit selon une architecture __core / plugins__ pour favoriser l'évolutivité et l'ajout de nouvelles fonctionnalités / la gestion de nouveaux services. Pour ce faire, les plugins s'enregistrent auprès de différents `hooks` (qui suivent le cycle de vie d'un projet au sein de l'application), ces derniers seront déclenchés par les contrôleurs de l'application.
+Le backend actif est `apps/server-nestjs`. Ses modules métier orchestrent les intégrations via des événements ; le client appelle directement ce backend, sans proxy de migration. Les sources `apps/server` et `apps/nginx-strangler` restent gelées comme références historiques dans cette tranche de #2895, mais ne sont plus des services des stacks ni des paquets du workspace actif.
 
-Plusieurs plugins sont nativement enregistrés auprès du serveur pour assurer le bon fonctionnement de la plateforme, à savoir :
+Les intégrations du backend couvrent notamment :
 
 - [Argocd](https://argo-cd.readthedocs.io/en/stable/)
 - [Gitlab](https://about.gitlab.com/)
@@ -118,7 +118,7 @@ pnpm install
 ./ci/scripts/init-env.sh
 
 # Générer le client Prisma côté serveur
-pnpm --filter @cpn-console/server run db:generate
+pnpm --filter @cpn-console/server-nestjs run db:generate
 
 # Construire tous les paquets applicatifs
 pnpm build
@@ -135,7 +135,7 @@ __Déploiement local du client et du serveur de la console, le reste dans des co
 pnpm run dev
 
 # Lancer le serveur dans un shell (la commande va afficher les logs)
-pnpm --filter @cpn-console/server run dev
+pnpm --filter @cpn-console/server-nestjs run start:dev
 
 # Lancer le client dans un shell (la commande va afficher les logs)
 pnpm --filter @cpn-console/client run dev
@@ -162,7 +162,7 @@ pnpm run docker:dev:clean
 pnpm run docker:dev:delete
 ```
 
-> Pour lancer le debugger Node.js sur le serveur, dans les fichiers `docker-compose` remplacer la directive  `command: ["dev"]` par `command: ["debug"]`.
+> Pour déboguer NestJS dans Docker, utiliser `command: ["start:debug"]` et publier le port Inspector uniquement sur l’interface locale.
 
 #### Intégration
 
@@ -176,7 +176,7 @@ __Déploiement local du client et du serveur de la console, le reste dans des co
 pnpm run integ
 
 # Lancer le serveur
-pnpm --filter @cpn-console/server run integ
+pnpm --filter @cpn-console/server-nestjs run integ
 
 # Lancer le client
 pnpm --filter @cpn-console/client run integ
@@ -235,7 +235,7 @@ Les services sont disponibles via les ports suivants :
 | Service                                        | Url (local/docker)      |
 | ---------------------------------------------- | ----------------------- |
 | Interface graphique *- (client)*               | <http://localhost:8080> |
-| Serveur *- (api)*                              | <http://localhost:4000> |
+| Serveur NestJS *- (api)*                       | <http://localhost:3001> |
 | Interface d'administration de base de données  | <http://localhost:8081> |
 | Interface d'administration du serveur keycloak | <http://localhost:8090> |
 
@@ -260,19 +260,18 @@ Les comptes utilisés pendant le développement sont les suivants :
 
 __Local / Docker:__
 
-Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
+Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server-nestjs` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
 
 ### Base de données
 
-Pour faciliter les opérations de migrations de base de données via [Prisma](https://www.prisma.io/), un script est disponible :
+Les migrations [Prisma](https://www.prisma.io/) sont conservées dans `apps/server-nestjs/src/prisma/migrations` et appliquées au démarrage du backend.
 
 ```shell
-# Lancer le script
-pnpm --filter @cpn-console/server run db:wrapper
-
-# Voir l'aide du script
-pnpm --filter @cpn-console/server run db:wrapper -h
+# Appliquer explicitement les migrations
+pnpm --filter @cpn-console/server-nestjs run db:deploy
 ```
+
+Les données de démonstration ne sont plus chargées au démarrage normal. Pour une base locale jetable, backends arrêtés, utiliser [les fixtures explicites](apps/server-nestjs/README.md#fixtures-de-développement-et-de-test). La stack CI les initialise via son service ponctuel `fixtures`.
 
 ### Débogage avec VS Code
 
@@ -281,7 +280,7 @@ Rendez-vous dans l'onglet "Run and Debug" (ou `Ctrl+Shift+D`) pour voir les conf
 
 #### Configurations disponibles
 
-- **Launch Server** : Lance le serveur en local (hors Docker) et attache le débogueur.
+- **Launch Server NestJS** : Lance le backend en local (hors Docker) et attache le débogueur.
   - *Note : Assurez-vous que les bases de données (Postgres) et Keycloak sont accessibles (ex: lancés via `pnpm run dev` dans un autre terminal pour les dépendances).*
 - **Attach Server** : S'attache au processus Node.js du serveur.
   - Utile lorsque le serveur tourne dans un conteneur Docker.
@@ -295,7 +294,7 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 
 **Exemple avec Chrome DevTools :**
 
-1. Lancez le serveur en mode debug (voir section précédente pour Docker, ou `pnpm run debug` en local).
+1. Lancez le serveur en mode debug (voir section précédente pour Docker, ou `pnpm --filter @cpn-console/server-nestjs run start:debug` en local).
 2. Ouvrez Chrome et naviguez vers `chrome://inspect`.
 3. Cliquez sur "Open dedicated DevTools for Node" ou attendez que votre target apparaisse sous "Remote Target".
 4. Vous pouvez maintenant mettre des points d'arrêt, inspecter les variables, etc.
@@ -304,13 +303,13 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
-- [docker-compose.local.yml](./docker/docker-compose.local.yml) pour le développement local (`client`/`server`/`server-nestjs` lancés localement, et une "glue" docker pour les joindre)
+- [docker-compose.local.yml](./docker/docker-compose.local.yml) pour le développement local (`client` et `server-nestjs` lancés localement ; leurs dépendances dans Docker)
 - [docker-compose.dev.yml](./docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
 - [docker-compose.ci.yml](./docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
 
 ## Configuration du Keycloak
 
-Pour pouvoir gérer les droits utilisateurs des services le pod `server` doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:
+Pour pouvoir gérer les droits utilisateurs des services le backend NestJS doit accéder aux groupes des users. Cela signifie modifier le clientScope `profile`:
 
 - Onglet `Mappers`
 - `Add Mappers > By configuration > Group Membership`
@@ -351,7 +350,9 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 ./
 ├── apps
 │   ├── client
-│   └── server
+│   ├── server-nestjs
+│   ├── server          # référence legacy gelée, hors workspace actif
+│   └── nginx-strangler # référence historique, hors stacks actives
 ├── packages
 │   ├── eslintconfig
 │   ├── hooks

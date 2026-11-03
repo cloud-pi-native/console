@@ -18,7 +18,7 @@ if (process.env.DOCKER !== 'true' && fs.existsSync('.env'))
   process.loadEnvFile('.env')
 
 const serverHost = process.env.SERVER_HOST ?? 'localhost'
-const serverPort = process.env.SERVER_PORT ?? 4000
+const serverPort = process.env.SERVER_PORT ?? 3001
 const clientPort = process.env.CLIENT_PORT ?? 8080
 
 const define = process.env.NODE_ENV === 'production'
@@ -31,17 +31,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: Number(clientPort) || 8080,
     proxy: {
-      '^/api': {
-        target: `http://${serverHost}:${serverPort}`,
-        changeOrigin: true,
-        ws: true,
-      },
-      '^/swagger-ui-server': {
-        target: `http://${serverHost}:${serverPort}`,
-        changeOrigin: true,
-        ws: true,
-      },
-      '^/swagger-ui-server-nestjs': {
+      '^/(api|swagger-ui)': {
         target: `http://${serverHost}:${serverPort}`,
         changeOrigin: true,
         ws: true,
@@ -102,8 +92,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [
           /^\/api/,
-          /^\/swagger-ui-server/,
-          /^\/swagger-ui-server-nestjs/,
+          /^\/swagger-ui/,
         ],
       },
       devOptions: {

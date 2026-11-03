@@ -1,10 +1,6 @@
 {
   "apps": [
     {
-      "name": "@cpn-console/server",
-      "path": "./apps/server"
-    },
-    {
       "name": "@cpn-console/server-nestjs",
       "path": "./apps/server-nestjs"
     },
