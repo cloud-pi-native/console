@@ -22,7 +22,9 @@ NODE_ENV=test DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
 
 Les données proviennent de `packages/test-utils/src/imports/data.ts`. Leur remplacement est
 transactionnel : une erreur annule l’ensemble des suppressions et des insertions.
-Le démarrage normal du backend ne déclenche jamais cet import.
+Le cycle de fixtures est directement importable depuis `src/prisma/fixtures-testing.utils.ts`.
+Le point d’entrée `db:fixtures` ne fait que vérifier la configuration, ouvrir le client et le fermer.
+Cet outillage est exclu de la compilation de production ; le démarrage normal du backend ne le déclenche jamais.
 
 La stack CI utilise le service ponctuel `fixtures`, construit depuis la cible Docker de test
 homonyme, avant de démarrer les backends. Il applique les migrations NestJS puis importe les
@@ -33,7 +35,7 @@ Pour rejouer les tests PostgreSQL sur une base jetable où les migrations ont é
 
 ```bash
 FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
-  pnpm --dir apps/server-nestjs exec vitest run test/fixtures
+  pnpm --dir apps/server-nestjs exec vitest run src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
 ```
 
 ## Objectifs
