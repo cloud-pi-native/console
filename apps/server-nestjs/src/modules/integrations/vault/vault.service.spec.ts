@@ -8,63 +8,13 @@ import { baseConfigFactory } from '../../../config/base.config'
 import { vaultConfigFactory } from '../../../config/vault.config'
 import { VaultClientService } from './vault-client.service'
 import { VaultDatastoreService } from './vault-datastore.service'
-import { makeProjectWithDetails, makeZoneWithDetails } from './vault-testing.utils'
+import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
-
-interface FakeIdentityGroup {
-  id: string
-  policies: string[]
-  alias?: string
-}
-
-type FakeIdentityStore = ReturnType<typeof installFakeIdentityStore>
-
-/**
- * Minimal in-memory model of the Vault identity store. It reproduces the
- * constraint that broke the owner alias: a group carries a single alias per
- * auth mount, so a second `identity/group-alias` POST on the same group
- * replaces the previous alias instead of adding to it.
- */
-function installFakeIdentityStore(client: DeepMockProxy<VaultClientService>) {
-  const groups = new Map<string, FakeIdentityGroup>()
-  let groupCount = 0
-
-  client.ensureIdentityGroupName.mockImplementation(async (groupName, body) => {
-    const group = groups.get(groupName)
-    if (group) {
-      group.policies = body.policies
-      return
-    }
-    groupCount += 1
-    groups.set(groupName, { id: `gid-${groupCount}`, policies: body.policies })
-  })
-
-  client.getIdentityGroupName.mockImplementation(async (groupName) => {
-    const group = groups.get(groupName)
-    if (!group) return { data: { id: '', name: groupName } }
-    return { data: { id: group.id, name: groupName, ...(group.alias === undefined ? {} : { alias: { name: group.alias } }) } }
-  })
-
-  client.createIdentityGroupAlias.mockImplementation(async ({ name, canonical_id }) => {
-    for (const group of groups.values()) {
-      if (group.alias === name) group.alias = undefined
-    }
-    const target = [...groups.values()].find(group => group.id === canonical_id)
-    if (!target) throw new Error(`Unknown Vault identity group canonical id: ${canonical_id}`)
-    target.alias = name
-  })
-
-  return {
-    groupNameByAlias: (aliasName: string) => [...groups.entries()].find(([, group]) => group.alias === aliasName)?.[0],
-    policiesOf: (groupName: string) => groups.get(groupName)?.policies,
-  }
-}
 
 describe('vaultService', () => {
   let service: VaultService
   let datastore: DeepMockProxy<VaultDatastoreService>
   let client: DeepMockProxy<VaultClientService>
-  let identityStore: FakeIdentityStore
   let vaultConfig: DeepMockProxy<ConfigType<typeof vaultConfigFactory>>
   let baseConfig: DeepMockProxy<ConfigType<typeof baseConfigFactory>>
 
@@ -81,12 +31,12 @@ describe('vaultService', () => {
       deleteSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
       ensureAuthApproleRole: vi.fn().mockResolvedValue(undefined),
       deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
+      getIdentityGroupName: vi.fn(async (groupName: string) => makeVaultSecret({ data: { id: groupName, name: groupName } })),
       getSysAuth: vi.fn().mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } }),
       createIdentityGroupAlias: vi.fn().mockResolvedValue(undefined),
       listKvMetadata: vi.fn().mockResolvedValue([]),
       delete: vi.fn().mockResolvedValue(undefined),
     })
-    identityStore = installFakeIdentityStore(client)
 
     vaultConfig = mockDeep<ConfigType<typeof vaultConfigFactory>>({ kvName: 'forge-dso' })
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({ projectsRootDir: 'forge' })
@@ -151,7 +101,7 @@ describe('vaultService', () => {
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
-    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin-console-owner`, expect.any(Object))
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`, expect.any(Object))
     expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
       name: `/${project.slug}/console/owner`,
     }))
@@ -178,12 +128,34 @@ describe('vaultService', () => {
 
     await service.handleUpsert(project)
 
-    const adminGroupName = `project-${project.slug}-admin`
-    const ownerGroupName = `project-${project.slug}-admin-console-owner`
-    expect(identityStore.groupNameByAlias(`/${project.slug}/console/admin`)).toBe(adminGroupName)
-    expect(identityStore.groupNameByAlias(`/${project.slug}/console/owner`)).toBe(ownerGroupName)
-    expect(identityStore.policiesOf(adminGroupName)).toEqual([`app--${project.slug}--admin`])
-    expect(identityStore.policiesOf(ownerGroupName)).toEqual([`app--${project.slug}--admin`])
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/admin`,
+      canonical_id: `project-${project.slug}-admin`,
+    }))
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+      canonical_id: `project-${project.slug}-owner`,
+    }))
+  })
+
+  it('should not recreate an existing group alias on project upsert', async () => {
+    const project = makeProjectWithDetails()
+    client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({
+      data: {
+        id: groupName,
+        name: groupName,
+        alias: { name: groupName === `project-${project.slug}-owner` ? `/${project.slug}/console/owner` : groupName === `project-${project.slug}-admin` ? `/${project.slug}/console/admin` : undefined },
+      },
+    }))
+
+    await service.handleUpsert(project)
+
+    expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/admin`,
+    }))
+    expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+    }))
   })
 
   it('should delete project and destroy secrets on event', async () => {
@@ -200,7 +172,7 @@ describe('vaultService', () => {
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`)
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(project.slug)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`)
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin-console-owner`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)
