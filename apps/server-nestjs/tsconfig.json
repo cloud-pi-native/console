@@ -8,6 +8,7 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,
+    "rewriteRelativeImportExtensions": true,
     "strictBindCallApply": false,
     "strictNullChecks": true,
     "noFallthroughCasesInSwitch": false,

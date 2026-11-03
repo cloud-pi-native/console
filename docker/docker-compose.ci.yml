@@ -46,6 +46,24 @@ services:
       - dso-network
     attach: false
 
+  fixtures:
+    build:
+      context: ..
+      dockerfile: apps/server-nestjs/Dockerfile
+      target: fixtures
+    image: dso-console/server-nestjs:fixtures
+    container_name: dso-console_fixtures
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ../apps/server-nestjs/.env.docker
+    environment:
+      NODE_ENV: test
+      INTEGRATION: "false"
+    networks:
+      - dso-network
+
   server:
     restart: unless-stopped
     build:
@@ -60,14 +78,13 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
-    volumes:
-      - ../packages/test-utils/src/imports/data.ts:/app/dist/init/db/imports/data.js
+      fixtures:
+        condition: service_completed_successfully
     env_file:
       - ../apps/server/.env.docker
     environment:
       NODE_ENV: production
       CI: 'true'
-      DEV_SETUP: 'true'
     networks:
       - dso-network
 
@@ -86,12 +103,13 @@ services:
         condition: service_healthy
       opencds-mockoon:
         condition: service_healthy
+      fixtures:
+        condition: service_completed_successfully
     env_file:
       - ../apps/server-nestjs/.env.docker
     environment:
       NODE_ENV: 'production'
       CI: 'true'
-      DEV_SETUP: 'true'
       OPENCDS_URL: 'http://dso-console_opencds-mockoon:3100/api/v1'
       OPENCDS_API_TOKEN: 'token'
       OPENCDS_API_TLS_REJECT_UNAUTHORIZED: 'false'

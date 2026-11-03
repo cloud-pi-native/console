@@ -61,6 +61,13 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
 ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
 CMD ["start:dev"]
 
+# Test-only fixture runner. Never part of the production image or its startup.
+FROM dev AS fixtures
+
+ENV NODE_ENV=test
+HEALTHCHECK NONE
+ENTRYPOINT ["sh", "-c", "pnpm --filter @cpn-console/server-nestjs run db:deploy && exec pnpm --filter @cpn-console/server-nestjs run db:fixtures --reset"]
+
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
 
