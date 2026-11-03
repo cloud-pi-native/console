@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
-import { data } from '../../../../packages/test-utils/src/imports/data'
-import { replaceFixtures } from './fixtures-queries.utils'
-import { parseFixtureConfig, parseFixtures } from './fixtures.utils'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { data } from '../../../packages/test-utils/src/imports/data'
+import { parseFixtureConfig, parseFixtures, resetFixtures } from '../src/prisma/fixtures-testing.utils'
 
 // Opt-in only: this database is disposable and every test resets its contents.
 // Apply db:deploy first. Never point FIXTURES_TEST_DB_URL at shared data.
@@ -14,7 +14,7 @@ describe.skipIf(!process.env.FIXTURES_TEST_DB_URL)('fixtures on PostgreSQL', () 
   })
 
   beforeEach(async () => {
-    await prisma.$transaction(tx => replaceFixtures(tx, parseFixtures(data)))
+    await resetFixtures(prisma)
   })
 
   afterAll(async () => {
@@ -37,7 +37,7 @@ describe.skipIf(!process.env.FIXTURES_TEST_DB_URL)('fixtures on PostgreSQL', () 
 
   it('can reset the same database repeatedly without duplicate records', async () => {
     await prisma.project.update({ where: { id: data.project[0].id }, data: { description: 'modified' } })
-    await prisma.$transaction(tx => replaceFixtures(tx, parseFixtures(data)))
+    await resetFixtures(prisma)
 
     expect(await prisma.project.count()).toBe(data.project.length)
     expect(await prisma.project.findUniqueOrThrow({ where: { id: data.project[0].id } })).toMatchObject({ description: data.project[0].description })
@@ -49,7 +49,7 @@ describe.skipIf(!process.env.FIXTURES_TEST_DB_URL)('fixtures on PostgreSQL', () 
     const fixtures = parseFixtures(data)
     fixtures.project[0].ownerId = '00000000-0000-0000-0000-000000000000'
 
-    await expect(prisma.$transaction(tx => replaceFixtures(tx, fixtures))).rejects.toThrow()
+    await expect(resetFixtures(prisma, fixtures)).rejects.toThrow()
 
     expect(await snapshot(prisma)).toEqual(before)
   })
