@@ -536,16 +536,53 @@ describe('gitlabService', () => {
       await service.handleUpsert(project)
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'admin@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'admin@example.com', admin: true }),
         expect.objectContaining({ cpnUserId: 'u1' }),
       )
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'auditor@example.com', admin: false, auditor: true }),
+        expect.objectContaining({ email: 'auditor@example.com', auditor: true }),
         expect.objectContaining({ cpnUserId: 'u2' }),
       )
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'owner@example.com', admin: true, auditor: false }),
+        expect.objectContaining({ email: 'owner@example.com', admin: true }),
         expect.objectContaining({ cpnUserId: 'o1' }),
+      )
+    })
+
+    it('should never demote a GitLab admin whose role is not mapped on the project', async () => {
+      const project = makeProjectWithDetails({
+        owner: { id: 'o1', email: 'owner@example.com', firstName: 'Owner', lastName: 'User', adminRoleIds: [] },
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      datastore.getAdminPluginConfig.mockImplementation(async (_pluginName: string, key: string) => {
+        if (key === 'adminGroupPath') return '/console/admin'
+        return null
+      })
+      datastore.getAdminRolesByOidcGroups.mockResolvedValue([
+        { id: 'admin-role-id', oidcGroup: '/console/admin' },
+      ])
+
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.ensureUser.mockResolvedValue(makeExpandedUserSchema({ id: 777, email: 'owner@example.com' }))
+      gitlab.getGroupRepos.mockReturnValue((async function* () { })())
+      gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+      gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+      await service.handleUpsert(project)
+
+      expect(gitlab.ensureUser).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'owner@example.com', admin: undefined, auditor: undefined }),
+        expect.objectContaining({ cpnUserId: 'o1' }),
+      )
+      expect(gitlab.ensureUser).not.toHaveBeenCalledWith(
+        expect.objectContaining({ admin: false }),
+        expect.anything(),
+      )
+      expect(gitlab.ensureUser).not.toHaveBeenCalledWith(
+        expect.objectContaining({ auditor: false }),
+        expect.anything(),
       )
     })
 

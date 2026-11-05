@@ -309,12 +309,14 @@ export class GitlabService {
     const accessLevelByUserId = generateAccessLevelMapping(project, groupPaths)
 
     await Promise.all(project.members.map(async ({ user }) => {
+      const admin = adminRoleFlag(user, adminRoleIds) || undefined
+      const auditor = adminRoleFlag(user, auditorRoleIds) || undefined
       const gitlabUser = await this.gitlab.ensureUser({
         email: user.email,
         username: generateUsername(user.email),
         name: generateName(user.firstName, user.lastName),
-        admin: adminRoleFlag(user, adminRoleIds),
-        auditor: adminRoleFlag(user, auditorRoleIds),
+        admin,
+        auditor,
       }, {
         cpnUserId: user.id,
       })
@@ -359,12 +361,14 @@ export class GitlabService {
     adminRoleIds: string[],
     auditorRoleIds: string[],
   ) {
+    const admin = adminRoleFlag(project.owner, adminRoleIds) || undefined
+    const auditor = adminRoleFlag(project.owner, auditorRoleIds) || undefined
     const gitlabUser = await this.gitlab.ensureUser({
       email: project.owner.email,
       username: generateUsername(project.owner.email),
       name: generateName(project.owner.firstName, project.owner.lastName),
-      admin: adminRoleFlag(project.owner, adminRoleIds),
-      auditor: adminRoleFlag(project.owner, auditorRoleIds),
+      admin,
+      auditor,
     }, {
       cpnUserId: project.owner.id,
     })
