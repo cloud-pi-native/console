@@ -13,7 +13,7 @@ import { isOwnerRole } from '../../integrations/keycloak/keycloak.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
-import { deleteProjectMember, upsertProjectMember } from '../project-members/project-members-queries.utils'
+import { upsertProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
   deleteProjectDependencies,
@@ -361,7 +361,11 @@ export class ProjectService {
       roles: [...new Set([...oldOwner?.roleIds ?? [], ownerRole?.id].filter(roleId => roleId !== undefined))],
     })
 
-    await deleteProjectMember(tx, project.id, ownerIdCandidate)
+    const nextOwnerRoles = [...new Set([...memberCandidate.roleIds, ...(ownerRole ? [ownerRole.id] : [])])]
+    await upsertProjectMember(tx, project.id, {
+      userId: ownerIdCandidate,
+      roles: nextOwnerRoles,
+    })
     await updateProject(tx, project.id, { owner: { connect: { id: ownerIdCandidate } } })
 
     this.logger.log(`project.update ownerChange completed (projectId=${projectId}, requestorUserId=${requestorUserId}, previousOwnerId=${project.ownerId}, nextOwnerId=${ownerIdCandidate})`)
