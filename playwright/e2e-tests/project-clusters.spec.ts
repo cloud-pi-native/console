@@ -3,7 +3,7 @@ import { clientURL, signInCloudPiNative, testUser } from '../config/console'
 import { createProject } from '../helpers/project'
 
 test.describe('Project clusters', { tag: '@e2e' }, () => {
-  test('Should list available clusters for a standard user project', async ({ page }) => {
+  test('should list available clusters for a standard user project', async ({ page }) => {
     // Arrange
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: testUser })

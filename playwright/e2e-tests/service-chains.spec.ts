@@ -1,17 +1,21 @@
 import { expect, test } from '@playwright/test'
 import { adminUser, clientURL, signInCloudPiNative } from '../config/console'
 
-test.describe('Service Chains page', () => {
+test.describe('Service Chains page', { tag: '@e2e' }, () => {
   test.describe('Given an Admin-level user', () => {
     test(
       'should list service chains',
-      { tag: ['@e2e', '@service-chains'] },
+      { tag: ['@service-chains'] },
       async ({ page }) => {
+        // Arrange
         await page.goto(clientURL)
         await signInCloudPiNative({ page, credentials: adminUser })
+
+        // Act
         await page.getByTestId('menuAdministrationBtn').click()
         await page.getByTestId('menuAdministrationServiceChains').click()
-        // We take the first service chain available
+
+        // Assert - we take the first service chain available
         const firstRow = page.locator('[data-testid^="serviceChainTr-"]').first()
         await expect(firstRow).toBeVisible()
         await expect(firstRow.getByTestId('state')).toBeVisible()
@@ -20,15 +24,18 @@ test.describe('Service Chains page', () => {
 
     test(
       'should show a service chain details',
-      { tag: ['@e2e', '@service-chains'] },
+      { tag: ['@service-chains'] },
       async ({ page }) => {
+        // Arrange
         await page.goto(clientURL)
         await signInCloudPiNative({ page, credentials: adminUser })
         await page.getByTestId('menuAdministrationBtn').click()
         await page.getByTestId('menuAdministrationServiceChains').click()
-        await expect(page.getByTitle('Voir les détails de la chaîne de service').first()).toBeVisible()
-        // We take the first service chain available
+
+        // Act - we take the first service chain available
         await page.locator('[data-testid^="serviceChainTr-"]').first().click()
+
+        // Assert
         await expect(
           page.getByRole('heading', { name: 'Chaîne de services' }),
         ).toBeVisible()
@@ -39,13 +46,17 @@ test.describe('Service Chains page', () => {
       'should show a service chain flows',
       { tag: ['@e2e', '@service-chains', '@service-chain-flows'] },
       async ({ page }) => {
+        // Arrange
         await page.goto(clientURL)
         await signInCloudPiNative({ page, credentials: adminUser })
         await page.getByTestId('menuAdministrationBtn').click()
         await expect(page.locator('.fr-collapsing')).toBeVisible()
         await expect(page.locator('.fr-collapsing')).not.toBeVisible()
 
+        // Act
         await page.getByTestId('menuAdministrationServiceChains').click()
+
+        // Assert
         await expect(
           page.getByTitle('Voir les détails de la chaîne de service').first(),
         ).toBeVisible()
