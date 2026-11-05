@@ -50,9 +50,14 @@ export function toRoleRelativeGroupPath(
   return role.oidcGroup.replace(consoleGroup.path, '')
 }
 
-// The project admin role is seeded with this OIDC group (project.utils.ts). The
-// owner implicitly holds it: services map SSO groups to permissions and the
-// owner would otherwise end up in no RBAC group at all.
+// Path equality against the role groups seeded in project.utils.ts.
+export function isOwnerRole(
+  project: Pick<ProjectWithDetails, 'slug'>,
+  role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,
+): boolean {
+  return role.oidcGroup === `/${project.slug}/${CONSOLE_GROUP_NAME}/owner`
+}
+
 export function isAdminRole(
   project: Pick<ProjectWithDetails, 'slug'>,
   role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,
