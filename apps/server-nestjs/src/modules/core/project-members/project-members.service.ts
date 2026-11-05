@@ -50,9 +50,10 @@ export class ProjectMembersService {
         const userDb = await this.resolveHumanUser(tx, { userId, email })
         if (!userDb) throw new NotFoundException('Utilisateur introuvable')
 
-        if (userDb.id === project.ownerId) {
-          throw new BadRequestException('Le owner ne peut pas être ajouté à cette liste')
-        }
+        const existing = await tx.projectMembers.findUnique({
+          where: { projectId_userId: { projectId, userId: userDb.id } },
+        })
+        if (existing) throw new BadRequestException('Cet utilisateur fait déjà partie des membres du projet')
 
         await upsertProjectMemberIfMissing(tx, projectId, userDb.id)
 
@@ -146,6 +147,10 @@ export class ProjectMembersService {
     this.logger.log(`projectMembers.removeMember started (projectId=${projectId}, userId=${userId})`)
     try {
       const members = await this.prisma.$transaction(async (tx) => {
+        const project = await getProjectOwnerId(tx, projectId)
+        if (project?.ownerId === userId) {
+          throw new BadRequestException('Le propriétaire du projet ne peut pas être retiré des membres')
+        }
         await deleteProjectMember(tx, projectId, userId)
         return listProjectMembersWithUser(tx, projectId)
       })

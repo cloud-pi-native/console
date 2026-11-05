@@ -127,10 +127,11 @@ describe('projectMembersService', () => {
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findUnique.mockResolvedValue(makeProject({ ownerId }))
       tx.user.findFirst.mockResolvedValue(makeUser({ id: ownerId }))
+      tx.projectMembers.findUnique.mockResolvedValue(makeProjectMembers({ projectId, userId: ownerId }))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
       await expect(service.add(projectId, body))
-        .rejects.toThrow('Le owner ne peut pas être ajouté à cette liste')
+        .rejects.toThrow('Cet utilisateur fait déjà partie des membres du projet')
     })
 
     it('throws NotFoundException when user not found by userId', async () => {
@@ -248,6 +249,7 @@ describe('projectMembersService', () => {
       const userId = faker.string.uuid()
 
       const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ ownerId: faker.string.uuid() }))
       tx.projectMembers.delete.mockResolvedValue(makeProjectMembers({ projectId, userId }))
       const memberUser = makeUser()
       tx.projectMembers.findMany.mockResolvedValue([makeProjectMemberWithUser(memberUser)])
@@ -263,6 +265,19 @@ describe('projectMembersService', () => {
         userId,
       }, { action: 'Remove Project Member' })
       expect(result).toBeDefined()
+    })
+
+    it('rejects removing the owner from the members list', async () => {
+      const projectId = faker.string.uuid()
+      const ownerId = faker.string.uuid()
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ ownerId }))
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.remove(projectId, ownerId))
+        .rejects.toThrow('Le propriétaire du projet ne peut pas être retiré des membres')
+      expect(tx.projectMembers.delete).not.toHaveBeenCalled()
     })
   })
 })

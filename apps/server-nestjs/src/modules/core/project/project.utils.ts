@@ -34,6 +34,9 @@ export function generateProjectCreateInput(
     prodGpu: data.prodGpu,
     prodMemory: data.prodMemory,
     owner: { connect: { id: ownerId } },
+    members: {
+      create: [{ userId: ownerId, roleIds: [] }],
+    },
     roles: {
       create: [
         {
