@@ -140,11 +140,15 @@ describe('vaultService', () => {
 
   it('should not recreate an existing group alias on project upsert', async () => {
     const project = makeProjectWithDetails()
+    const aliasNameByGroup: Record<string, string | undefined> = {
+      [`project-${project.slug}-owner`]: `/${project.slug}/console/owner`,
+      [`project-${project.slug}-admin`]: `/${project.slug}/console/admin`,
+    }
     client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({
       data: {
         id: groupName,
         name: groupName,
-        alias: { name: groupName === `project-${project.slug}-owner` ? `/${project.slug}/console/owner` : groupName === `project-${project.slug}-admin` ? `/${project.slug}/console/admin` : undefined },
+        alias: { name: aliasNameByGroup[groupName] },
       },
     }))
 

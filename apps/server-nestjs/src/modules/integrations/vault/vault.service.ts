@@ -623,7 +623,7 @@ function generateProjectRoleGroups(
   const primaryName = generateProjectGroupName(project, scope)
   return groupPaths.map((groupPath) => {
     if (groupPath === primaryPath) return { name: primaryName, groupPath }
-    const leaf = groupPath.split('/').filter(Boolean).pop()
+    const leaf = groupPath.split('/').findLast(Boolean)
     return { name: `project-${project.slug}-${leaf}`, groupPath }
   })
 }
