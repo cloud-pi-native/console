@@ -122,6 +122,9 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
           prodMemory: 0,
           everyonePerms: 0n,
           lastSuccessProvisionningVersion: null,
+          members: {
+            create: [{ userId: ownerId, roleIds: [] }],
+          },
         },
       })
 
@@ -135,7 +138,7 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
 
     it('list', async () => {
       const members = await service.list(projectId)
-      expect(members).toHaveLength(0)
+      expect(members.some(m => m.userId === ownerId)).toBe(true)
     })
 
     it('add', async () => {

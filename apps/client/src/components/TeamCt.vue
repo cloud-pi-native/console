@@ -47,7 +47,7 @@ const lettersNotMatching = ref('')
 const tableKey = ref(useRandomId('table'))
 
 const isUserAlreadyInTeam = computed(() => {
-  return !!(newUserEmail.value && (props.project.owner.email === newUserEmail.value || props.project.members.find(member => member.email === newUserEmail.value)))
+  return !!(newUserEmail.value && props.project.members.find(member => member.email === newUserEmail.value))
 })
 
 const usersToSuggest = computed(() => usersToAdd.value.map(userToAdd => ({
@@ -76,10 +76,12 @@ watch(() => props.project.members, () => {
 const isTransferingProject = ref(false)
 const nextOwnerId = ref<string | undefined>(undefined)
 
-const transferSelectOptions = props.project.members.map(member => ({
-  text: `${member.lastName} ${member.firstName} (${member.email})`,
-  value: member.userId,
-}))
+const transferSelectOptions = props.project.members
+  .filter(member => member.userId !== props.project.ownerId)
+  .map(member => ({
+    text: `${member.lastName} ${member.firstName} (${member.email})`,
+    value: member.userId,
+  }))
 
 async function addUserToProject() {
   if (!newUserEmail.value) return
@@ -124,7 +126,7 @@ async function transferOwnerShip() {
       :headers="headers"
     >
       <tr
-        v-for="member in [{ ...props.project.owner, roleIds: [], userId: props.project.owner.id }, ...project.members]"
+        v-for="member in project.members"
         :key="member.userId"
       >
         <td>
