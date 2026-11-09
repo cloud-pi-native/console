@@ -10,7 +10,8 @@ Elle ne charge aucun fichier `.env` : fournir explicitement `DB_URL`, `NODE_ENV=
 ou `NODE_ENV=test`, et l’argument `--reset`. Les modes production et intégration sont refusés,
 y compris avec `CI=true`.
 
-Depuis la racine, après installation des dépendances et génération du client Prisma :
+Depuis la racine, après installation des dépendances, compilation de `@cpn-console/test-utils`
+(et de ses dépendances workspace) et génération du client Prisma :
 
 ```bash
 # Base locale jetable, préalablement démarrée.
@@ -34,7 +35,7 @@ lorsque les images applicatives sont fournies par `TAG`. Cette image de test n�
 Pour rejouer les tests PostgreSQL sur une base jetable où les migrations ont été appliquées :
 
 ```bash
-FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
+E2E=true FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
   pnpm --dir apps/server-nestjs exec vitest run src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
 ```
 

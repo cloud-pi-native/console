@@ -1,8 +1,8 @@
 import type { Prisma, PrismaClient } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import { data } from '@cpn-console/test-utils'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
-import { data } from '../../../../packages/test-utils/src/imports/data'
 import { parseFixtureConfig, parseFixtures, resetFixtures } from './fixtures-testing.utils'
 
 const dbUrl = 'postgresql://admin:admin@localhost:5432/fixtures'

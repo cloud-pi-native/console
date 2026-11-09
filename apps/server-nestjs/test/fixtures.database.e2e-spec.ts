@@ -1,11 +1,11 @@
+import { data } from '@cpn-console/test-utils'
 import { PrismaClient } from '@prisma/client'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
-import { data } from '../../../packages/test-utils/src/imports/data'
 import { parseFixtureConfig, parseFixtures, resetFixtures } from '../src/prisma/fixtures-testing.utils'
 
 // Opt-in only: this database is disposable and every test resets its contents.
-// Apply db:deploy first. Never point FIXTURES_TEST_DB_URL at shared data.
-describe.skipIf(!process.env.FIXTURES_TEST_DB_URL)('fixtures on PostgreSQL', () => {
+// Enable E2E and apply db:deploy first. Never point FIXTURES_TEST_DB_URL at shared data.
+describe.skipIf(!process.env.E2E || !process.env.FIXTURES_TEST_DB_URL)('fixtures on PostgreSQL', () => {
   let prisma: PrismaClient
 
   beforeAll(() => {

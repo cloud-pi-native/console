@@ -1,7 +1,7 @@
 import type { PrismaClient } from '@prisma/client'
+import { data } from '@cpn-console/test-utils'
 import { ClusterPrivacy, ProjectStatus, TokenStatus, UserType } from '@prisma/client'
 import { z } from 'zod'
-import { data } from '../../../../packages/test-utils/src/imports/data.ts'
 
 const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'test']),
