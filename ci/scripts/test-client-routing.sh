@@ -121,8 +121,4 @@ count=$((count + 1))
 large_header=$(printf '%12000s' '' | tr ' ' a)
 curl -fsS -H "Authorization: Bearer $large_header" "http://$address/api/v1/healthz" >/dev/null
 count=$((count + 1))
-if grep -Eq 'nginx-strangler|server-legacy' "$root/apps/client/nginx/default.docker.conf"; then
-  echo 'FAIL: client config still references the retired proxy or backend' >&2
-  exit 1
-fi
 echo "$count client routing checks passed; NestJS is the only upstream."

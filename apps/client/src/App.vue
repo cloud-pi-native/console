@@ -126,14 +126,6 @@ watch(userStore, async () => {
             swagger
           </a>
           <a
-            data-testid="swaggerUrl-legacy"
-            :href="`${swaggerUiPath}-server`"
-            target="_blank"
-            title="accéder au swagger UI (legacy)"
-          >
-            swagger (legacy)
-          </a>
-          <a
             data-testid="appVersionUrl"
             :href="appVersionUrl"
             title="accéder au code source"

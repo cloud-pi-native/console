@@ -58,12 +58,8 @@ export function buildRepositoryUpdateData(
  * - `clear` : the body sets `isPrivate: false` (repo made public) → remove the creds.
  * - `keep`  : the body carries no token → leave the stored secret unchanged.
  *
- * How "keep" is signalled differs from the legacy server: legacy sent a placeholder
- * string ('fakeToken') as the token value to mean "unchanged" — dropped in
- * `apps/server/src/resources/repository/router.ts` (`updateRepository`), then the empty
- * token falls back to the stored password in the GitLab plugin
- * (`plugins/gitlab/src/repositories.ts`, `ensureRepositoryExists`). Here the client
- * simply omits the field, so an absent (or empty) token is what selects `keep`.
+ * The client omits the token field to leave credentials unchanged. An absent or
+ * empty token selects `keep`; it never replaces the stored secret.
  */
 export type RepositoryMirrorCredentialUpdate
   = | { kind: 'set', externalToken: string }
@@ -72,7 +68,7 @@ export type RepositoryMirrorCredentialUpdate
 
 /**
  * Parses the credential intent out of a partial update body. An absent or empty token
- * means "unchanged" (the legacy `token || existing` fallback), so it never triggers a
+ * means "unchanged", so it never triggers a
  * write. `isPrivate === false` wins: making a repository public clears its creds.
  */
 export function parseRepositoryCredentialUpdate(

@@ -52,10 +52,10 @@ $ pnpm install
 # Initialiser la base de données PostgreSQL lancée localement
 $ pnpm db:generate
 
-# Construire les applications client et server
+# Construire les applications client et server-nestjs
 $ pnpm build
 
-# Construire les images dockers client et server, puis lancer la stack docker compose d'intégration
+# Construire les images dockers client et server-nestjs, puis lancer la stack docker compose d'intégration
 $ export KUBECONFIG_HOST_PATH="$HOME/.kube/config" && pnpm run docker:integ
 ```
 
@@ -70,7 +70,7 @@ Le serveur et le client sont livrés sous forme d'images [Docker](https://www.do
 
 ### API
 
-Le backend actif est `apps/server-nestjs`. Ses modules métier orchestrent les intégrations via des événements ; le client appelle directement ce backend, sans proxy de migration. Les sources `apps/server` et `apps/nginx-strangler` restent gelées comme références historiques dans cette tranche de #2895, mais ne sont plus des services des stacks ni des paquets du workspace actif.
+Le backend actif est `apps/server-nestjs`. Ses modules métier orchestrent les intégrations via des événements ; le client appelle directement ce backend, sans proxy de migration.
 
 Les intégrations du backend couvrent notamment :
 
@@ -350,9 +350,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 ./
 ├── apps
 │   ├── client
-│   ├── server-nestjs
-│   ├── server          # référence legacy gelée, hors workspace actif
-│   └── nginx-strangler # référence historique, hors stacks actives
+│   └── server-nestjs
 ├── packages
 │   ├── eslintconfig
 │   ├── hooks

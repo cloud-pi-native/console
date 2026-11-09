@@ -86,12 +86,10 @@ explicite de l'équipe CPIN.
 
 ## Cibler le backend approuvé
 
-`apps/server` est le backend historique et ne reçoit plus de contribution.
-Toute pull request ou merge request qui modifie ce dossier est rejetée, y
-compris pour une correction de bug.
-
 Les évolutions backend ciblent exclusivement `apps/server-nestjs`. Elles
-suivent le [plan de modularisation backend vers NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md), l'[état de migration](apps/server-nestjs/documentation/Modularisation-de-console-server/MODULARISATION-STATUT.md), les conventions NestJS et la stratégie de tests associée. Toute dérogation est une décision explicite de l'équipe CPIN, hors du flux normal de contribution.
+suivent les conventions NestJS et la stratégie de tests décrites dans
+[AGENTS.md](AGENTS.md) et la [documentation du backend](apps/server-nestjs/README.md).
+Toute dérogation est une décision explicite de l'équipe CPIN, hors du flux normal de contribution.
 
 ## Respecter l'architecture et la qualité
 
@@ -134,7 +132,7 @@ Consultez et citez les références appropriées dans le ticket :
 
 - La [documentation publique Cloud Pi Native](https://github.com/cloud-pi-native/documentation), notamment l'[introduction de la plateforme](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/introduction.md) et la [feuille de route](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/roadmap.md) ;
 - L'[architecture et les conventions du dépôt](README.md) ;
-- Le [plan de modularisation NestJS](apps/server-nestjs/documentation/Modularisation-de-console-server/README.md) ;
+- La [documentation du backend NestJS](apps/server-nestjs/README.md) ;
 
 La feuille de route publique est actuellement en cours de rédaction. Son
 indisponibilité ne bloque pas la qualification : le ticket doit alors exposer

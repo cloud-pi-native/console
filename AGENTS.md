@@ -5,9 +5,8 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 ## Structure
 
 - `apps/client` : Vue 3 + Vite + vue-dsfr (French gov design system), Pinia, UnoCSS
-- `apps/server` : Fastify 4 + Prisma 6 (PostgreSQL), contract-first API via @ts-rest
-- `apps/server-nestjs` : NestJS rewrite (in progress) — the only modifiable
-  backend target; `apps/server` is frozen (read-only reference)
+- `apps/server-nestjs` : NestJS + Fastify + Prisma 6 (PostgreSQL), contract-first API via @ts-rest — the only modifiable backend target
+- `apps/server` remains frozen until its removal; do not modify it.
 - `plugins/*` : argocd, gitlab, harbor, keycloak, kubernetes, nexus, sonarqube, vault
 - `packages/shared` : API contracts (@ts-rest), types, permissions (BigInt bitmasks)
 - `packages/hooks` : plugin hook system (core of plugin architecture)
@@ -17,16 +16,15 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 - `ci/scripts/` : init-env.sh, setup.sh, cleanup.sh, run-tests.sh
 - `keycloak/` : DSFR theme and dev realm data
 
-## Server architecture (Fastify)
+## Backend architecture (NestJS)
 
-Resource-based organization in `apps/server/src/resources/`. Each resource follows a 3-file pattern:
+Domain modules live in `apps/server-nestjs/src/modules/core/`, integrations in
+`modules/integrations/`, and cross-cutting services in `modules/infrastructure/`.
+Controllers handle HTTP contracts and mapping, services orchestrate business logic,
+and `*-queries.utils.ts` functions perform Prisma queries.
 
-- `router.ts` : route handlers (auth, permissions, delegates to business)
-- `business.ts` : business logic, orchestrates queries + hook calls
-- `queries.ts` : Prisma database queries
-
-API contracts defined in `@cpn-console/shared`, shared with client via @ts-rest.
-Auth: Keycloak + Fastify session. Permissions: BigInt bitmasks (`ProjectAuthorized`, `AdminAuthorized`).
+API contracts are defined in `@cpn-console/shared`, shared with the client via @ts-rest.
+Auth: Keycloak and access tokens. Permissions: BigInt bitmasks (`ProjectAuthorized`, `AdminAuthorized`).
 
 server-nestjs services receive configuration via injection
 (`@Inject(xxxConfigFactory.KEY)` + `ConfigType<typeof xxxConfigFactory>`),
@@ -35,7 +33,7 @@ never `process.env`.
 ## Plugin / Hook system
 
 Hook lifecycle: `pre` -> `main` -> `post` (sequential steps, parallel plugin execution). On failure: `revert`.
-Plugins are statically imported in `apps/server/src/plugins.ts`, then external plugins dynamically loaded from `/plugins`.
+NestJS integration modules consume domain events and bridge plugin results through `capturePluginResult`.
 Each plugin: `index.ts` (Plugin interface), `infos.ts` (metadata/config), `functions.ts` (hook handlers).
 Plugins use TS module augmentation to extend `ProjectStore` and `Config` interfaces.
 
@@ -45,7 +43,7 @@ Keycloak/GitLab group syncs silently stop at cutover.
 
 ## Database (Prisma)
 
-Multi-file schema in `apps/server/src/prisma/schema/*.prisma` (project, user, token, admin, topography).
+Multi-file schema in `apps/server-nestjs/src/prisma/schema/*.prisma` (project, user, token, admin, topography).
 Migrations: standard Prisma Migrate. Major version data migrations in `migrations/v9/`.
 
 `deleteMany`/`updateMany` with an `undefined` filter value matches ALL rows —
@@ -53,10 +51,10 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 
 ## Environment config
 
-- Files: `.env`, `.env.docker`, `.env.integ` in `apps/client/`, `apps/server/`, `apps/server-nestjs/`
+- Files: `.env`, `.env.docker`, `.env.integ` in `apps/client/` and `apps/server-nestjs/`
 - Templates: `*-example` suffix (not `.example`; git-tracked), active files gitignored
 - Override chain (weakest to strongest): `.env` < `.env.docker` (if DOCKER=true) < `.env.integ` (if INTEGRATION=true) < explicit env vars
-- Server loading: `apps/server/src/utils/env.ts` | Client: `apps/client/vite.config.ts`
+- Backend loading: `apps/server-nestjs/src/utils/dotenv.utils.ts` and `src/main.module.ts` | Client: `apps/client/vite.config.ts`
 - `ci/scripts/init-env.sh` copies `*-example` to active equivalents (non-destructive)
 
 ## Testing
@@ -88,7 +86,6 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 ## TypeScript
 
 - Shared base: `packages/tsconfig/tsconfig.base.json` — ESNext, NodeNext, strict, `@/* -> src/*` alias
-- Server: extends shared base, uses `ts-patch`/`tspc` for path transform in emitted JS
 - Client: does NOT extend shared base, uses `Bundler` module resolution
 - server-nestjs: standalone config with `emitDecoratorMetadata` + `experimentalDecorators`
 - Strict type safety: no `as` casts (including `as any`), no `any`, and no
