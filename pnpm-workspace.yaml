@@ -31,9 +31,8 @@ trustPolicyExclude:
 packages:
   - packages/**
   - plugins/**
-  - apps/**
-  # Frozen reference only: never build, test or publish the legacy workspace.
-  - "!apps/server/**"
+  - apps/client
+  - apps/server-nestjs
   - playwright/**
 overrides:
   "@fastify/static@9.1.3": ">=10.1.2 <11"
