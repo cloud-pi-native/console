@@ -64,6 +64,9 @@ CMD ["start:dev"]
 # Test-only fixture runner. Never part of the production image or its startup.
 FROM dev AS fixtures
 
+RUN pnpm --filter @cpn-console/test-utils run build
+RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
+
 ENV NODE_ENV=test
 HEALTHCHECK NONE
 ENTRYPOINT ["sh", "-c", "pnpm --filter @cpn-console/server-nestjs run db:deploy && exec pnpm --filter @cpn-console/server-nestjs run db:fixtures --reset"]
