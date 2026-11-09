@@ -171,7 +171,7 @@ catalogs:
     # Ensure Playwright version is the same as the one in this Dockerfile:
     # https://github.com/cloud-pi-native/Dockerfile/tree/main/docker/actions-runner-pw/Dockerfile
     # Because this is the image used by our Github Self-Hosted Runner that handles Playwright tests
-    "@playwright/test": ^1.59.1
+    "@playwright/test": ^1.65.0
     "@vitest/coverage-v8": ^4.1.12
     globals: ^16.5.0
     jsdom: ^25.0.1
