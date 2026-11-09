@@ -6,7 +6,7 @@ Comme vous aurez pu le constater, il y a beaucoup de choses à configurer pour u
 
 ## Backend unique dans les stacks de développement et de CI
 
-Le client joint directement `apps/server-nestjs` sur le port `3001` : via Vite en développement, ou via le Nginx client dans la stack CI. Les services `server` et `nginx-strangler` ne sont plus démarrés ni construits par ces stacks.
+Le client joint directement `apps/server-nestjs` sur le port `3001` : via Vite en développement, ou via le Nginx client dans la stack CI.
 
 ```text
 Navigateur → client:8080 → server-nestjs:3001

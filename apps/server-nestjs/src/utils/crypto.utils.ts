@@ -28,8 +28,8 @@ export interface TokenPair {
 
 // Unsalting SHA-256 hex digest used to store and look up access tokens.
 // Single source of truth for the token hash format: creation, auth lookup and
-// tests must all go through it. Must stay byte-for-byte identical to the
-// legacy @cpn-console/server implementation (unsalted `sha256(token)`).
+// tests must all go through it. Preserve unsalted `sha256(token)` to keep
+// existing stored tokens valid.
 export function hashToken(password: string): string {
   return createHash('sha256').update(password).digest('hex')
 }

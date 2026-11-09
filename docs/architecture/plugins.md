@@ -240,7 +240,7 @@ sequenceDiagram
   G->>G: Commit des actions préparées
 ```
 
-Preuves : `apps/server/src/resources/cluster/business.ts`, `plugins/argocd/src/index.ts`, `cluster.ts`, `utils.ts`, `plugins/gitlab/src/index.ts`, `class.ts` et `functions.ts`. Le module/les émissions cluster et ces consommateurs ArgoCD ne figurent pas dans l’instantané NestJS de référence. Leur migration est suivie par [#2492](https://github.com/cloud-pi-native/console/issues/2492) et [#2495](https://github.com/cloud-pi-native/console/pull/2495), pas considérée comme livrée ici ; la route cluster reste legacy tant que sa bascule n’est pas réalisée. Cette cartographie n’ajoute aucun listener.
+Preuves historiques : `plugins/argocd/src/index.ts`, `cluster.ts`, `utils.ts`, `plugins/gitlab/src/index.ts`, `class.ts` et `functions.ts`. Ce diagramme retrace le cycle des hooks de cet instantané, pas le routage HTTP courant. La migration cluster est documentée par [#2492](https://github.com/cloud-pi-native/console/issues/2492) et [#2495](https://github.com/cloud-pi-native/console/pull/2495). Cette cartographie n’ajoute aucun listener.
 
 ## Lire les deltas
 

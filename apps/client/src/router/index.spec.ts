@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { useProjectStore } from '@/stores/project.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import { useUserStore } from '@/stores/user.js'
-import { createAppRouter, detectProjectslug } from './index.js'
+import { createAppRouter, detectProjectslug, routes } from './index.js'
 
 describe('router index', () => {
   beforeEach(() => {
@@ -75,6 +75,12 @@ describe('router index', () => {
       })
       expect(slugFound).toEqual(slug)
     })
+  })
+
+  it('exposes only the active backend Swagger route', () => {
+    const documentationRoutes = routes.filter(route => route.path.startsWith('/swagger-ui'))
+
+    expect(documentationRoutes.map(route => route.path)).toEqual(['/swagger-ui-server-nestjs'])
   })
 
   describe('navigation with real router instance', () => {

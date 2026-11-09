@@ -2,7 +2,7 @@
 
 ## Présentation
 
-Le plugin manager ou communément appelés "hooks" est une interface permettant au serveur d'api (`apps/server`) de déclencher des hooks "déclencheurs / événements" pour que les plugins puissent piloter et configurer des outils.
+Le plugin manager ou communément appelés "hooks" est une interface permettant au serveur d'api (`apps/server-nestjs`) de déclencher des hooks "déclencheurs / événements" pour que les plugins puissent piloter et configurer des outils.
 
 Les plugins obligatoires de l'application sont souvent appelés `corePlugins`.
 

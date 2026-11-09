@@ -12,4 +12,4 @@ Vérification sans stack applicative :
 bash ci/scripts/test-client-routing.sh
 ```
 
-Les sources de l’ancien proxy de migration sont conservées comme historique, mais aucun `nginx-strangler` n’est utilisé par les stacks courantes. Le retrait en production et l’alignement du chart restent suivis dans #2895.
+L’alignement du chart et la bascule en production restent suivis dans #2895.
