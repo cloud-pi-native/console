@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { CleanLog, Log, XOR } from '@cpn-console/shared'
-import { ref } from 'vue'
+import { computed } from 'vue'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import router from '@/router/index.js'
@@ -16,6 +16,8 @@ const props = withDefaults(defineProps<{
   hideTotalEvents?: boolean
   headerClass?: string
   bodyClass?: string
+  hideLogs?: boolean
+  hideLogDetails?: boolean
 }>(), {
   step: 10,
   totalLength: 0,
@@ -23,13 +25,23 @@ const props = withDefaults(defineProps<{
   hideTotalEvents: false,
   headerClass: '',
   bodyClass: '',
+  hideLogs: false,
+  hideLogDetails: false,
 })
 const emits = defineEmits<{
   movePage: [index: number]
+  'update:hideLogs': [value: boolean]
+  'update:hideLogDetails': [value: boolean]
 }>()
 
-const hideLogs = ref(props.mode === 'hide')
-const hideLogDetails = ref(props.mode === 'hideDetails')
+const hideLogs = computed({
+  get: () => props.hideLogs || props.mode === 'hide',
+  set: value => emits('update:hideLogs', value),
+})
+const hideLogDetails = computed({
+  get: () => props.hideLogDetails,
+  set: value => emits('update:hideLogDetails', value),
+})
 
 type LogModelSliced = Omit<Log['data'], 'failed'>
   | Omit<Log['data'], 'failed' | 'totalExecutionTime'>
