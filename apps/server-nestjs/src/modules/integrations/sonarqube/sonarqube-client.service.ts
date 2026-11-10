@@ -9,9 +9,9 @@ import type {
   SONARQUBE_PROJECT_QUALIFIER_UNIT_TEST,
   SONARQUBE_PROJECT_QUALIFIER_VIEW,
 } from './sonarqube.constants'
-import { Inject, Injectable, Logger } from '@nestjs/common'
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
-import { SonarqubeHttpClientService } from './sonarqube-http-client.service'
+import { SonarqubeError, SonarqubeHttpClientService } from './sonarqube-http-client.service'
 import { SONARQUBE_MAX_PAGES, SONARQUBE_PAGE_SIZE } from './sonarqube.constants'
 import { ensure } from './sonarqube.utils'
 
@@ -368,6 +368,17 @@ export class SonarqubeClientService {
 
   @StartActiveSpan()
   async deleteProject(params: DeleteProjectParams) {
-    await this.http.fetch('projects/delete', { method: 'POST', query: params })
+    try {
+      await this.http.fetch('projects/delete', { method: 'POST', query: params })
+    } catch (error) {
+      // Deletion must be idempotent: concurrent reconciliations of the same
+      // project (hook replay, admin resync) both list the orphan, the first
+      // delete wins and the second receives a 404 — not a real failure.
+      if (error instanceof SonarqubeError && error.status === HttpStatus.NOT_FOUND) {
+        this.logger.warn(`SonarQube project already absent, skipping deletion (project=${params.project})`)
+        return
+      }
+      throw error
+    }
   }
 }
