@@ -30,7 +30,6 @@ const router = useRouter()
 const role = ref({
   ...props,
   permissions: props.permissions ?? 0n,
-  allMembers: props.allMembers ?? [],
   oidcGroup: props.oidcGroup ?? '',
   type: props.type ?? 'managed',
 })

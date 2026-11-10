@@ -309,6 +309,10 @@ export class GitlabService {
     const accessLevelByUserId = generateAccessLevelMapping(project, groupPaths)
 
     await Promise.all(project.members.map(async ({ user }) => {
+      // The owner is reconciled by addMissingOwnerMember at OWNER level; routing
+      // them through the ordinary-member pass would demote or double-add them
+      // against the stale GitLab member snapshot (PR #2991 review).
+      if (user.id === project.owner.id) return
       const gitlabUser = await this.gitlab.ensureUser({
         email: user.email,
         username: generateUsername(user.email),
