@@ -509,15 +509,25 @@ export class GitlabClientService {
   }
 
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
-    const fullPath = `${projectSlug}/${repoName}`
-    const repo = await unlessNotFound(() => this.client.Projects.show(`${this.config.projectRootDir}/${fullPath}`))
+    const fullPath = this.config.projectRootDir
+      ? `${this.config.projectRootDir}/${projectSlug}/${repoName}`
+      : `${projectSlug}/${repoName}`
+    const repo = await unlessNotFound(() => this.client.Projects.show(fullPath))
+      ?? await find(
+        this.offsetPaginate(opts => this.client.Projects.all({
+          search: fullPath,
+          orderBy: 'path',
+          ...opts,
+        })),
+        p => p.path_with_namespace === fullPath,
+      )
     if (!repo) {
-      this.logger.log(`GitLab repository not found for path ${fullPath}; cleanup is a no-op`)
+      this.logger.log(`GitLab repository already absent, skipping deletion (path=${fullPath})`)
       return
     }
     await unlessNotFound(() => this.client.Projects.remove(repo.id))
     // GitLab requires the full path (including the projects root group), not the group-relative one.
-    return unlessNotFound(() => this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${fullPath}-deletion_scheduled-${repo.id}` }))
+    return unlessNotFound(() => this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${repo.path_with_namespace}-deletion_scheduled-${repo.id}` }))
   }
 
   // CI Variables
