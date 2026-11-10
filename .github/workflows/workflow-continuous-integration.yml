@@ -50,6 +50,9 @@ jobs:
               - 'plugins/**'
             ci:
               - '.github/workflows/**'
+              - 'ci/**'
+              - 'pnpm-workspace.yaml'
+              - 'pnpm-lock.yaml'
             e2e:
               - 'playwright/**'
 
