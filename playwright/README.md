@@ -19,6 +19,12 @@ $ pnpm exec playwright install --with-deps
 
 Note: Il est possible qu'il soit nécessaire que vous fassiez un `sudo`
 
+## Contrat de version du runner CI
+
+En CI, les navigateurs sont fournis par l’image du runner ; le job ne les réinstalle pas. Après installation des dépendances depuis le lockfile, `ci/scripts/check-playwright-version.ts` compare la version exacte du paquet `@playwright/test` installé pour ce dossier à `RUNNER_PLAYWRIGHT_VERSION`, exposée par le runner. Une variable absente, illisible ou différente bloque le job avant le téléchargement des images applicatives et le démarrage de la stack.
+
+Toute montée de version doit être coordonnée avec l’image du runner, y compris pour les branches de maintenance. Ne pas surcharger la variable pour contourner le contrôle. Le premier déploiement du runner exposant cette variable doit précéder l’activation du contrôle : [Dockerfile #10](https://github.com/cloud-pi-native/Dockerfile/issues/10).
+
 ## Lancer la suite E2E
 
 La suite E2E Playwright nécessite les fixtures et les données de la stack CI (`pnpm docker:ci`).
