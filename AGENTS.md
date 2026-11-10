@@ -6,7 +6,7 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 
 - `apps/client` : Vue 3 + Vite + vue-dsfr (French gov design system), Pinia, UnoCSS
 - `apps/server-nestjs` : NestJS + Fastify + Prisma 6 (PostgreSQL), contract-first API via @ts-rest — the only modifiable backend target
-- `apps/server` remains frozen until its removal; do not modify it.
+- Legacy `apps/server` and `apps/nginx-strangler` were removed; use Git history for migration comparisons.
 - `plugins/*` : argocd, gitlab, harbor, keycloak, kubernetes, nexus, sonarqube, vault
 - `packages/shared` : API contracts (@ts-rest), types, permissions (BigInt bitmasks)
 - `packages/hooks` : plugin hook system (core of plugin architecture)
