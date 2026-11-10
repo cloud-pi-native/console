@@ -26,6 +26,7 @@ SET "roleIds" = ARRAY(
   LEFT JOIN "ProjectRole" k
     ON d."id" IS NOT NULL
    AND k."projectId" = d."projectId"
+   AND k."type" = 'system:managed'
    AND k."name" = d."name"
    AND ( (k."name", k."permissions") IN (('Développeur', 784::bigint),
                                          ('Sécurité', 832::bigint))
@@ -48,6 +49,7 @@ WHERE d."type" = 'system:managed'
   AND EXISTS (
     SELECT 1 FROM "ProjectRole" k
     WHERE k."projectId" = d."projectId"
+      AND k."type" = 'system:managed'
       AND k."name" = d."name"
       AND ( (k."name", k."permissions") IN (('Développeur', 784::bigint),
                                              ('Sécurité', 832::bigint))
