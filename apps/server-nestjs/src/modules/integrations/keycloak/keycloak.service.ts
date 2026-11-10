@@ -160,9 +160,12 @@ export class KeycloakService {
     span?.setAttribute('keycloak.console_group.id', group.id)
     const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
-    await Promise.all([
-      this.ensureRoleGroups(project, consoleGroup),
-    ])
+    await this.ensureRoleGroups(project, consoleGroup)
+    // A deleted project role emits only project.upsert, and the ensure pass is
+    // purely additive: without this purge the role's Keycloak group and its
+    // memberships survive forever (issue #2880). Symmetric, at group level,
+    // with purgeOrphanRoleGroupMembers.
+    await this.purgeOrphanRoleGroups(project, consoleGroup)
   }
 
   @StartActiveSpan()
@@ -337,6 +340,38 @@ export class KeycloakService {
     span?.setAttribute('project.roles.oidc_group.count', rolesWithOidcGroup.length)
 
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
+  }
+
+  // Deletes every direct child of the console group that no longer matches a
+  // current role's OIDC group. Keycloak gives no direct "find children by
+  // path" read, so each candidate group is resolved through getGroupByPath
+  // against the console group's path: a path match proves the group was
+  // console-created for a role, anything else is left untouched.
+  @StartActiveSpan()
+  private async purgeOrphanRoleGroups(
+    project: ProjectWithDetails,
+    consoleGroup: GroupRepresentationWithIdNamePath,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    span?.setAttribute('keycloak.group.id', consoleGroup.id)
+
+    const desiredRelativePaths = new Set(
+      project.roles
+        .filter(r => isNonEmptyGroupPath(r.oidcGroup))
+        .map(r => toRoleRelativeGroupPath(r, consoleGroup)),
+    )
+    span?.setAttribute('keycloak.role_groups.desired', desiredRelativePaths.size)
+
+    for await (const child of this.keycloak.getSubGroups(consoleGroup.id)) {
+      const childPath = child.path ?? `${consoleGroup.path}/${child.name}`
+      if (desiredRelativePaths.has(childPath.slice(consoleGroup.path.length))) continue
+      const resolved = await this.keycloak.getGroupByPath(childPath)
+      if (!resolved || resolved.id !== child.id) continue
+      span?.addEvent('purge.orphan.role_group', { 'keycloak.group.path': childPath })
+      this.logger.log(`Deleting an orphan Keycloak role group (projectSlug=${project.slug}, path=${childPath}, groupId=${child.id})`)
+      await this.keycloak.deleteGroup(child.id)
+    }
   }
 
   @StartActiveSpan()
