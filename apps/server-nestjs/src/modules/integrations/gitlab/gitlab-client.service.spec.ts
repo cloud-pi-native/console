@@ -1204,13 +1204,15 @@ describe('gitlab-client', () => {
     it('should delete a project repo with permanent removal', async () => {
       const projectSlug = 'project-b'
       const repoName = 'web'
-      const repo = makeProjectSchema({ id: 99, name: repoName, path: repoName, path_with_namespace: `${projectSlug}/${repoName}` })
+      const repo = makeProjectSchema({ id: 99, name: repoName, path: repoName, path_with_namespace: `forge/${projectSlug}/${repoName}` })
 
       gitlabApi.Projects.show.mockResolvedValueOnce(repo)
       gitlabApi.Projects.remove.mockResolvedValueOnce(undefined)
 
       await expect(service.deleteProjectGroupRepo(projectSlug, repoName)).resolves.toBeUndefined()
 
+      expect(gitlabApi.Projects.show).toHaveBeenCalledWith(`forge/${projectSlug}/${repoName}`)
+      expect(gitlabApi.Projects.create).not.toHaveBeenCalled()
       expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(1, 99)
       expect(gitlabApi.Projects.remove).toHaveBeenNthCalledWith(2, 99, {
         fullPath: `forge/${projectSlug}/${repoName}-deletion_scheduled-99`,
@@ -1218,18 +1220,45 @@ describe('gitlab-client', () => {
       })
     })
 
-    it('should no-op when the repo is already absent per #2787 delete idempotency', async () => {
-      gitlabApi.Projects.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project Not Found', status: 404 }))
+    it('should no-op without creating when the repo is already absent', async () => {
+      gitlabApi.Projects.show.mockRejectedValue(makeGitbeakerRequestError({ status: 404, statusText: 'Not Found', description: '404 Project Not Found' }))
+      gitlabApi.Projects.all.mockResolvedValue({ data: [], paginationInfo: { next: null, total: 0 } })
+      gitlabApi.Projects.create.mockResolvedValue(makeProjectSchema({ id: 999 }))
+      gitlabApi.Projects.remove.mockResolvedValue(undefined)
 
-      await expect(service.deleteProjectGroupRepo('project-b', 'web')).resolves.toBeUndefined()
+      await expect(service.deleteProjectGroupRepo('project-b', 'gone')).resolves.toBeUndefined()
+
+      expect(gitlabApi.Projects.create).not.toHaveBeenCalled()
+      expect(gitlabApi.Projects.remove).not.toHaveBeenCalled()
+    })
+
+    it('should skip a repo living outside the configured root', async () => {
+      const foreign = makeProjectSchema({ id: 999, path_with_namespace: 'project-b/gone' })
+      gitlabApi.Projects.show.mockRejectedValueOnce(makeGitbeakerRequestError({ status: 404, statusText: 'Not Found', description: '404 Project Not Found' }))
+      gitlabApi.Projects.all.mockResolvedValue({ data: [foreign], paginationInfo: { next: null, total: 1 } })
+      gitlabApi.Projects.remove.mockResolvedValue(undefined)
+
+      await expect(service.deleteProjectGroupRepo('project-b', 'gone')).resolves.toBeUndefined()
 
       expect(gitlabApi.Projects.remove).not.toHaveBeenCalled()
     })
 
-    it('should tolerate a 404 on repo remove when the repo was deleted concurrently', async () => {
-      const repo = makeProjectSchema({ id: 99, name: 'web', path: 'web', path_with_namespace: 'project-b/web' })
+    it('should tolerate a 404 on the first removal (race with a concurrent deletion)', async () => {
+      const repo = makeProjectSchema({ id: 99, path_with_namespace: 'forge/project-b/web' })
       gitlabApi.Projects.show.mockResolvedValueOnce(repo)
-      gitlabApi.Projects.remove.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project Not Found', status: 404 }))
+      gitlabApi.Projects.remove
+        .mockRejectedValueOnce(makeGitbeakerRequestError({ status: 404, statusText: 'Not Found', description: '404 Project Not Found' }))
+        .mockResolvedValueOnce(undefined)
+
+      await expect(service.deleteProjectGroupRepo('project-b', 'web')).resolves.toBeUndefined()
+    })
+
+    it('should tolerate a 404 on the permanent removal', async () => {
+      const repo = makeProjectSchema({ id: 99, path_with_namespace: 'forge/project-b/web' })
+      gitlabApi.Projects.show.mockResolvedValueOnce(repo)
+      gitlabApi.Projects.remove
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(makeGitbeakerRequestError({ status: 404, statusText: 'Not Found', description: '404 Project Not Found' }))
 
       await expect(service.deleteProjectGroupRepo('project-b', 'web')).resolves.toBeUndefined()
     })
