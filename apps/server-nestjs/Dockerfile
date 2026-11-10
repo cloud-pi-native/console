@@ -23,14 +23,6 @@ COPY --chown=node:node packages/hooks/package.json        ./packages/hooks/packa
 COPY --chown=node:node packages/test-utils/package.json   ./packages/test-utils/package.json
 COPY --chown=node:node packages/tsconfig/package.json     ./packages/tsconfig/package.json
 
-COPY --chown=node:node plugins/argocd/package.json        ./plugins/argocd/package.json
-COPY --chown=node:node plugins/gitlab/package.json        ./plugins/gitlab/package.json
-COPY --chown=node:node plugins/harbor/package.json        ./plugins/harbor/package.json
-COPY --chown=node:node plugins/keycloak/package.json      ./plugins/keycloak/package.json
-COPY --chown=node:node plugins/nexus/package.json         ./plugins/nexus/package.json
-COPY --chown=node:node plugins/sonarqube/package.json     ./plugins/sonarqube/package.json
-COPY --chown=node:node plugins/vault/package.json         ./plugins/vault/package.json
-
 # Il ne faut plus installer PNPM depuis Corepack !
 # (cf: https://github.com/pnpm/pnpm/issues/11732#issuecomment-5267508169)
 ENV SHELL="bash"
@@ -41,7 +33,6 @@ ENV PATH="/home/node/.local/share/pnpm/bin:$PATH"
 RUN pnpm install --frozen-lockfile
 
 # Copier les sources des packages workspace
-COPY --chown=node:node plugins/  ./plugins/
 COPY --chown=node:node packages/ ./packages/
 COPY --chown=node:node apps/server-nestjs/ ./apps/server-nestjs/
 

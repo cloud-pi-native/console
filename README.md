@@ -342,7 +342,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 
 - Les différentes briques applicatives se trouvent dans le dossier `apps/`.
 - Les bibliothèques additionnelles se trouvent dans le dossier `packages/`.
-- Les plugins core se trouvent dans le dossier `plugins/`.
+- Les intégrations aux outils externes se trouvent dans `apps/server-nestjs/src/modules/integrations/`. Les anciens plugins legacy sont conservés dans l’historique Git.
 
 *Schema de l'architecture du monorepo :*
 
@@ -357,15 +357,6 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 │   ├── shared
 │   ├── test-utils
 │   └── tsconfig
-├── plugins
-│   ├── argocd
-│   ├── gitlab
-│   ├── harbor
-│   ├── keycloak
-│   ├── kubernetes
-│   ├── nexus
-│   ├── sonarqube
-│   └── vault
 ├── package.json
 ├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml

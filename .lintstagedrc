@@ -2,6 +2,5 @@
   "**/apps/client/**/*.{vue,css}": "pnpm --filter=@cpn-console/client run lint:style --",
   "**/apps/client/**/*": "pnpm --filter=@cpn-console/client run lint:ts --",
   "**/packages/**/*": "pnpm --filter=./packages/* run lint --",
-  "**/plugins/**/*": "pnpm --filter=./plugins/* run lint --",
   "**/*": "pnpm run lint:root --"
 }

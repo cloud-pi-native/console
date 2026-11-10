@@ -7,7 +7,7 @@ pnpm monorepo. Node >= 26, pnpm v11.8
 - `apps/client` : Vue 3 + Vite + vue-dsfr (French gov design system), Pinia, UnoCSS
 - `apps/server-nestjs` : NestJS + Fastify + Prisma 6 (PostgreSQL), contract-first API via @ts-rest — the only modifiable backend target
 - Legacy `apps/server` and `apps/nginx-strangler` were removed; use Git history for migration comparisons.
-- `plugins/*` : argocd, gitlab, harbor, keycloak, kubernetes, nexus, sonarqube, vault
+- External-system integrations live in `apps/server-nestjs/src/modules/integrations/`; legacy `plugins/` is available in Git history.
 - `packages/shared` : API contracts (@ts-rest), types, permissions (BigInt bitmasks)
 - `packages/hooks` : plugin hook system (core of plugin architecture)
 - `packages/test-utils`, `packages/eslintconfig`, `packages/tsconfig`
@@ -59,7 +59,7 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 
 ## Testing
 
-- **Vitest**: unit tests everywhere (server, client, packages, plugins) — colocated `*.spec.ts` files
+- **Vitest**: unit tests in backend, client and packages — colocated `*.spec.ts` files
 - **Playwright**: the E2E suite in `playwright/` (Chromium + Firefox,
   parallel) requires the CI stack and its fixtures.
 - Commands: `pnpm test` (all unit), `pnpm docker:e2e-ci` (the only Docker

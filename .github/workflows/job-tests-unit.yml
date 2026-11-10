@@ -62,9 +62,6 @@ jobs:
       - name: Build internal dependencies (packages)
         run: pnpm --filter "./packages/**" build
 
-      - name: Build internal plugins
-        run: pnpm --filter "./plugins/**" build
-
       - name: Run unit tests
         run: |
           ./ci/scripts/init-env.sh

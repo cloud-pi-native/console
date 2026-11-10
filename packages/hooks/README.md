@@ -1,8 +1,12 @@
-# Plugin manager
+# Hooks et utilitaires partagés
 
-## Présentation
+NestJS utilise encore les types et utilitaires de ce paquet pour la configuration des intégrations, les informations de services et les clés de projet. Le paquet reste donc nécessaire après le retrait des plugins legacy.
 
-Le plugin manager ou communément appelés "hooks" est une interface permettant au serveur d'api (`apps/server-nestjs`) de déclencher des hooks "déclencheurs / événements" pour que les plugins puissent piloter et configurer des outils.
+La suite de ce document décrit le gestionnaire de plugins historique du serveur Fastify, pas le démarrage de NestJS. Les intégrations actuelles se trouvent dans `apps/server-nestjs/src/modules/integrations/` ; les sources des anciens plugins sont disponibles dans l’historique Git.
+
+## Présentation historique
+
+Le plugin manager ou communément appelés "hooks" est une interface permettant à l'ancien serveur d'API Fastify de déclencher des hooks "déclencheurs / événements" pour que les plugins puissent piloter et configurer des outils.
 
 Les plugins obligatoires de l'application sont souvent appelés `corePlugins`.
 
@@ -12,7 +16,7 @@ L'objectif est que le server soit totalement agnostique des actions des plugins 
 
 Cette section est dédiée à tous ceux voulant améliorer les corePlugins ou en créer de nouveaux.
 
-Pour commencer je vous conseille d'aller regarder le [plugin vault](../../plugins/vault)
+Pour commencer je vous conseille d'aller regarder le [plugin Vault historique](https://github.com/cloud-pi-native/console/tree/2de2d8378d6e7efdab7999524feaf21e73091e0d/plugins/vault)
 
 ### Interface
 
