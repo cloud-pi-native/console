@@ -57,7 +57,6 @@ services:
       - 3001:3001
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
-      - ${EXTERNAL_PLUGINS_DIR_HOST_PATH}:/plugins
     env_file:
       - ../apps/server-nestjs/.env.docker
       - ../apps/server-nestjs/.env.integ
@@ -80,11 +79,6 @@ services:
         - action: sync
           path: ../packages/hooks
           target: /app/packages/hooks
-          ignore:
-            - node_modules/
-        - action: sync
-          path: ../plugins
-          target: /app/plugins
           ignore:
             - node_modules/
         - action: rebuild
