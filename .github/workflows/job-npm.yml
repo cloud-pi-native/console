@@ -15,9 +15,6 @@ on:
       PUBLISH_PACKAGES:
         required: true
         type: boolean
-      PUBLISH_PLUGINS:
-        required: true
-        type: boolean
       CHECK_CHANGES:
         required: true
         type: boolean
@@ -37,11 +34,6 @@ on:
         required: true
         type: boolean
         default: false
-      PUBLISH_PLUGINS:
-        description: Publish plugins modules
-        required: true
-        type: boolean
-        default: true
       CHECK_CHANGES:
         required: true
         type: boolean
@@ -72,20 +64,6 @@ jobs:
               - 'packages/tsconfig/**'
             logger:
               - 'packages/logger/**'
-            argocd:
-              - 'plugins/argocd/src/**'
-            gitlab:
-              - 'plugins/gitlab/src/**'
-            harbor:
-              - 'plugins/harbor/src/**'
-            keycloak:
-              - 'plugins/keycloak/src/**'
-            nexus:
-              - 'plugins/nexus/src/**'
-            sonarqube:
-              - 'plugins/sonarqube/src/**'
-            vault:
-              - 'plugins/vault/src/**'
 
   check-update:
     name: Check for package version update
@@ -109,8 +87,8 @@ jobs:
       - name: Check changes
         id: check
         run: |
-          PACKAGE_NAME=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.name | test($p)?) | .name' < ./ci/matrix-npm.json)
-          PACKAGE_PATH=$(jq -cr --arg p "${{ matrix.packages }}" '[.packages[], .plugins[]][] | select(.name | test($p)?) | .path' < ./ci/matrix-npm.json)
+          PACKAGE_NAME=$(jq -cr --arg p "${{ matrix.packages }}" '.packages[] | select(.name | test($p)?) | .name' < ./ci/matrix-npm.json)
+          PACKAGE_PATH=$(jq -cr --arg p "${{ matrix.packages }}" '.packages[] | select(.name | test($p)?) | .path' < ./ci/matrix-npm.json)
           PACKAGE_VERSION=$(jq -cr '.version' < ${PACKAGE_PATH}/package.json)
           if [ "$(curl -s -o /dev/null -I -w %{http_code} https://registry.npmjs.org/${PACKAGE_NAME})" = 404 ]; then
             REMOTE=false
@@ -130,7 +108,7 @@ jobs:
     name: Generate publish matrix
     needs:
       - path-filter
-    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS) }}
+    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES) }}
     runs-on: ubuntu-latest
     outputs:
       publish-matrix: ${{ steps.packages-matrix.outputs.PUBLISH_MATRIX }}
@@ -144,21 +122,17 @@ jobs:
           PUBLISH_MATRIX="[]"
           APPS_MATRIX="$(jq -c '.apps' < ./ci/matrix-npm.json)"
           PACKAGES_MATRIX="$(jq -c '.packages' < ./ci/matrix-npm.json)"
-          PLUGINS_MATRIX="$(jq -c '.plugins' < ./ci/matrix-npm.json)"
           if [ "${{ inputs.PUBLISH_APPS }}" = "true" ]; then
             PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$APPS_MATRIX" '$acc + $cur')"
           fi
           if [ "${{ inputs.PUBLISH_PACKAGES }}" = "true" ]; then
             PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$PACKAGES_MATRIX" '$acc + $cur')"
           fi
-          if [ "${{ inputs.PUBLISH_PLUGINS }}" = "true" ]; then
-            PUBLISH_MATRIX="$(jq -n -c --argjson acc "$PUBLISH_MATRIX" --argjson cur "$PLUGINS_MATRIX" '$acc + $cur')"
-          fi
           echo "PUBLISH_MATRIX=$PUBLISH_MATRIX" >> $GITHUB_OUTPUT
 
   publish-npm:
     name: Publish on npm
-    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES || inputs.PUBLISH_PLUGINS) }}
+    if: ${{ needs.path-filter.outputs.packages != '' && (inputs.PUBLISH_APPS || inputs.PUBLISH_PACKAGES) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -229,7 +203,7 @@ jobs:
       - name: Build internal dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}
         run: |
-          pnpm --filter "./packages/**" run build && pnpm --filter "./plugins/**" run build
+          pnpm --filter "./packages/**" run build
 
       - name: Update PNPM internal links with built internal dependencies
         if: ${{ steps.check-version.outputs.REMOTE == 'false' }}

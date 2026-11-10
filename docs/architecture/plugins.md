@@ -4,7 +4,7 @@ Cette cartographie décrit les interactions entre les plugins historiques et leu
 
 Les documents de module, colocalisés au code, sont la référence détaillée des coutures. Les dépendances sortantes sont prouvées dans le README du consommateur ; le README du fournisseur en donne une synthèse entrante et renvoie à cette preuve.
 
-L’état observé est confronté au [code de référence `2de2d8378`](https://github.com/cloud-pi-native/console/tree/2de2d8378d6e7efdab7999524feaf21e73091e0d). Les fiches se lisent avec ce même instantané ; les migrations encore ouvertes citées plus bas ne sont pas assimilées à du code livré.
+L’état observé est confronté au [code de référence `2de2d8378`](https://github.com/cloud-pi-native/console/tree/2de2d8378d6e7efdab7999524feaf21e73091e0d). Les fiches se lisent avec ce même instantané ; les migrations encore ouvertes citées plus bas ne sont pas assimilées à du code livré. Le dossier `plugins/` ayant été supprimé, ses chemins cités ici et dans les fiches désignent les sources de cet instantané Git, pas des fichiers de l’arbre courant.
 
 ## Lire la cartographie
 

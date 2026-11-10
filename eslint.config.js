@@ -4,6 +4,5 @@ export default eslintConfigBase.append({
   ignores: [
     'apps/',
     'packages/',
-    'plugins/',
   ],
 })

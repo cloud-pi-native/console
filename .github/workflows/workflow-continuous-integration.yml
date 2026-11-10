@@ -47,7 +47,6 @@ jobs:
               - 'apps/**'
             packages:
               - 'packages/**'
-              - 'plugins/**'
             ci:
               - '.github/workflows/**'
             e2e:
