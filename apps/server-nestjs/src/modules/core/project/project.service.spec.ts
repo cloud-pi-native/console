@@ -21,7 +21,6 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import {
-  makeAdminRole,
   makeCreateProjectBody,
   makeListProjectsQuery,
   makeOwnerRole,

@@ -165,6 +165,10 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
       await expect(service.add(projectId, { userId: ownerId })).rejects.toThrow(BadRequestException)
     })
 
+    it('rejects removeMember when removing owner', async () => {
+      await expect(service.remove(projectId, ownerId)).rejects.toThrow(BadRequestException)
+    })
+
     it('rejects addMember when user does not exist', async () => {
       await expect(service.add(projectId, { userId: faker.string.uuid() })).rejects.toThrow(NotFoundException)
     })

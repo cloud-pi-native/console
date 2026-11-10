@@ -139,7 +139,7 @@ async function transferOwnerShip() {
           >{{ member.userId }}</code>
         </td>
         <td>{{ member.email }}</td>
-        <td>{{ project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds) }}</td>
+        <td>{{ getRolesNames(member.roleIds) }}</td>
         <td>
           <div
             v-if="props.project.ownerId === member.userId"
