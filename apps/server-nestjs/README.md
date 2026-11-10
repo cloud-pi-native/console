@@ -23,7 +23,10 @@ NODE_ENV=test DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
 
 Les données proviennent de `packages/test-utils/src/imports/data.ts`. Leur remplacement est
 transactionnel : une erreur annule l’ensemble des suppressions et des insertions.
-Le cycle de fixtures est directement importable depuis `src/prisma/fixtures-testing.utils.ts`.
+`loadFixtures()` charge et convertit le dataset depuis `src/prisma/fixtures-testing.utils.ts` ;
+`resetFixtures(prisma)` le réimporte dans une transaction. Les tests de rollback peuvent fournir
+un dataset modifié en second argument. La configuration destructive est isolée dans
+`src/config/fixtures.config.ts`, sans chargement implicite de l’environnement.
 Le point d’entrée `db:fixtures` ne fait que vérifier la configuration, ouvrir le client et le fermer.
 Cet outillage est exclu de la compilation de production ; le démarrage normal du backend ne le déclenche jamais.
 
@@ -36,7 +39,7 @@ Pour rejouer les tests PostgreSQL sur une base jetable où les migrations ont é
 
 ```bash
 E2E=true FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
-  pnpm --dir apps/server-nestjs exec vitest run src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
+  pnpm --dir apps/server-nestjs exec vitest run src/config/fixtures.config.spec.ts src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
 ```
 
 ## Objectifs
