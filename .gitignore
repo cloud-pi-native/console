@@ -62,8 +62,6 @@ charts/
 .eslintcache
 ci/kind/configs/rendered
 
-external-plugins
-
 # Playwright
 playwright/test-results/
 playwright/playwright-report/

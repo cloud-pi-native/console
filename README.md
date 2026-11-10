@@ -83,10 +83,7 @@ Les intégrations du backend couvrent notamment :
 - [Sonarqube](https://www.sonarsource.com/products/sonarqube/)
 - [Vault](https://www.vaultproject.io/)
 
-> Pour plus d'informations sur le développement d'un plugin, voir :
->   - [documentation des plugins](./misc/plugins.md).
->   - [documentation du module hooks](./packages/hooks/README.md).
->   - [exemple de plugin](https://github.com/cloud-pi-native/console-plugin-helloworld).
+Les intégrations sont décrites dans la [cartographie des modules](./docs/architecture/plugins.md). Le chargement de plugins externes est retiré depuis l’internalisation du module Observability ; son retrait est suivi dans [#3005](https://github.com/cloud-pi-native/console/issues/3005).
 
 ### Gestion des rôles
 

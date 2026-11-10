@@ -15,7 +15,8 @@ Navigateur → client:8080 → server-nestjs:3001
 - API : `/api/*`. Swagger maintenu : `/swagger-ui-server-nestjs` et son document `-json`.
 - Les réglages de proxy nécessaires restent dans le client : en-têtes de transfert, WebSocket et gros en-têtes Keycloak. Swagger legacy reste indisponible.
 - Après mise à jour, adapter les fichiers actifs `apps/client/.env` et `.env.docker` : `SERVER_HOST=localhost` en natif, `SERVER_HOST=server-nestjs` dans Docker, `SERVER_PORT=3001` dans les deux cas. `init-env.sh` ne remplace pas les fichiers existants.
-- Les sources legacy et du proxy restent gelées comme références historiques dans cette tranche de #2895. Les anciennes procédures du proxy ne décrivent plus les stacks courantes ; un retour arrière exige les versions et configurations compatibles, sans garantie d’annulation des données ou des effets externes.
+- Les sources legacy, du proxy et des anciens plugins sont retirées de l’arbre courant ; elles restent consultables dans l’historique Git. Un retour arrière exige les versions et configurations compatibles, sans garantie d’annulation des données ou des effets externes.
+- Le chargement de plugins externes est retiré : il n’est plus utilisé depuis l’internalisation du module Observability. Aucun répertoire externe n’est nécessaire ; une éventuelle réintroduction sera une décision distincte, voir [#3005](https://github.com/cloud-pi-native/console/issues/3005).
 - Le retrait en production, le chart et le guide opérationnel restent suivis par [#2895](https://github.com/cloud-pi-native/console/issues/2895). Cette configuration ne constitue pas une preuve de qualification en production.
 
 ---
@@ -151,7 +152,6 @@ pnpm docker:dev
 | `SERVER_PORT` | `0` (dynamique) | Port du serveur (NestJS) |
 | `SESSION_SECRET` | — | Secret de signature des cookies de session (min 32 caractères) |
 | `CONTACT_EMAIL` | `cloudpinative-relations@interieur.gouv.fr` | Email de contact affiché dans l'interface |
-| `DEV_SETUP` | — | Ancienne variable legacy, sans effet sur le bootstrap NestJS ; utiliser les fixtures explicites en développement |
 
 ### Intégration / CI
 
@@ -297,13 +297,11 @@ pnpm docker:dev
 | `DSO_ENV_CHART_VERSION` | `dso-env-1.6.0` | Version du chart dso-env |
 | `DSO_NS_CHART_VERSION` | `dso-ns-1.1.5` | Version du chart dso-ns |
 
-### Variables plugins (mode mock)
+### Racine des projets
 
 | Variable | Défaut | Description |
 |----------|--------|-------------|
-| `MOCK_PLUGINS` | — | Active le mode mock des plugins (`true`) |
 | `PROJECTS_ROOT_DIR` | — | Dossier racine des projets |
-| `PLUGINS_DIR` | `/plugins` | Dossier des plugins externes |
 
 ### Variables E2E (tests)
 
@@ -362,7 +360,7 @@ Fichiers utilisés :
 - `apps/server-nestjs/.env.docker`
 - `apps/server-nestjs/.env.integ`
 
-Cette configuration est une itération de la précédente. Dans ce cas d'usage le Keycloak n'est pas créé en tant que conteneur, car on est supposé se brancher sur l'environnement d'intégration défini dans les fichiers `.env.integ`. Le contenu de `apps/server-nestjs/.env.integ` configure aussi les volumes de Compose : renseigner notamment `KUBECONFIG_HOST_PATH` et `EXTERNAL_PLUGINS_DIR_HOST_PATH` avant le lancement.
+Cette configuration est une itération de la précédente. Dans ce cas d'usage le Keycloak n'est pas créé en tant que conteneur, car on est supposé se brancher sur l'environnement d'intégration défini dans les fichiers `.env.integ`. Le contenu de `apps/server-nestjs/.env.integ` configure aussi les volumes de Compose : renseigner notamment `KUBECONFIG_HOST_PATH` avant le lancement.
 
 **Commandes de lancement :**
 

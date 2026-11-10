@@ -30,12 +30,12 @@ server-nestjs services receive configuration via injection
 (`@Inject(xxxConfigFactory.KEY)` + `ConfigType<typeof xxxConfigFactory>`),
 never `process.env`.
 
-## Plugin / Hook system
+## Integration events and shared hooks
 
-Hook lifecycle: `pre` -> `main` -> `post` (sequential steps, parallel plugin execution). On failure: `revert`.
 NestJS integration modules consume domain events and bridge plugin results through `capturePluginResult`.
-Each plugin: `index.ts` (Plugin interface), `infos.ts` (metadata/config), `functions.ts` (hook handlers).
-Plugins use TS module augmentation to extend `ProjectStore` and `Config` interfaces.
+External plugin loading was retired after Observability was internalized; see #3005.
+`packages/hooks` still provides shared types and utilities; its legacy hook engine is not the NestJS startup model.
+Decoupling its consumers and removing the package is a separate delivery tracked in #3006.
 
 server-nestjs parity: every `eventEmitter.emitAsync('<entity>.<verb>')` must
 have a matching `@OnEvent` consumer bridging to `capturePluginResult`, or

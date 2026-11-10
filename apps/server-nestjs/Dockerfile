@@ -89,7 +89,6 @@ FROM docker.io/node:26.12.1-trixie-slim AS prod
 ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 
-VOLUME ["/plugins"]
 WORKDIR /app
 
 RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
