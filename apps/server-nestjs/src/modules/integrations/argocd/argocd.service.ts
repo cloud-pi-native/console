@@ -20,12 +20,12 @@ import { ArgoCDDatastoreService } from './argocd-datastore.service'
 import {
   CONSOLE_ADMIN_GROUP_PATH,
   PLATFORM_ADMIN_GROUP_PATH,
-  PLATFORM_READONLY_GROUP_PATH,
+  PLATFORM_READER_GROUP_PATH,
   PLATFORM_SECURITY_GROUP_PATH,
   PROJECT_ADMIN_GROUP_PATH_SUFFIX,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
-  PROJECT_READONLY_GROUP_PATH_SUFFIX,
+  PROJECT_READER_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
 import { generateClusterSecretData, generateZoneVaultValues } from './argocd.utils'
@@ -660,13 +660,13 @@ function formatEnvironmentValues(
     valueFilePath,
     consoleAdminGroup: CONSOLE_ADMIN_GROUP_PATH,
     platformAdminGroup: PLATFORM_ADMIN_GROUP_PATH,
-    platformReadonlyGroup: PLATFORM_READONLY_GROUP_PATH,
+    platformReadonlyGroup: PLATFORM_READER_GROUP_PATH,
     platformSecurityGroup: PLATFORM_SECURITY_GROUP_PATH,
     projectAdminGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_ADMIN_GROUP_PATH_SUFFIX),
     projectDevopsGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVOPS_GROUP_PATH_SUFFIX),
     projectDevelopperGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX),
     projectSecurityGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_SECURITY_GROUP_PATH_SUFFIX),
-    projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READONLY_GROUP_PATH_SUFFIX),
+    projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READER_GROUP_PATH_SUFFIX),
   } satisfies ValuesSchema['environment']
 }
 
