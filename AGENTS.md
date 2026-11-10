@@ -75,6 +75,7 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
 
 ## Code quality
 
+- Comments: `//` only, never `/** */` blocks; two lines max, why not what.
 - ESLint 9 flat config based on `@antfu/eslint-config` (no Prettier, except server-nestjs)
 - Stylelint for CSS/Vue in client
 - Husky hooks: pre-commit (lint-staged), commit-msg (commitlint), pre-push (unit tests)

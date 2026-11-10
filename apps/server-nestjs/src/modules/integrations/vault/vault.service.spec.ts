@@ -11,8 +11,6 @@ import { VaultDatastoreService } from './vault-datastore.service'
 import { makeProjectWithDetails, makeVaultSecret, makeZoneWithDetails } from './vault-testing.utils'
 import { VaultService } from './vault.service'
 
-const projectRoleGroupNameRegex = /^project-(.*)-(admin|devops|developer|readonly|security)$/
-
 describe('vaultService', () => {
   let service: VaultService
   let datastore: DeepMockProxy<VaultDatastoreService>
@@ -33,8 +31,7 @@ describe('vaultService', () => {
       deleteSysPoliciesAcl: vi.fn().mockResolvedValue(undefined),
       ensureAuthApproleRole: vi.fn().mockResolvedValue(undefined),
       deleteAuthApproleRole: vi.fn().mockResolvedValue(undefined),
-      getIdentityGroupName: vi.fn(async (groupName: string) => makeVaultSecret({ data: { id: 'gid', name: groupName } })),
-      deleteIdentityGroupName: vi.fn().mockResolvedValue(undefined),
+      getIdentityGroupName: vi.fn(async (groupName: string) => makeVaultSecret({ data: { id: groupName, name: groupName } })),
       getSysAuth: vi.fn().mockResolvedValue({ 'oidc/': { accessor: 'oidc-accessor', type: 'oidc' } }),
       createIdentityGroupAlias: vi.fn().mockResolvedValue(undefined),
       listKvMetadata: vi.fn().mockResolvedValue([]),
@@ -84,21 +81,6 @@ describe('vaultService', () => {
   it('should upsert project on event', async () => {
     const project = makeProjectWithDetails()
 
-    client.getIdentityGroupName.mockImplementation(async (groupName: string) => {
-      const projectRoleMatch = groupName.match(projectRoleGroupNameRegex)
-      if (projectRoleMatch) {
-        const projectSlug = projectRoleMatch[1]
-        const role = projectRoleMatch[2]
-        return { data: { id: 'gid', name: groupName, alias: { name: `/${projectSlug}/console/${role}` } } }
-      }
-
-      if (groupName === 'console-admin') return { data: { id: 'gid', name: groupName, alias: { name: '/console/admin' } } }
-      if (groupName === 'console-readonly') return { data: { id: 'gid', name: groupName, alias: { name: '/console/readonly' } } }
-      if (groupName === 'console-security') return { data: { id: 'gid', name: groupName, alias: { name: '/console/security' } } }
-
-      return { data: { id: 'gid', name: groupName } }
-    })
-
     await service.handleUpsert(project)
 
     expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
@@ -119,7 +101,10 @@ describe('vaultService', () => {
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
-    expect(client.createIdentityGroupAlias).not.toHaveBeenCalled()
+    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`, expect.any(Object))
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+    }))
 
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
@@ -138,6 +123,45 @@ describe('vaultService', () => {
     })
   })
 
+  it('should keep a distinct Vault identity group per alias path', async () => {
+    const project = makeProjectWithDetails()
+
+    await service.handleUpsert(project)
+
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/admin`,
+      canonical_id: `project-${project.slug}-admin`,
+    }))
+    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+      canonical_id: `project-${project.slug}-owner`,
+    }))
+  })
+
+  it('should not recreate an existing group alias on project upsert', async () => {
+    const project = makeProjectWithDetails()
+    const aliasNameByGroup: Record<string, string | undefined> = {
+      [`project-${project.slug}-owner`]: `/${project.slug}/console/owner`,
+      [`project-${project.slug}-admin`]: `/${project.slug}/console/admin`,
+    }
+    client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({
+      data: {
+        id: groupName,
+        name: groupName,
+        alias: { name: aliasNameByGroup[groupName] },
+      },
+    }))
+
+    await service.handleUpsert(project)
+
+    expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/admin`,
+    }))
+    expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
+      name: `/${project.slug}/console/owner`,
+    }))
+  })
+
   it('should delete project and destroy secrets on event', async () => {
     const project = makeProjectWithDetails()
 
@@ -152,6 +176,7 @@ describe('vaultService', () => {
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`)
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(project.slug)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`)
+    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)

@@ -24,6 +24,7 @@ import {
   makeAdminRole,
   makeCreateProjectBody,
   makeListProjectsQuery,
+  makeOwnerRole,
   makeProject,
   makeProjectContext,
   makeProjectMemberWithUser,
@@ -463,13 +464,13 @@ describe('projectService', () => {
       expect(result).toBeDefined()
     })
 
-    it('grants the previous owner the admin role on transfer', async () => {
+    it('grants the previous owner the owner role on transfer (previous owner not a member)', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
       const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
-      const adminRoleId = faker.string.uuid()
-      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
+      const ownerRoleId = faker.string.uuid()
+      pwd.roles = [makeOwnerRole(pwd, { id: ownerRoleId })]
 
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findFirst.mockResolvedValue(
@@ -493,19 +494,19 @@ describe('projectService', () => {
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [adminRoleId] },
-        update: { roleIds: [adminRoleId] },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [ownerRoleId] },
+        update: { roleIds: [ownerRoleId] },
       })
     })
 
-    it('grants the previous owner the admin role on transfer when already a member', async () => {
+    it('grants the previous owner the owner role on transfer, unioned with existing roles (already a member)', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
       const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
-      const adminRoleId = faker.string.uuid()
+      const ownerRoleId = faker.string.uuid()
       const existingRoleId = faker.string.uuid()
-      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
+      pwd.roles = [makeOwnerRole(pwd, { id: ownerRoleId })]
 
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findFirst.mockResolvedValue(
@@ -533,8 +534,8 @@ describe('projectService', () => {
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, adminRoleId] },
-        update: { roleIds: [existingRoleId, adminRoleId] },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, ownerRoleId] },
+        update: { roleIds: [existingRoleId, ownerRoleId] },
       })
     })
   })
