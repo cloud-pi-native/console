@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createApp, h, nextTick } from 'vue'
 
+import LogsViewer from './LogsViewer.vue'
+
 vi.mock('@/router/index.js', () => ({
   default: { push: vi.fn(), replace: vi.fn(), currentRoute: { value: { query: {} } } },
 }))
-
-import LogsViewer from './LogsViewer.vue'
 
 const apps: ReturnType<typeof createApp>[] = []
 const containers: HTMLElement[] = []
@@ -52,7 +52,7 @@ async function toggle(container: HTMLElement, title: string) {
   await nextTick()
 }
 
-describe('LogsViewer hide toggles', () => {
+describe('logs viewer hide toggles', () => {
   // ponytail: DsfrButton swallows DOM clicks in jsdom, so toggles are asserted
   // through the instance state the template binds to, not the rendered DOM
   it('toggles local hide state when the parent binds nothing (uncontrolled)', async () => {
