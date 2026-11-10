@@ -138,8 +138,8 @@ would rotate it every sync (`ensureAuthApproleRoleSecretId`).
 
 ## Migration parity
 
-Rules for porting behaviour between `apps/server` and `apps/server-nestjs`
-live in [references/migration-parity.md](references/migration-parity.md).
+Rules for comparing `apps/server-nestjs` with the removed `apps/server`
+in Git history live in [references/migration-parity.md](references/migration-parity.md).
 
 ## Realigning an open branch
 

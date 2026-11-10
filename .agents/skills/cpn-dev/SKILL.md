@@ -13,8 +13,8 @@ metadata:
 ## Stack
 
 - pnpm monorepo, Node >= 26, pnpm >= 11.8
-- Backend target: `apps/server-nestjs`. `apps/server` is frozen (read-only
-  reference) — never modify it.
+- Backend target: `apps/server-nestjs`. Legacy `apps/server` and
+  `apps/nginx-strangler` were removed; consult Git history when needed.
 - Git-backed repository: work on feature branches off `origin/main`;
   `main` is protected.
 

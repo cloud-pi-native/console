@@ -21,9 +21,6 @@ node_modules
 .env.codespace
 .env.docker
 
-# init-db
-apps/server/src/init/db/imports/data
-
 # act
 **/act/artifacts
 **/act/docker/registry/auth
@@ -32,7 +29,6 @@ apps/server/src/init/db/imports/data
 # vitest
 coverage
 apps/client/vite.config.*.timestamp-*.mjs
-apps/server/vite.config.*.timestamp-*.mjs
 
 # sonarqube
 .scannerwork
@@ -54,9 +50,6 @@ components.d.ts
 
 # types
 types/
-
-# plugins
-apps/server/src/plugins/external
 
 # helm
 charts/
