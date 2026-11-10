@@ -340,7 +340,7 @@ export class VaultService {
       this.ensureAppAdminPolicy(appPolicyName, project.slug),
       this.ensureTechReadOnlyPolicy(techPolicyName, project.slug),
       this.ensureProjectDevopsPolicy(projectDevopsPolicyName, project.slug),
-      this.ensureProjectReadOnlyPolicy(projectDeveloperPolicyName, project.slug),
+      this.ensureProjectDeveloperPolicy(projectDeveloperPolicyName, project.slug),
       this.ensureProjectReadOnlyPolicy(projectReadOnlyPolicyName, project.slug),
       this.createProjectSecurityPolicy(projectSecurityPolicyName, project.slug),
       this.ensurePlatformAdminPolicy(PLATFORM_ADMIN_POLICY_NAME),
@@ -481,6 +481,15 @@ export class VaultService {
         `path "${projectSlug}/delete/*" { capabilities = ["update"] }`,
         `path "${projectSlug}/undelete/*" { capabilities = ["update"] }`,
         `path "${projectSlug}/destroy/*" { capabilities = ["update"] }`,
+      ].join('\n'),
+    })
+  }
+
+  async ensureProjectDeveloperPolicy(name: string, projectSlug: string): Promise<void> {
+    await this.client.ensureSysPoliciesAcl(name, {
+      policy: [
+        `path "${projectSlug}/data/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
+        `path "${projectSlug}/metadata/*" { capabilities = ["read", "list"] }`,
       ].join('\n'),
     })
   }

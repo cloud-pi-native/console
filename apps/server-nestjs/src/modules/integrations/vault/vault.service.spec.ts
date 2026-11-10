@@ -107,7 +107,10 @@ describe('vaultService', () => {
     }))
 
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
-      policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
+      policy: [
+        `path "${project.slug}/data/*" { capabilities = ["create", "read", "update", "delete", "list"] }`,
+        `path "${project.slug}/metadata/*" { capabilities = ["read", "list"] }`,
+      ].join('\n'),
     })
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--readonly`, {
       policy: `path "${project.slug}/data/*" { capabilities = ["list"] }`,
