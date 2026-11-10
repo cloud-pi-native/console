@@ -204,6 +204,22 @@ describe('sonarqubeClientService', () => {
       )
       await service.deleteProject({ project: project.key })
     })
+
+    it('should tolerate a 404 when the project is already absent', async () => {
+      const project = makeSonarqubeProject()
+      server.use(
+        http.post(`${sonarUrl}/api/projects/delete`, () => HttpResponse.json({}, { status: 404 })),
+      )
+      await expect(service.deleteProject({ project: project.key })).resolves.toBeUndefined()
+    })
+
+    it('should propagate non-404 errors', async () => {
+      const project = makeSonarqubeProject()
+      server.use(
+        http.post(`${sonarUrl}/api/projects/delete`, () => HttpResponse.json({}, { status: 500 })),
+      )
+      await expect(service.deleteProject({ project: project.key })).rejects.toThrow()
+    })
   })
 
   describe('projectsCreate', () => {
