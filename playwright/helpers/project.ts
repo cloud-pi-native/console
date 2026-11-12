@@ -7,6 +7,7 @@ import { openMyProjects } from './navigation'
 
 const projectUrlRegexp = /\/projects\/[^/]+$/
 const projectSlugPrefixRegexp = /^slug\s*:\s*/i
+const projectDeleteApiRegex = /\/api\/.*\/projects\/[^/]+$/
 
 interface Resources {
   cpu: number
@@ -118,7 +119,12 @@ export async function deleteProject({ page, projectName }: { page: Page, project
   await page.getByRole('link', { name: projectName }).click()
   await page.getByRole('button', { name: 'Supprimer le projet' }).click()
   await page.getByTestId('archiveProjectInput').fill(deleteValidationInput)
+  const archiveResponse = page.waitForResponse((response) => {
+    const request = response.request()
+    return request.method() === 'DELETE' && projectDeleteApiRegex.test(response.url())
+  })
   await page.getByTestId('confirmDeletionBtn').click()
+  await archiveResponse
   await openMyProjects({ page })
   await expect(page.getByRole('link', { name: projectName })).not.toBeVisible()
 }

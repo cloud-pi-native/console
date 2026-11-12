@@ -84,7 +84,13 @@ test.describe('Projects page', { tag: '@e2e' }, () => {
       await page.getByTestId('showArchiveProjectBtn').click()
       await expect(page.getByTestId('confirmDeletionBtn')).toBeDisabled()
       await page.getByTestId('archiveProjectInput').fill(deleteValidationInput)
+      const archiveResponse = page.waitForResponse((response) => {
+        const request = response.request()
+        return request.method() === 'DELETE'
+          && /\/api\/.*\/projects\/[^/]+$/.test(response.url())
+      })
       await page.getByTestId('confirmDeletionBtn').click()
+      await archiveResponse
 
       // Assert
       await page.getByTestId('menuAdministrationProjects').click()
