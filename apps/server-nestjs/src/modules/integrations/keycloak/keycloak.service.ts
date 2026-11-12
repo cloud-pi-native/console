@@ -342,7 +342,8 @@ export class KeycloakService {
 
   // Keycloak has no find-children-by-path read: a candidate is deleted only
   // when getGroupByPath resolves it to the same id, proving it was
-  // console-created for a role; foreign groups stay untouched.
+  // console-created for a role; foreign groups stay untouched. A nested role
+  // path keeps every ancestor segment alive.
   @StartActiveSpan()
   private async purgeOrphanRoleGroups(
     project: ProjectWithDetails,
@@ -359,9 +360,34 @@ export class KeycloakService {
     )
     span?.setAttribute('keycloak.role_groups.desired', desiredRelativePaths.size)
 
-    for await (const child of this.keycloak.getSubGroups(consoleGroup.id)) {
-      const childPath = child.path ?? `${consoleGroup.path}/${child.name}`
-      if (desiredRelativePaths.has(childPath.slice(consoleGroup.path.length))) continue
+    const protectedPaths = new Set(
+      [...desiredRelativePaths].flatMap((path) => {
+        const segments = path.split('/').filter(Boolean)
+        return segments.map((_segment, i) => `${consoleGroup.path}/${segments.slice(0, i + 1).join('/')}`)
+      }),
+    )
+
+    await this.purgeOrphanRoleGroupChildren(project, consoleGroup.id, consoleGroup.path, protectedPaths)
+  }
+
+  // Deletes console-created children of parentGroup that no protected path
+  // claims, recursing into kept children so nested orphans are pruned too.
+  // Protected paths are console-absolute so every recursion level compares
+  // childPath in the same frame.
+  private async purgeOrphanRoleGroupChildren(
+    project: ProjectWithDetails,
+    parentId: string,
+    parentPath: string,
+    protectedPaths: Set<string>,
+  ) {
+    const span = trace.getActiveSpan()
+    for await (const child of this.keycloak.getSubGroups(parentId)) {
+      if (!isNonEmptyGroupPath(child.id) || !isNonEmptyGroupPath(child.name)) continue
+      const childPath = child.path ?? `${parentPath}/${child.name}`
+      if (protectedPaths.has(childPath)) {
+        await this.purgeOrphanRoleGroupChildren(project, child.id, childPath, protectedPaths)
+        continue
+      }
       const resolved = await this.keycloak.getGroupByPath(childPath)
       if (!resolved || resolved.id !== child.id) continue
       span?.addEvent('purge.orphan.role_group', { 'keycloak.group.path': childPath })

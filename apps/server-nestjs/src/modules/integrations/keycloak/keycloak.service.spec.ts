@@ -285,6 +285,119 @@ describe('keycloakService', () => {
       expect(keycloak.addUserToGroup).not.toHaveBeenCalledWith('owner-id', 'developer-group-id')
     })
 
+    it('should keep the ancestors of a nested role group when purging orphans', async () => {
+      const developerRole = makeProjectRole({
+        id: 'role-developer',
+        permissions: 0n,
+        oidcGroup: '/test-project/console/team/developer',
+        type: 'managed',
+      })
+      const projectWithDeveloperRole = makeProjectWithDetails({
+        ...mockProject,
+        members: [],
+        roles: [developerRole],
+      })
+      datastore.getAllProjects.mockResolvedValue([projectWithDeveloperRole])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
+      const developerGroup = makeGroupRepresentation({ id: 'developer-group-id', name: 'developer', path: '/test-project/console/team/developer' })
+
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
+      })
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(developerGroup)
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      const teamGroup = makeGroupRepresentation({ id: 'team-group-id', name: 'team', path: '/test-project/console/team' })
+      keycloak.getSubGroups.mockImplementation((parentId) => {
+        if (parentId === 'console-id') return (async function* () { yield teamGroup })()
+        return (async function* () { /* empty */ })()
+      })
+
+      await service.handleCron()
+
+      expect(keycloak.deleteGroup).not.toHaveBeenCalled()
+    })
+
+    it('should purge a nested orphan group under a kept path', async () => {
+      const teamRole = makeProjectRole({
+        id: 'role-team',
+        permissions: 0n,
+        oidcGroup: '/test-project/console/team',
+        type: 'managed',
+      })
+      const projectWithTeamRole = makeProjectWithDetails({
+        ...mockProject,
+        members: [],
+        roles: [teamRole],
+      })
+      datastore.getAllProjects.mockResolvedValue([projectWithTeamRole])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
+
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
+      })
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'team-group-id', name: 'team', path: '/test-project/console/team' }))
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      const staleRoleGroup = makeGroupRepresentation({ id: 'stale-role-group-id', name: 'developer' })
+      keycloak.getSubGroups.mockImplementation((parentId) => {
+        if (parentId === 'console-id') return (async function* () { yield makeGroupRepresentation({ id: 'team-group-id', name: 'team', path: '/test-project/console/team' }) })()
+        if (parentId === 'team-group-id') return (async function* () { yield staleRoleGroup })()
+        return (async function* () { /* empty */ })()
+      })
+      keycloak.getGroupByPath.mockResolvedValue(staleRoleGroup)
+
+      await service.handleCron()
+
+      expect(keycloak.deleteGroup).toHaveBeenCalledWith('stale-role-group-id')
+    })
+
+    it('should keep every segment of a nested role group across recursion levels', async () => {
+      const reviewersRole = makeProjectRole({
+        id: 'role-reviewers',
+        permissions: 0n,
+        oidcGroup: '/test-project/console/team/reviewers',
+        type: 'managed',
+      })
+      const projectWithReviewersRole = makeProjectWithDetails({
+        ...mockProject,
+        members: [],
+        roles: [reviewersRole],
+      })
+      datastore.getAllProjects.mockResolvedValue([projectWithReviewersRole])
+
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project' })
+      const consoleGroup = { id: 'console-id', name: 'console', path: '/test-project/console' }
+      const reviewersGroup = makeGroupRepresentation({ id: 'reviewers-group-id', name: 'reviewers', path: '/test-project/console/team/reviewers' })
+
+      keycloak.ensureGroupByPath.mockImplementation((path) => {
+        if (path === '/test-project') return Promise.resolve(projectGroup)
+        throw new Error(`Unexpected ensureGroupByPath call: ${path}`)
+      })
+      keycloak.ensureConsoleGroup.mockResolvedValue(consoleGroup)
+      keycloak.ensureRoleGroup.mockResolvedValue(reviewersGroup)
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      keycloak.getSubGroups.mockImplementation((parentId) => {
+        if (parentId === 'console-id') return (async function* () { yield makeGroupRepresentation({ id: 'team-group-id', name: 'team', path: '/test-project/console/team' }) })()
+        if (parentId === 'team-group-id') return (async function* () { yield reviewersGroup })()
+        return (async function* () { /* empty */ })()
+      })
+      keycloak.getGroupByPath.mockResolvedValue(reviewersGroup)
+
+      await service.handleCron()
+
+      expect(keycloak.deleteGroup).not.toHaveBeenCalled()
+    })
+
     it('should handle different role types (managed, external, global)', async () => {
       const roleManaged = makeProjectRole({ id: 'role-managed', permissions: 0n, oidcGroup: '/test-project/console/managed-group', type: 'managed' })
       const roleExternal = makeProjectRole({ id: 'role-external', permissions: 0n, oidcGroup: '/test-project/console/external-group', type: 'external' })
