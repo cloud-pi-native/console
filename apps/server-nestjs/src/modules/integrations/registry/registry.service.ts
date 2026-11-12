@@ -43,7 +43,6 @@ import {
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
-  REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
   ROBOT_NAME_PROJECT,
   ROBOT_NAME_RO,
@@ -104,8 +103,7 @@ export class RegistryService {
       'project.slug': project.slug,
       'registry.robot.name': robotName,
     })
-    const relativeVaultPath = `REGISTRY/${robotName}`
-    const vaultPath = getProjectVaultPath(project, this.baseConfig.projectsRootDir, relativeVaultPath)
+    const vaultPath = getProjectVaultPath(project, this.baseConfig.projectsRootDir, `REGISTRY/${robotName}`)
     const vaultRobotSecret = await this.vault.read<VaultRobotSecret>(vaultPath).catch((error) => {
       if (isVaultNotFound(error)) return null
       throw error
@@ -134,6 +132,24 @@ export class RegistryService {
     await this.vault.write(secret, vaultPath)
     span?.setAttribute('vault.secret.written', true)
     return secret
+  }
+
+  private async revokeRobotSecret(project: ProjectWithDetails, harborProjectId: number, robotName: string) {
+    const span = trace.getActiveSpan()
+    span?.setAttributes({
+      'project.slug': project.slug,
+      'registry.robot.name': robotName,
+    })
+    const existing = await this.getRobot(project, harborProjectId, robotName)
+    if (existing?.id) {
+      await this.client.deleteRobot(existing.id)
+    }
+    const vaultPath = getProjectVaultPath(project, this.baseConfig.projectsRootDir, `REGISTRY/${robotName}`)
+    try {
+      await this.vault.delete(vaultPath)
+    } catch (error) {
+      if (!isVaultNotFound(error)) throw error
+    }
   }
 
   private isRobotSecretExpiring(vaultSecret: VaultSecret): boolean {
@@ -257,7 +273,7 @@ export class RegistryService {
       this.ensureRetentionPolicy(project, harborProjectId),
       options.publishProjectRobot
         ? this.ensureRobotSecret(project, harborProjectId, ROBOT_NAME_PROJECT, roAccess)
-        : Promise.resolve(),
+        : this.revokeRobotSecret(project, harborProjectId, ROBOT_NAME_PROJECT),
     ])
 
     return {
@@ -327,7 +343,7 @@ export class RegistryService {
     this.logger.log('Starting Registry reconciliation')
     const projects = await this.datastore.getAllProjects()
     span?.setAttribute('registry.projects.count', projects.length)
-    await Promise.all(projects.map(p => this.ensureProject(p)))
+    await Promise.all(projects.map(p => this.syncProject(p)))
   }
 
   private async getAdminPluginConfig(key: string): Promise<string | null> {

@@ -228,9 +228,15 @@ export class RegistryClientService {
   }
 
   async deleteRobot(robotId: number): Promise<RegistryResponse> {
-    return this.http.fetch(`robots/${encodeURIComponent(String(robotId))}`, {
+    const deleted = await this.http.fetch(`robots/${encodeURIComponent(String(robotId))}`, {
       method: 'DELETE',
     })
+    // A 404 proves the robot is gone; anything else >= 300 must not look like a
+    // successful revocation to callers that destroy the vault secret after it.
+    if (deleted.status !== HttpStatus.NOT_FOUND && deleted.status >= HttpStatus.AMBIGUOUS) {
+      throw new Error(`Harbor delete robot failed (${deleted.status})`)
+    }
+    return deleted
   }
 
   async getRetentionId(projectName: string): Promise<number | null> {
@@ -280,7 +286,13 @@ export class RegistryClientService {
         method: 'GET',
         query: { ...query, page, page_size: ROBOT_LIST_PAGE_SIZE },
       })
-      if (response.status !== 200 || !response.data?.length) return
+      // A 404 proves absence; a 5xx mid-listing must not be reported as an
+      // empty list — callers cannot tell a proven absence from a failure.
+      if (response.status === HttpStatus.NOT_FOUND) return
+      if (response.status !== HttpStatus.OK) {
+        throw new Error(`Harbor list failed (${path}, ${response.status})`)
+      }
+      if (!response.data?.length) return
       yield* response.data
       if (response.data.length < ROBOT_LIST_PAGE_SIZE) return
     }
