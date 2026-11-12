@@ -284,24 +284,20 @@ export class ArgoCDService {
     infraProject: ProjectSchema,
     zoneSlug: string,
   ) {
-    const environmentActions = await this.generateEnvironmentsUpdateActions(
-      project,
-      project.environments,
-      infraProject,
-      zoneSlug,
-    )
-    const deploymentActions = await this.generateDeploymentsUpdateActions(
-      project,
-      infraProject,
-      zoneSlug,
-    )
+    // Pick the mode from the data, not from the actions: an up-to-date deployment
+    // values file yields no action and must not fall back to the legacy layout.
+    const hasZoneDeployments = project.deployments
+      .some(deployment => deployment.environment.cluster?.zone.slug === zoneSlug)
+    const updateActions = hasZoneDeployments
+      ? await this.generateDeploymentsUpdateActions(project, infraProject, zoneSlug)
+      : await this.generateEnvironmentsUpdateActions(project, project.environments, infraProject, zoneSlug)
     const purgeEnvironmentActions = await this.generatePurgeEnvironmentActions(
       project,
       infraProject,
       zoneSlug,
     )
     return [
-      ...(deploymentActions.length ? deploymentActions : environmentActions),
+      ...updateActions,
       ...purgeEnvironmentActions,
     ] satisfies CommitAction[]
   }
@@ -636,9 +632,10 @@ function formatRepositoriesValuesFromDeployments(
       .map((source) => {
         const valueFiles = splitExtraRepositories(source.helmValuesFiles)
         const valueSources = formatDeploymentSourceValueSources(source, gitlabPublicProjectUrl)
+        // Same key order as formatRepositoriesValues: switching from legacy must not reorder the YAML
         return {
-          name: source.repository.internalRepoName,
           id: source.repository.id,
+          name: source.repository.internalRepoName,
           repoURL: `${gitlabPublicProjectUrl}/${source.repository.internalRepoName}.git`,
           targetRevision: source.targetRevision || 'HEAD',
           path: source.path || '.',
