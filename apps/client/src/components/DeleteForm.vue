@@ -60,7 +60,7 @@ const deleteConfirmValue = ref('')
             icon="ri:delete-bin-7-line"
             @click="$emit('delete')"
           />
-          <DsfrButton v-if="props.isLoading" :icon="{ name: 'ri:refresh-line', animation: 'spin' }" icon-only disabled />
+          <DsfrButton v-if="props.isLoading" :icon="{ name: 'ri:refresh-line', animation: 'spin' }" icon-only disabled aria-label="Suppression en cours" aria-busy="true" />
         </div>
         <DsfrButton
           label="Annuler"

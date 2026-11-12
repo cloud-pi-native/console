@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Project, ProjectOperations } from '@/utils/project-utils.js'
+import type { Project } from '@/utils/project-utils.js'
 import { deleteValidationInput } from '@cpn-console/shared'
 import { useProjectStore } from '@/stores/project.js'
 import { clickInDialog } from '@/utils/func.js'
@@ -12,17 +12,18 @@ const emit = defineEmits<{
   archive: []
 }>()
 
+const projectStore = useProjectStore()
 const isArchivingProject = ref(false)
 const deleteInput = ref('')
 const isDeleting = computed(
   () =>
-    (props.project.operationsInProgress as unknown as ProjectOperations[]).some(ope => ope.startsWith('delete')),
+    props.project.operationsInProgress.some(ope => ope.startsWith('delete')),
 )
 
 async function archiveProject() {
   isArchivingProject.value = false
-  await props.project.Commands.delete()
-  useProjectStore().lastSelectedProjectSlug = undefined
+  await projectStore.archiveProject(props.project.id)
+  projectStore.lastSelectedProjectSlug = undefined
   emit('archive')
 }
 

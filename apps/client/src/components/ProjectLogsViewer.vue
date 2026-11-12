@@ -2,12 +2,14 @@
 import type { CleanLog } from '@cpn-console/shared'
 import type { Project } from '@/utils/project-utils.js'
 import { ref, watch } from 'vue'
+import { useProjectStore } from '@/stores/project.js'
 
 const props = defineProps<{
   project: Project
   asProfile: 'user' | 'admin'
 }>()
 
+const projectStore = useProjectStore()
 const step = props.asProfile === 'user' ? 5 : 15
 const isUpdating = ref(false)
 const page = ref(0)
@@ -18,7 +20,7 @@ const totalLength = ref(0)
 async function showLogs(newPage?: number) {
   if (newPage != null) page.value = newPage
   isUpdating.value = true
-  const res = await props.project.Logs.list({ offset: page.value * step, limit: step, clean: props.asProfile === 'user' ? 'true' : 'false' })
+  const res = await projectStore.listProjectLogs(props.project.id, { offset: page.value * step, limit: step, clean: props.asProfile === 'user' ? 'true' : 'false' })
   logs.value = res.logs
   totalLength.value = res.total
   isUpdating.value = false

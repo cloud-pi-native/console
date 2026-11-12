@@ -9,7 +9,7 @@
     "url": "https://github.com/cloud-pi-native/console"
   },
   "scripts": {
-    "build": "pnpm run icons && pnpm run type-check && pnpm run build-only",
+    "build": "pnpm run icons && pnpm run type-check && pnpm run a11y:audit && pnpm run build-only",
     "build-only": "vite --mode=production build",
     "build:clean": "rimraf ./dist ./tsconfig.tsbuildinfo",
     "dev": "vite --mode=development",
@@ -23,7 +23,10 @@
     "preview": "vite preview --port 8080",
     "test": "vitest run",
     "test:cov": "vitest run --coverage",
-    "type-check": "vue-tsc --noEmit -p tsconfig.json"
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
+    "a11y:audit": "node ./scripts/a11y-audit.mjs",
+    "a11y:audit:update": "node ./scripts/a11y-audit.mjs --update-baseline",
+    "a11y:audit:report": "node ./scripts/a11y-audit.mjs --write-report"
   },
   "dependencies": {
     "@cpn-console/logger": "workspace:^",
