@@ -161,10 +161,8 @@ export class KeycloakService {
     const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await this.ensureRoleGroups(project, consoleGroup)
-    // A deleted project role emits only project.upsert, and the ensure pass is
-    // purely additive: without this purge the role's Keycloak group and its
-    // memberships survive forever (issue #2880). Symmetric, at group level,
-    // with purgeOrphanRoleGroupMembers.
+    // A deleted role emits only project.upsert and the ensure pass is purely
+    // additive: without this purge the role's Keycloak group survives forever.
     await this.purgeOrphanRoleGroups(project, consoleGroup)
   }
 
@@ -342,11 +340,9 @@ export class KeycloakService {
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
   }
 
-  // Deletes every direct child of the console group that no longer matches a
-  // current role's OIDC group. Keycloak gives no direct "find children by
-  // path" read, so each candidate group is resolved through getGroupByPath
-  // against the console group's path: a path match proves the group was
-  // console-created for a role, anything else is left untouched.
+  // Keycloak has no find-children-by-path read: a candidate is deleted only
+  // when getGroupByPath resolves it to the same id, proving it was
+  // console-created for a role; foreign groups stay untouched.
   @StartActiveSpan()
   private async purgeOrphanRoleGroups(
     project: ProjectWithDetails,
