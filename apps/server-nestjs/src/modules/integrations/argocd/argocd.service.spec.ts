@@ -654,8 +654,8 @@ describe('argoCDService', () => {
               },
               repositories: [
                 {
-                  name: 'infra-repo',
                   id: mockRepo.id,
+                  name: 'infra-repo',
                   repoURL: `https://gitlab.internal/group/project-1/infra-repo.git`,
                   targetRevision: 'dev',
                   path: '.',
@@ -663,8 +663,8 @@ describe('argoCDService', () => {
                   valueSources: [],
                 },
                 {
-                  name: 'infra-repo',
                   id: mockRepo.id,
+                  name: 'infra-repo',
                   repoURL: `https://gitlab.internal/group/project-1/infra-repo.git`,
                   targetRevision: '1.0.0',
                   path: 'service-1',
@@ -689,7 +689,40 @@ describe('argoCDService', () => {
       recursive: true,
     })
 
-    expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(4) // 2 environments + 2 deployments
+    expect(gitlab.generateCreateOrUpdateAction).toHaveBeenCalledTimes(2) // one per environment with deployments
+  })
+
+  it('should not fall back to legacy values when deployment values are already up to date', async () => {
+    const deployedRepo = makeProjectRepository({ internalRepoName: 'deployed-repo' })
+    const unattachedRepo = makeProjectRepository({ internalRepoName: 'unattached-repo', isInfra: true })
+    const mockDevEnv = makeProjectEnvironment({ name: 'dev', cluster: { id: 'c1', label: 'cluster-1', zone: { slug: 'zone-1' } } })
+    const mockProject = makeProjectWithDetails({
+      slug: 'project-1',
+      name: 'Project 1',
+      environments: [mockDevEnv],
+      repositories: [deployedRepo, unattachedRepo],
+      deployments: [
+        makeProjectDeployment({
+          environment: mockDevEnv,
+          deploymentSources: [makeProjectDeploymentSource({ repository: deployedRepo })],
+        }),
+      ],
+    })
+
+    datastore.getAllProjects.mockResolvedValue([mockProject])
+    gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
+    gitlab.ensureProjectGroupPublicUrl.mockResolvedValue('https://gitlab.internal/group')
+    gitlab.listFiles.mockResolvedValue([])
+    vault.getAuthApproleRoleRoleId.mockResolvedValue('role-id')
+    vault.ensureAuthApproleRoleSecretId.mockResolvedValue('secret-id')
+    gitlab.generateCreateOrUpdateAction.mockImplementation(async (_repo, _ref, filePath: string, content: string) => {
+      // The values file already holds the deployment layout; only a legacy one would differ
+      return content.includes('unattached-repo') ? makeCommitAction({ filePath, content }) : null
+    })
+
+    await expect(service.handleCron()).resolves.not.toThrow()
+
+    expect(gitlab.maybeCreateCommit).not.toHaveBeenCalled()
   })
 
   it('should generate multi-source valueSources (internal + external) for a deployment', async () => {
