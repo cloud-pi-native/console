@@ -1217,6 +1217,22 @@ describe('gitlab-client', () => {
         permanentlyRemove: true,
       })
     })
+
+    it('should no-op when the repo is already absent per #2787 delete idempotency', async () => {
+      gitlabApi.Projects.show.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project Not Found', status: 404 }))
+
+      await expect(service.deleteProjectGroupRepo('project-b', 'web')).resolves.toBeUndefined()
+
+      expect(gitlabApi.Projects.remove).not.toHaveBeenCalled()
+    })
+
+    it('should tolerate a 404 on repo remove when the repo was deleted concurrently', async () => {
+      const repo = makeProjectSchema({ id: 99, name: 'web', path: 'web', path_with_namespace: 'project-b/web' })
+      gitlabApi.Projects.show.mockResolvedValueOnce(repo)
+      gitlabApi.Projects.remove.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Project Not Found', status: 404 }))
+
+      await expect(service.deleteProjectGroupRepo('project-b', 'web')).resolves.toBeUndefined()
+    })
   })
 
   describe('deleteGroup', () => {
@@ -1232,6 +1248,16 @@ describe('gitlab-client', () => {
         fullPath: `forge/project-b-deletion_scheduled-77`,
         permanentlyRemove: true,
       })
+    })
+
+    it('should tolerate a 404 on remove when the group is already gone', async () => {
+      const group = makeGroupSchema({ id: 77, full_path: 'forge/project-b' })
+
+      gitlabApi.Groups.remove.mockRejectedValueOnce(makeGitbeakerRequestError({ description: '404 Group Not Found', status: 404 }))
+
+      await expect(service.deleteGroup(group)).resolves.toBeUndefined()
+
+      expect(gitlabApi.Groups.remove).toHaveBeenCalledTimes(2)
     })
   })
 })
