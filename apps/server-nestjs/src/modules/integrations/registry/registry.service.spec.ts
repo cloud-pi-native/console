@@ -1,6 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { DeepMockProxy } from 'vitest-mock-extended'
-import { DEFAULT, ENABLED } from '@cpn-console/shared'
+import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { HttpStatus } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
@@ -10,6 +10,7 @@ import { baseConfigFactory } from '../../../config/base.config'
 import { harborConfigFactory } from '../../../config/harbor.config'
 import { vaultConfigFactory } from '../../../config/vault.config'
 import { VaultClientService } from '../vault/vault-client.service'
+import { VaultError } from '../vault/vault-http-client.service'
 import { makeVaultSecret } from '../vault/vault-testing.utils'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
@@ -195,7 +196,7 @@ describe('registryService', () => {
       expect(vault.read).toHaveBeenCalledTimes(2)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
-      expect(client.getProjectRobots).not.toHaveBeenCalled()
+      expect(client.getProjectRobots).toHaveBeenCalledTimes(1)
       expect(client.ensureRobot).not.toHaveBeenCalled()
       expect(client.deleteRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
@@ -344,6 +345,73 @@ describe('registryService', () => {
       await service.handleUpsert(project)
 
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
+    })
+
+    it('revokes the project robot and its vault secret when publishing is disabled', async () => {
+      const project = makeProjectWithDetails({
+        plugins: [
+          { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT, value: DISABLED },
+        ],
+      })
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(false)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}` }
+      })
+      client.deleteRobot.mockResolvedValue(makeNoContent())
+
+      await service.handleUpsert(project)
+
+      expect(client.deleteRobot).toHaveBeenCalledWith(42)
+      expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
+      expect(vault.write).not.toHaveBeenCalledWith(expect.anything(), `forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
+    })
+
+    it('is idempotent when the project robot and its vault secret are already gone', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(false)
+      vault.delete.mockRejectedValue(new VaultError('NotFound', 'missing'))
+
+      await expect(service.handleUpsert(project)).resolves.toEqual({
+        harbor: expect.objectContaining({ status: 'OK' }),
+      })
+
+      expect(client.deleteRobot).not.toHaveBeenCalled()
+    })
+
+    it('surfaces a Harbor revocation failure as KO without destroying the vault secret', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(false)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}` }
+      })
+      client.deleteRobot.mockRejectedValue(new Error('Harbor delete robot failed (500)'))
+
+      await expect(service.handleUpsert(project)).resolves.toEqual({
+        harbor: expect.objectContaining({
+          status: 'KO',
+          message: expect.stringContaining('Harbor delete robot failed'),
+        }),
+      })
+
+      expect(vault.delete).not.toHaveBeenCalled()
+    })
+
+    it('surfaces a robot-listing failure as KO without destroying the vault secret', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(false)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield* []
+        throw new Error('Harbor list failed (500)')
+      })
+
+      await expect(service.handleUpsert(project)).resolves.toEqual({
+        harbor: expect.objectContaining({
+          status: 'KO',
+          message: expect.stringContaining('Harbor list failed'),
+        }),
+      })
+
+      expect(vault.delete).not.toHaveBeenCalled()
     })
   })
 

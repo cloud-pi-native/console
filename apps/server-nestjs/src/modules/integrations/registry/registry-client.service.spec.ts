@@ -338,6 +338,16 @@ describe('registryService', () => {
       expect(robots).toMatchObject([{ id: 3, name: 'robot$myproj+ro' }])
     })
 
+    it('rejects a robot listing Harbor refused', async () => {
+      server.use(
+        http.get(`${harborUrl}/api/v2.0/robots`, () => new HttpResponse(null, { status: HttpStatus.INTERNAL_SERVER_ERROR })),
+      )
+
+      await expect((async () => {
+        for await (const _robot of service.getProjectRobots(123)) { /* drain */ }
+      })()).rejects.toThrow('Harbor list failed')
+    })
+
     it('deletes a robot by id', async () => {
       server.use(
         http.delete(`${harborUrl}/api/v2.0/robots/:robotId`, ({ params }) => {
@@ -347,6 +357,22 @@ describe('registryService', () => {
       )
 
       await expect(service.deleteRobot(3)).resolves.toMatchObject({ status: HttpStatus.OK })
+    })
+
+    it('tolerates a 404 when deleting a robot already gone', async () => {
+      server.use(
+        http.delete(`${harborUrl}/api/v2.0/robots/:robotId`, () => new HttpResponse(null, { status: HttpStatus.NOT_FOUND })),
+      )
+
+      await expect(service.deleteRobot(3)).resolves.toMatchObject({ status: HttpStatus.NOT_FOUND })
+    })
+
+    it('rejects a robot deletion rejected by Harbor', async () => {
+      server.use(
+        http.delete(`${harborUrl}/api/v2.0/robots/:robotId`, () => new HttpResponse(null, { status: HttpStatus.INTERNAL_SERVER_ERROR })),
+      )
+
+      await expect(service.deleteRobot(3)).rejects.toThrow('Harbor delete robot failed (500)')
     })
   })
 
