@@ -394,11 +394,11 @@ export class GitlabClientService {
 
   async deleteGroup(group: GroupSchemaWith<'id' | 'full_path'>): Promise<void> {
     this.logger.verbose(`Deleting GitLab group ${group.full_path} (groupId=${group.id})`)
-    await this.client.Groups.remove(group.id)
-    return this.client.Groups.remove(group.id, {
+    await unlessNotFound(() => this.client.Groups.remove(group.id))
+    return unlessNotFound(() => this.client.Groups.remove(group.id, {
       permanentlyRemove: true,
       fullPath: `${group.full_path}-deletion_scheduled-${group.id}`,
-    })
+    }))
   }
 
   async getGroupMembers(group: GroupSchemaWith<'id'>) {
@@ -510,10 +510,14 @@ export class GitlabClientService {
 
   async deleteProjectGroupRepo(projectSlug: string, repoName: string) {
     const fullPath = `${projectSlug}/${repoName}`
-    const repo = await this.ensureProjectGroupRepo(projectSlug, fullPath)
-    await this.client.Projects.remove(repo.id)
+    const repo = await unlessNotFound(() => this.client.Projects.show(`${this.config.projectRootDir}/${fullPath}`))
+    if (!repo) {
+      this.logger.log(`GitLab repository not found for path ${fullPath}; cleanup is a no-op`)
+      return
+    }
+    await unlessNotFound(() => this.client.Projects.remove(repo.id))
     // GitLab requires the full path (including the projects root group), not the group-relative one.
-    return this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${fullPath}-deletion_scheduled-${repo.id}` })
+    return unlessNotFound(() => this.client.Projects.remove(repo.id, { permanentlyRemove: true, fullPath: `${this.config.projectRootDir}/${fullPath}-deletion_scheduled-${repo.id}` }))
   }
 
   // CI Variables
