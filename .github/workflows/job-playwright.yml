@@ -37,10 +37,15 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # - name: Ensure Playwright browsers
-        # run: pnpm --dir playwright exec playwright install chromium firefox
+      - name: Install Playwright dependencies from lockfile
+        run: pnpm --filter @cpn-console/playwright install --frozen-lockfile --ignore-scripts
+
+      # Requires the runner image exposing RUNNER_PLAYWRIGHT_VERSION (Dockerfile#10).
+      - name: Check Playwright version matches runner
+        run: node ci/scripts/check-playwright-version.ts
 
       - name: Initialize application environment for tests
+        id: application-environment
         env:
           GHCR_CACHE: registry-cache-ghcr:5000
         run: |
@@ -58,7 +63,7 @@ jobs:
         run: pnpm --dir playwright exec playwright test --grep @e2e --shard=${{ matrix.shard }}/4 --reporter=blob
 
       - name: Dump docker compose state on failure
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.application-environment.outcome != 'skipped' }}
         run: |
           docker compose -f ./docker/docker-compose.ci.yml ps -a
           for service in keycloak postgres fixtures server-nestjs client opencds-mockoon; do
@@ -85,6 +90,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Playwright dependencies from lockfile
+        run: pnpm --filter @cpn-console/playwright install --frozen-lockfile --ignore-scripts
 
       - name: Download blob reports from all shards
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
