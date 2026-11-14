@@ -26,8 +26,13 @@ let keycloak: Keycloak
 
 export function getKeycloak() {
   if (!keycloak) {
+    let checked = false
     keycloak = new Keycloak(keycloakConfig)
     keycloak.onAuthSuccess = () => {
+      // Issue #2593: only check on the initial login — after a refresh, ssoSessionMaxLifespan
+      // can cap refreshTokenParsed.exp below the fresh access token's exp, which is expected.
+      if (checked) return
+      checked = true
       if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp > keycloak.tokenParsed.exp)) {
         return
       }

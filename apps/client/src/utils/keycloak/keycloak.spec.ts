@@ -1,3 +1,4 @@
+import { logger } from '@cpn-console/logger/browser'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getKeycloak, getUserProfile, keycloakInit, keycloakLogin, keycloakLogout } from './keycloak.js'
 
@@ -31,6 +32,10 @@ vi.mock('keycloak-js', () => {
   }
   return { default: Keycloak }
 })
+
+vi.mock('@cpn-console/logger/browser', () => ({
+  logger: { warn: vi.fn() },
+}))
 
 const mockedKeycloakInit = vi.spyOn(keycloak, 'init')
 const mockedKeycloakLogin = vi.spyOn(keycloak, 'login')
@@ -103,5 +108,28 @@ describe('keycloak-init', () => {
       expect(mockedKeycloakLogout.mock.calls).toHaveLength(1)
       expect(e).toEqual(error)
     }
+  })
+})
+
+describe('keycloak onAuthSuccess refresh-token expiry check (issue #2593)', () => {
+  it('should warn on initial auth but not again after a token refresh', () => {
+    // Initial login: refresh token (ssoSessionMaxLifespan) outlives the access token.
+    const now = Math.floor(Date.now() / 1000)
+    Object.assign(keycloak, {
+      tokenParsed: { exp: now + 300 },
+      refreshTokenParsed: { exp: now + 36000 },
+    })
+    keycloak.onAuthSuccess?.()
+    expect(logger.warn).toHaveBeenCalledTimes(1)
+    expect(logger.warn).toHaveBeenCalledWith('Keycloak misconfiguration: refreshToken should not expire before token')
+
+    // Late refresh: ssoSessionMaxLifespan caps refreshTokenParsed.exp below the
+    // fresh access token's exp — expected, must not warn again (#2593).
+    Object.assign(keycloak, {
+      tokenParsed: { exp: now + 300 },
+      refreshTokenParsed: { exp: now + 60 },
+    })
+    keycloak.onAuthSuccess?.()
+    expect(logger.warn).toHaveBeenCalledTimes(1)
   })
 })
