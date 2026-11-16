@@ -68,8 +68,7 @@ always filter by concrete id. `ProjectRole`/`Repository` foreign keys do not cas
   Stop an active dev stack with `pnpm docker:dev:clean` before E2E;
   `docker:dev` does not provide E2E fixtures. Clean up with
   `pnpm docker:e2e-ci:delete` after the suite, including a failed run.
-- For one-spec manual debugging only, start the CI stack with `pnpm docker:ci`,
-  run `pnpm --dir playwright exec playwright test e2e-tests/dashboard.spec.ts -g 'Should display a project statuses'`, then stop it with `pnpm docker:ci:clean`.
+- For one-spec manual debugging, follow docs/e2e-debugging.md.
 
 ## Code quality
 
