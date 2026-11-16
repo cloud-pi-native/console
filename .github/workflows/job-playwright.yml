@@ -42,7 +42,12 @@ jobs:
 
       # Requires the runner image exposing RUNNER_PLAYWRIGHT_VERSION (Dockerfile#10).
       - name: Check Playwright version matches runner
-        run: node ci/scripts/check-playwright-version.ts
+        run: |
+          application_version=$(node -p "require('./playwright/node_modules/@playwright/test/package.json').version")
+          if [[ ! "${RUNNER_PLAYWRIGHT_VERSION:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || "$application_version" != "${RUNNER_PLAYWRIGHT_VERSION:-}" ]]; then
+            echo "::error::Versions Playwright incompatibles : application=$application_version ; runner=${RUNNER_PLAYWRIGHT_VERSION:-absente}. Un alignement explicite est requis."
+            exit 1
+          fi
 
       - name: Initialize application environment for tests
         id: application-environment
