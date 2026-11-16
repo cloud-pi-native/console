@@ -75,14 +75,10 @@ overrides:
   vite@8.0.11: ">=8.0.16 <9"
 catalogs:
   build:
-    "@iconify/types": ^2.0.0
     "@nestjs/cli": ^11.0.16
     "@nestjs/schematics": ^11.0.9
     "@nestjs/testing": ^11.1.16
-    "@unocss/transformer-directives": ^0.65.4
     "@vitejs/plugin-vue": ^6.0.4
-    "@vue/tsconfig": ^0.7.0
-    ts-patch: ^3.3.0
     typescript: ^5.9.3
     unocss: ^66.6.6
     unplugin-auto-import: ^0.18.6
@@ -161,9 +157,7 @@ catalogs:
     "@antfu/eslint-config": ^8.2.0
     "@commitlint/cli": ^20.5.3
     "@commitlint/config-conventional": ^20.5.3
-    "@eslint/eslintrc": ^3.3.5
-    "@eslint/js": ^9.39.4
-    "@vue/eslint-config-typescript": ^14.7.0
+    # vue-dsfr-icons imports chalk without declaring it as a runtime dependency.
     chalk: ^5.6.2
     eslint: ^10.5.0
     eslint-plugin-vue: ^10.8.0
@@ -177,10 +171,7 @@ catalogs:
     stylelint-config-html: ^1.1.0
     stylelint-config-recommended-vue: ^1.6.1
     stylelint-config-standard: ^40.0.0
-    typescript-eslint: ^8.57.0
     vue-eslint-parser: ^10.4.0
   types:
     "@types/jsdom": ^21.1.7
-    "@types/json-schema": ^7.0.15
     "@types/node": ^26.1.2
-    undici-types: ^7.16.0

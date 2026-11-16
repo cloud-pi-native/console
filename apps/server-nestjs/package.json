@@ -74,9 +74,6 @@
   "devDependencies": {
     "@cpn-console/eslint-config": "workspace:^",
     "@cpn-console/test-utils": "workspace:^",
-    "@cpn-console/ts-config": "workspace:^",
-    "@eslint/eslintrc": "catalog:tools",
-    "@eslint/js": "catalog:tools",
     "@faker-js/faker": "catalog:test",
     "@nestjs/cli": "catalog:build",
     "@nestjs/schematics": "catalog:build",
@@ -87,10 +84,7 @@
     "globals": "catalog:test",
     "msw": "catalog:test",
     "pino-pretty": "catalog:tools",
-    "rimraf": "catalog:tools",
-    "ts-patch": "catalog:build",
     "typescript": "catalog:build",
-    "typescript-eslint": "catalog:tools",
     "vite": "catalog:build",
     "vite-node": "catalog:build",
     "vitest": "catalog:test"
