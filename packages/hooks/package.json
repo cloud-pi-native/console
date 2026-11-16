@@ -33,8 +33,6 @@
   "dependencies": {
     "@cpn-console/logger": "workspace:^",
     "@cpn-console/shared": "workspace:^",
-    "json-schema": "catalog:runtime",
-    "vitest-mock-extended": "catalog:runtime",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

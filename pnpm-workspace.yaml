@@ -110,7 +110,6 @@ catalogs:
     "@iconify-json/ri": ^1.2.10
     "@iconify/vue": ^4.3.0
     "@keycloak/keycloak-admin-client": ^26.5.5
-    "@kubernetes-models/argo-cd": ^2.7.2
     "@nestjs/cache-manager": ^3.1.2
     "@nestjs/common": ^11.1.16
     "@nestjs/config": ^4.0.3
@@ -123,19 +122,13 @@ catalogs:
     "@nestjs/terminus": ^11.1.1
     "@prisma/client": ^6.19.2
     "@ts-rest/core": ^3.52.1
-    "@ts-rest/fastify": ^3.52.1
-    "@ts-rest/open-api": ^3.52.1
     axios: ^1.20.0
     cache-manager: ^7.2.8
-    date-fns: ^4.1.0
     fastify: ^5.12.5
-    fastify-keycloak-adapter: ^3.0.0
     javascript-time-ago: ^2.6.4
     json-2-csv: ^5.5.11
-    json-schema: ^0.4.0
     jszip: ^3.10.1
     keycloak-js: ^26.2.3
-    mustache: ^4.2.0
     nanoid: 5.1.16
     nestjs-pino: ^4.6.0
     p-debounce: ^4.0.0
