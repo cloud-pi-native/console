@@ -157,6 +157,8 @@ catalogs:
     "@antfu/eslint-config": ^8.2.0
     "@commitlint/cli": ^20.5.3
     "@commitlint/config-conventional": ^20.5.3
+    # vue-dsfr-icons imports chalk without declaring it as a runtime dependency.
+    chalk: ^5.6.2
     eslint: ^10.5.0
     eslint-plugin-vue: ^10.8.0
     husky: ^9.1.7
