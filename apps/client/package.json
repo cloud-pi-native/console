@@ -55,6 +55,7 @@
     "@types/node": "catalog:types",
     "@vitejs/plugin-vue": "catalog:build",
     "@vitest/coverage-v8": "catalog:test",
+    "chalk": "catalog:tools",
     "eslint": "catalog:tools",
     "eslint-plugin-vue": "catalog:tools",
     "jsdom": "catalog:test",
