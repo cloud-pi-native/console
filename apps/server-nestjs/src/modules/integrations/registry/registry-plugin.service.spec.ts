@@ -1,5 +1,8 @@
 import type { ConfigType } from '@nestjs/config'
+import type { Cache } from 'cache-manager'
 import type { DeepMockProxy } from 'vitest-mock-extended'
+import type { PluginService } from '../../core/plugin/plugin.service'
+import type { PrismaService } from '../../infrastructure/database/prisma.service'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -7,6 +10,7 @@ import { mockDeep } from 'vitest-mock-extended'
 import { harborConfigFactory } from '../../../config/harbor.config'
 import { makeToUrlParams } from '../../core/plugin/plugin-testing.utils'
 import { makeProjectWithDetails } from '../../core/project/project-testing.utils'
+import { SystemConfigService } from '../../core/system-config/system-config.service'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
@@ -71,6 +75,32 @@ describe('registryPluginService', () => {
     expect(datastore.getProject).not.toHaveBeenCalled()
     expect(registryClient.getProjectByName).not.toHaveBeenCalled()
     expect(cache.get).not.toHaveBeenCalled()
+  })
+
+  it('reads the robot default saved through the system configuration manifest', async () => {
+    const prisma = mockDeep<PrismaService>()
+    const catalog = mockDeep<PluginService>()
+    const records = new Map<string, string>()
+    catalog.manifests.mockReturnValue([service.manifest()])
+    prisma.$transaction.mockImplementation(async callback => callback(prisma))
+    prisma.adminPlugin.upsert.mockImplementation(async ({ create }) => {
+      records.set(`${create.pluginName}:${create.key}`, create.value)
+      return { pluginName: create.pluginName, key: create.key, value: create.value }
+    })
+    prisma.adminPlugin.findUnique.mockImplementation(async ({ where }) => {
+      const identity = where.pluginName_key
+      if (!identity) throw new Error('Missing configuration identity')
+      const value = records.get(`${identity.pluginName}:${identity.key}`)
+      return value === undefined ? null : { ...identity, value }
+    })
+    const configService = new SystemConfigService(prisma, catalog)
+    const registry = new RegistryPluginService(harborConfig, new RegistryDatastoreService(prisma), registryClient, mockDeep<Cache>(), vault)
+
+    await configService.update({ [service.manifest().name]: { publishProjectRobot: 'enabled' } })
+
+    expect(await registry.isProjectRobotEnabled({ slug: 'test-project', plugins: [] })).toBe(true)
+    expect(records.get('harbor:publishProjectRobot')).toBe('enabled')
+    expect(records.has('registry:publishProjectRobot')).toBe(false)
   })
 
   describe('secrets', () => {
