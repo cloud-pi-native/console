@@ -5,12 +5,12 @@ import type { ProjectWithDetails } from './nexus-datastore.service'
 import type {
   MavenHostedRepoKind,
 } from './nexus.utils'
-import { specificallyEnabled } from '@cpn-console/hooks'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../../config/base.config'
 import { nexusConfigFactory } from '../../../config/nexus.config'
+import { specificallyEnabled } from '../../core/plugin/plugin-config.utils'
 import { capturePluginResult } from '../../core/plugin/plugin.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { VaultClientService } from '../vault/vault-client.service'

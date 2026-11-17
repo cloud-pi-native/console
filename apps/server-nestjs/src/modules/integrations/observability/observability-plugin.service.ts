@@ -1,5 +1,5 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
+import type { ServiceInfos } from '../../core/plugin/plugin.types'
 import { ENABLED } from '@cpn-console/shared'
 import { Inject, Injectable } from '@nestjs/common'
 import { observabilityConfigFactory } from '../../../config/observability.config'
@@ -35,9 +35,12 @@ export class ObservabilityPluginService {
       })
     }
 
+    return { ...this.manifest(), to: () => urls }
+  }
+
+  manifest(): ServiceInfos {
     return {
       name: 'observability',
-      to: () => urls,
       title: 'Grafana',
       imgSrc: '/img/grafana.png',
       description: 'Grafana est un outil de visualisation de métriques et de logs',

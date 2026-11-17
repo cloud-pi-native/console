@@ -5,8 +5,7 @@ export function generateRandomPassword(length = 24, chars = 'abcdefghijklmnopqrs
     .join('')
 }
 
-// Must stay byte-for-byte identical to the legacy @cpn-console/hooks implementation:
-// existing SonarQube project keys were generated with it, and ownership matching
+// SonarQube project ownership matching
 // recomputes keys to decide which projects to reconcile or delete.
 export function generateProjectKey(projectSlug: string, internalRepoName: string) {
   const repoHash = createHmac('sha256', '')

@@ -1,8 +1,8 @@
 import type { ProjectWithDetails } from './observability-datastore.service'
-import { specificallyDisabled } from '@cpn-console/hooks'
 import { compressUUID, getPermsByUserRoles, ProjectAuthorized } from '@cpn-console/shared'
 import { stringify } from 'yaml'
 import z from 'zod'
+import { specificallyDisabled } from '../../core/plugin/plugin-config.utils'
 import {
   ENABLED_PLUGIN_KEY,
   GRAFANA_GROUP_NAME,

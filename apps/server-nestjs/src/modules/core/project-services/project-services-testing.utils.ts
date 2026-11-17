@@ -1,6 +1,6 @@
-import type { Plugin } from '@cpn-console/hooks'
 import type { PluginsUpdateBody } from '@cpn-console/shared'
 import type { Cluster, Environment, ProjectPlugin as PrismaProjectPlugin, Project, Zone } from '@prisma/client'
+import type { ServiceInfos } from '../plugin/plugin.types'
 import type { AdminPlugin, ProjectPlugin, ProjectWithDetails, PublicCluster } from './project-services-queries.utils'
 import { DEFAULT } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
@@ -12,35 +12,32 @@ export function makeServicesPluginName(): string {
   return faker.helpers.slugify(faker.company.name())
 }
 
-export function makePlugin(overrides: Partial<Plugin['infos']> = {}): Plugin {
+export function makeServiceInfos(overrides: Partial<ServiceInfos> = {}): ServiceInfos {
   const pluginName = overrides.name ?? makeServicesPluginName()
 
   return {
-    infos: {
-      name: pluginName,
-      title: faker.commerce.productName(),
-      description: faker.lorem.sentence(),
-      imgSrc: `/${faker.helpers.slugify(faker.commerce.product())}.svg`,
-      config: {
-        global: [],
-        project: [
-          {
-            kind: 'switch',
-            key: 'enabled',
-            title: 'Enabled',
-            value: DEFAULT,
-            initialValue: DEFAULT,
-            permissions: {
-              user: { read: true, write: true },
-              admin: { read: true, write: true },
-            },
+    name: pluginName,
+    title: faker.commerce.productName(),
+    description: faker.lorem.sentence(),
+    imgSrc: `/${faker.helpers.slugify(faker.commerce.product())}.svg`,
+    config: {
+      global: [],
+      project: [
+        {
+          kind: 'switch',
+          key: 'enabled',
+          title: 'Enabled',
+          value: DEFAULT,
+          initialValue: DEFAULT,
+          permissions: {
+            user: { read: true, write: true },
+            admin: { read: true, write: true },
           },
-        ],
-      },
-      to: ({ project }) => `/projects/${project.slug}`,
-      ...overrides,
+        },
+      ],
     },
-    subscribedHooks: {},
+    to: ({ project }) => `/projects/${project.slug}`,
+    ...overrides,
   }
 }
 

@@ -1,15 +1,14 @@
-import type { ZoneObject } from '@cpn-console/hooks'
 import type { PermissionTarget, PluginsUpdateBody, ProjectService } from '@cpn-console/shared'
+import type { ServiceZone } from '../plugin/plugin.types'
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { buildEditStrippers, populateServiceManifest } from '../plugin/plugin-config.utils'
 import { PluginService } from '../plugin/plugin.service'
 import { getServicesQueryData } from './project-services-queries.utils'
 import {
-  buildProjectEditStrippers,
   generatePluginsUpdateBody,
   normalizeServiceUrls,
   parsePluginsUpdateBody,
-  populateServiceManifest,
   saveProjectStore,
 } from './project-services.utils'
 
@@ -31,7 +30,7 @@ export class ProjectServicesService {
 
     const store = generatePluginsUpdateBody([...projectStore, ...globalConfig])
     const clusters = [...project.clusters, ...publicClusters]
-    const zones = new Map<string, ZoneObject>()
+    const zones = new Map<string, ServiceZone>()
     for (const cluster of clusters) {
       zones.set(cluster.zone.id, cluster.zone)
     }
@@ -91,7 +90,7 @@ export class ProjectServicesService {
 
   async update(projectId: string, data: PluginsUpdateBody, stripperRoles: Array<'user' | 'admin'>) {
     this.logger.log(`Update project services started (projectId=${projectId}, pluginCount=${Object.keys(data).length}, stripperRoles=${stripperRoles.join(',')})`)
-    const editStrippers = buildProjectEditStrippers(await this.plugin.infos(projectId))
+    const editStrippers = buildEditStrippers(await this.plugin.infos(projectId))
 
     for (const role of stripperRoles) {
       const parsedData = editStrippers.project[role].safeParse(data)

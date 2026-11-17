@@ -350,7 +350,6 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 │   └── server-nestjs
 ├── packages
 │   ├── eslintconfig
-│   ├── hooks
 │   ├── shared
 │   ├── test-utils
 │   └── tsconfig
