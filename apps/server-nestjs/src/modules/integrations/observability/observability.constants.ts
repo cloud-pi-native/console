@@ -1,4 +1,4 @@
-// Observability plugin name (matches @cpn-console/hooks PluginName)
+// Observability integration identifier.
 export const PLUGIN_NAME = 'observability'
 
 // Project-scoped repository for custom dashboards and alerts

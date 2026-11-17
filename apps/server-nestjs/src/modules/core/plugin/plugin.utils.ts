@@ -1,16 +1,5 @@
-import type { ToUrlFnParamaters } from '@cpn-console/hooks'
 import { Logger } from '@nestjs/common'
 
-export function makeToUrlParams(overrides: Partial<ToUrlFnParamaters> = {}): ToUrlFnParamaters {
-  return {
-    store: {},
-    clusters: [],
-    zones: [],
-    environments: [],
-    project: { id: '', slug: 'dulei', name: '' },
-    ...overrides,
-  }
-}
 export type PluginName = 'argocd'
   | 'gitlab'
   | 'nexus'

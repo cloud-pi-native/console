@@ -1,4 +1,4 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from './plugin.types'
 import { Logger } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -7,6 +7,7 @@ import { ArgoCDPluginService } from '../../integrations/argocd/argocd-plugin.ser
 import { GitlabPluginService } from '../../integrations/gitlab/gitlab-plugin.service'
 import { KeycloakPluginService } from '../../integrations/keycloak/keycloak-plugin.service'
 import { NexusPluginService } from '../../integrations/nexus/nexus-plugin.service'
+import { ObservabilityPluginService } from '../../integrations/observability/observability-plugin.service'
 import { RegistryPluginService } from '../../integrations/registry/registry-plugin.service'
 import { SonarqubePluginService } from '../../integrations/sonarqube/sonarqube-plugin.service'
 import { VaultPluginService } from '../../integrations/vault/vault-plugin.service'
@@ -18,6 +19,28 @@ function makeInfos(name: string): ServiceInfos {
 
 describe('pluginService', () => {
   afterEach(() => vi.restoreAllMocks())
+
+  describe('manifests', () => {
+    it('collects enabled integrations without resolving project information', async () => {
+      const keycloak = mockDeep<KeycloakPluginService>()
+      const registry = mockDeep<RegistryPluginService>()
+      const observability = mockDeep<ObservabilityPluginService>()
+      keycloak.infos.mockReturnValue(makeInfos('keycloak'))
+      registry.manifest.mockReturnValue(makeInfos('registry'))
+      observability.manifest.mockReturnValue(makeInfos('observability'))
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          PluginService,
+          { provide: KeycloakPluginService, useValue: keycloak },
+          { provide: RegistryPluginService, useValue: registry },
+          { provide: ObservabilityPluginService, useValue: observability },
+        ],
+      }).compile()
+      expect(moduleRef.get(PluginService).manifests().map(info => info.name)).toEqual(['registry', 'keycloak', 'observability'])
+      expect(registry.infos).not.toHaveBeenCalled()
+      expect(observability.infos).not.toHaveBeenCalled()
+    })
+  })
 
   describe('infos', () => {
     it('collects results from all plugins when every plugin is registered', async () => {

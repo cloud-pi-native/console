@@ -1,5 +1,5 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
+import type { ServiceInfos } from '../../core/plugin/plugin.types'
 import { Inject, Injectable } from '@nestjs/common'
 import { vaultConfigFactory } from '../../../config/vault.config'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'

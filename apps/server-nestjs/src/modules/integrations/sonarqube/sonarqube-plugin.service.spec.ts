@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { sonarqubeConfigFactory } from '../../../config/sonarqube.config'
-import { makeToUrlParams } from '../../core/plugin/plugin.utils'
+import { makeToUrlParams } from '../../core/plugin/plugin-testing.utils'
 import { SonarqubePluginService } from './sonarqube-plugin.service'
 
 describe('sonarqubePluginService', () => {

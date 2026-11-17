@@ -33,7 +33,6 @@
     "test:debug": "vitest --inspect"
   },
   "dependencies": {
-    "@cpn-console/hooks": "workspace:^",
     "@cpn-console/logger": "workspace:^",
     "@cpn-console/shared": "workspace:^",
     "@gitbeaker/core": "catalog:runtime",

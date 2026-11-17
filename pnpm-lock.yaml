@@ -495,9 +495,6 @@ importers:
 
   apps/server-nestjs:
     dependencies:
-      '@cpn-console/hooks':
-        specifier: workspace:^
-        version: link:../../packages/hooks
       '@cpn-console/logger':
         specifier: workspace:^
         version: file:packages/logger
@@ -664,43 +661,6 @@ importers:
       eslint:
         specifier: catalog:tools
         version: 10.5.0(jiti@2.6.1)
-
-  packages/hooks:
-    dependencies:
-      '@cpn-console/logger':
-        specifier: workspace:^
-        version: file:packages/logger
-      '@cpn-console/shared':
-        specifier: workspace:^
-        version: link:../shared
-      zod:
-        specifier: catalog:runtime
-        version: 3.25.76
-    devDependencies:
-      '@cpn-console/eslint-config':
-        specifier: workspace:^
-        version: link:../eslintconfig
-      '@cpn-console/ts-config':
-        specifier: workspace:^
-        version: link:../tsconfig
-      '@types/node':
-        specifier: catalog:types
-        version: 26.1.2
-      '@vitest/coverage-v8':
-        specifier: catalog:test
-        version: 4.1.12(vitest@4.1.12)
-      nodemon:
-        specifier: catalog:tools
-        version: 3.1.14
-      rimraf:
-        specifier: catalog:tools
-        version: 6.1.3
-      typescript:
-        specifier: catalog:build
-        version: 5.9.3
-      vitest:
-        specifier: catalog:test
-        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@26.1.2)(@vitest/coverage-v8@4.1.12)(jsdom@25.0.1)(msw@2.12.10(@types/node@26.1.2)(typescript@5.9.3))(vite@8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1))
 
   packages/logger:
     dependencies:
@@ -12162,15 +12122,6 @@ snapshots:
       msw: 2.12.10(@types/node@26.1.2)(typescript@5.9.3)
       vite: 7.3.7(@types/node@26.1.2)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.51.2)(yaml@2.9.0)
 
-  '@vitest/mocker@4.1.12(msw@2.12.10(@types/node@26.1.2)(typescript@5.9.3))(vite@8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1))':
-    dependencies:
-      '@vitest/spy': 4.1.12
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      msw: 2.12.10(@types/node@26.1.2)(typescript@5.9.3)
-      vite: 8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1)
-
   '@vitest/mocker@4.1.12(msw@2.12.10(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1))':
     dependencies:
       '@vitest/spy': 4.1.12
@@ -17062,36 +17013,6 @@ snapshots:
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
       vite: 7.3.7(@types/node@26.1.2)(jiti@2.6.1)(lightningcss@1.33.0)(terser@5.48.0)(yaml@2.9.0)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@opentelemetry/api': 1.9.1
-      '@types/node': 26.1.2
-      '@vitest/coverage-v8': 4.1.12(vitest@4.1.12)
-      jsdom: 25.0.1(supports-color@5.5.0)
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.12(@opentelemetry/api@1.9.1)(@types/node@26.1.2)(@vitest/coverage-v8@4.1.12)(jsdom@25.0.1)(msw@2.12.10(@types/node@26.1.2)(typescript@5.9.3))(vite@8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1)):
-    dependencies:
-      '@vitest/expect': 4.1.12
-      '@vitest/mocker': 4.1.12(msw@2.12.10(@types/node@26.1.2)(typescript@5.9.3))(vite@8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1))
-      '@vitest/pretty-format': 4.1.12
-      '@vitest/runner': 4.1.12
-      '@vitest/snapshot': 4.1.12
-      '@vitest/spy': 4.1.12
-      '@vitest/utils': 4.1.12
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.3
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.2.4
-      tinyglobby: 0.2.17
-      tinyrainbow: 3.1.0
-      vite: 8.3.5(@types/node@26.1.2)(esbuild@0.28.1)(jiti@2.6.1)(terser@5.51.2)(yaml@2.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
