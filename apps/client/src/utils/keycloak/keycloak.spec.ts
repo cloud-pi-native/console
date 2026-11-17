@@ -22,12 +22,14 @@ vi.mock('keycloak-js', () => {
     init: () => void
     login: () => void
     logout: () => void
+    updateToken: () => void
 
     constructor() {
       this.idTokenParsed = userToken
       this.init = vi.fn()
       this.login = vi.fn()
       this.logout = vi.fn()
+      this.updateToken = vi.fn()
     }
   }
   return { default: Keycloak }
@@ -112,7 +114,11 @@ describe('keycloak-init', () => {
 })
 
 describe('keycloak onAuthSuccess refresh-token expiry check (issue #2593)', () => {
-  it('should warn on initial auth but not again after a token refresh', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should not warn on a healthy login, nor on a refresh cycle', () => {
     // Initial login: refresh token (ssoSessionMaxLifespan) outlives the access token.
     const now = Math.floor(Date.now() / 1000)
     Object.assign(keycloak, {
@@ -120,16 +126,36 @@ describe('keycloak onAuthSuccess refresh-token expiry check (issue #2593)', () =
       refreshTokenParsed: { exp: now + 36000 },
     })
     keycloak.onAuthSuccess?.()
-    expect(logger.warn).toHaveBeenCalledTimes(1)
-    expect(logger.warn).toHaveBeenCalledWith('Keycloak misconfiguration: refreshToken should not expire before token')
+    expect(logger.warn).not.toHaveBeenCalled()
+    expect(keycloak.updateToken).not.toHaveBeenCalled()
 
-    // Late refresh: ssoSessionMaxLifespan caps refreshTokenParsed.exp below the
-    // fresh access token's exp — expected, must not warn again (#2593).
+    // Refresh the way keycloak-js 26.2.3 does: onAuthRefreshSuccess fires,
+    // never a second onAuthSuccess.
     Object.assign(keycloak, {
       tokenParsed: { exp: now + 300 },
       refreshTokenParsed: { exp: now + 60 },
     })
-    keycloak.onAuthSuccess?.()
-    expect(logger.warn).toHaveBeenCalledTimes(1)
+    keycloak.onAuthRefreshSuccess?.()
+    expect(logger.warn).not.toHaveBeenCalled()
+    expect(keycloak.updateToken).not.toHaveBeenCalled()
+  })
+
+  it('should warn exactly once on a misconfigured realm at initial login', () => {
+    // Initial login: refreshTokenParsed.exp <= tokenParsed.exp — realm misconfiguration.
+    vi.useFakeTimers()
+    try {
+      const now = Math.floor(Date.now() / 1000)
+      Object.assign(keycloak, {
+        tokenParsed: { exp: now + 300 },
+        refreshTokenParsed: { exp: now + 120 },
+      })
+      keycloak.onAuthSuccess?.()
+      expect(logger.warn).toHaveBeenCalledTimes(1)
+      expect(logger.warn).toHaveBeenCalledWith('Keycloak misconfiguration: refreshToken should not expire before token')
+      vi.advanceTimersByTime((300 * 1000) / 2)
+      expect(keycloak.updateToken).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
