@@ -343,6 +343,37 @@ describe('registryService', () => {
       }))
     })
 
+    it('converges an expiring project robot in place without rotating its secret', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: 90 }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateRobot).toHaveBeenCalledWith(42, expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+      expect(client.ensureRobot).not.toHaveBeenCalledWith(expect.objectContaining({ name: ROBOT_NAME_PROJECT }))
+      expect(client.deleteRobot).not.toHaveBeenCalled()
+      expect(vault.write).not.toHaveBeenCalled()
+    })
+
+    it('leaves a project robot already non-expiring untouched', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: -1 }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateRobot).not.toHaveBeenCalled()
+      expect(vault.write).not.toHaveBeenCalled()
+    })
+
     it('parses plugin config and enables project robot publishing', async () => {
       const project = makeProjectWithDetails({
         plugins: [
