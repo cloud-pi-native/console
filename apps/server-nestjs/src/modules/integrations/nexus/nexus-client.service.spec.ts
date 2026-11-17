@@ -95,12 +95,12 @@ describe('nexusClientService', () => {
     server.use(
       http.post(`${nexusUrl}/service/rest/v1/security/roles`, () => {
         fetches++
-        return HttpResponse.json({ errorMessage: 'Internal error' }, { status: HttpStatus.INTERNAL_SERVER_ERROR })
+        return HttpResponse.json({ errorMessage: 'Bad Request' }, { status: HttpStatus.BAD_REQUEST })
       }),
     )
 
     await expect(service.ensureSecurityRoles({ id: 'r', name: 'r', description: 'desc', privileges: [] }))
-      .rejects.toThrow('responded 500')
+      .rejects.toThrow('responded 400')
     expect(fetches).toBe(1)
   })
 

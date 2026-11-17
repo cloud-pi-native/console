@@ -2,6 +2,7 @@ import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { sonarqubeConfigFactory } from '../../../config/sonarqube.config'
+import { withTransientRetry } from '../../../utils/http.utils'
 
 export interface SonarqubeFetchOptions {
   method?: string
@@ -57,18 +58,20 @@ export class SonarqubeHttpClientService {
     span?.setAttribute('sonarqube.method', method)
     span?.setAttribute('sonarqube.path', path)
 
-    const request = this.createRequest(path, method, options)
-    const response = await fetch(request).catch((error) => {
-      throw new SonarqubeError('Unexpected', error instanceof Error ? error.message : String(error), { method, path })
-    })
+    return await withTransientRetry(async () => {
+      const request = this.createRequest(path, method, options)
+      const response = await fetch(request).catch((error) => {
+        throw new SonarqubeError('Unexpected', error instanceof Error ? error.message : String(error), { method, path })
+      })
 
-    span?.setAttribute('sonarqube.http.status', response.status)
-    const result = await handleResponse<T>(response)
-    if (response.status >= 400) {
-      const kind = response.status >= 500 ? 'ServerError' : 'ClientError'
-      throw new SonarqubeError(kind, formatErrorMessage(response.status, result.data), { status: response.status, method, path })
-    }
-    return result
+      span?.setAttribute('sonarqube.http.status', response.status)
+      const result = await handleResponse<T>(response)
+      if (response.status >= 400) {
+        const kind = response.status >= 500 ? 'ServerError' : 'ClientError'
+        throw new SonarqubeError(kind, formatErrorMessage(response.status, result.data), { status: response.status, method, path })
+      }
+      return result
+    })
   }
 
   private createRequest(path: string, method: string, options: SonarqubeFetchOptions): Request {

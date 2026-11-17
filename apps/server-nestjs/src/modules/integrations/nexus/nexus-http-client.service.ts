@@ -2,6 +2,7 @@ import type { ConfigType } from '@nestjs/config'
 import { HttpStatus, Inject, Injectable } from '@nestjs/common'
 import { trace } from '@opentelemetry/api'
 import { nexusConfigFactory } from '../../../config/nexus.config'
+import { withTransientRetry } from '../../../utils/http.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 
 export interface NexusFetchOptions {
@@ -55,25 +56,27 @@ export class NexusHttpClientService {
     span?.setAttribute('nexus.method', method)
     span?.setAttribute('nexus.path', path)
 
-    const request = this.createRequest(path, method, options)
-    const response = await fetch(request).catch((error) => {
-      throw new NexusError(
-        'Unexpected',
-        error instanceof Error ? error.message : String(error),
-        { method, path },
-      )
-    })
-    span?.setAttribute('nexus.http.status', response.status)
-    const result = await handleResponse<T>(response)
-    if (!response.ok) {
-      throw new NexusError('HttpError', `Request failed: ${method} ${path} responded ${result.status} ${response.statusText}`, {
-        status: result.status,
-        method,
-        path,
-        statusText: response.statusText,
+    return await withTransientRetry(async () => {
+      const request = this.createRequest(path, method, options)
+      const response = await fetch(request).catch((error) => {
+        throw new NexusError(
+          'Unexpected',
+          error instanceof Error ? error.message : String(error),
+          { method, path },
+        )
       })
-    }
-    return result
+      span?.setAttribute('nexus.http.status', response.status)
+      const result = await handleResponse<T>(response)
+      if (!response.ok) {
+        throw new NexusError('HttpError', `Request failed: ${method} ${path} responded ${result.status} ${response.statusText}`, {
+          status: result.status,
+          method,
+          path,
+          statusText: response.statusText,
+        })
+      }
+      return result
+    })
   }
 
   private get apiBaseUrl() {

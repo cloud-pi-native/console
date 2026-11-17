@@ -279,6 +279,20 @@ describe('gitlab-client', () => {
       expect(gitlabApi.GroupCustomAttributes.set).toHaveBeenCalledWith(groupId, PROJECT_GROUP_CUSTOM_ATTRIBUTE_KEY, projectSlug)
     })
 
+    it('createSubGroup should retry a transient 500 once then succeed', async () => {
+      const parentGroup = makeGroupSchema({ id: 123, full_path: 'forge' })
+      const created = makeExpandedGroupSchema({ id: 456, name: 'project-1', path: 'project-1', full_path: 'forge/project-1' })
+
+      gitlabApi.Groups.create.mockRejectedValueOnce(makeGitbeakerRequestError({ status: 500, description: '500' }))
+      gitlabApi.Groups.create.mockResolvedValueOnce(created)
+      gitlabApi.Groups.show.mockResolvedValueOnce(makeExpandedGroupSchema({ id: parentGroup.id, full_path: 'forge' }))
+
+      const result = await service.createSubGroup(parentGroup, 'project-1', 'forge/project-1')
+
+      expect(result).toEqual(expect.objectContaining({ id: 456 }))
+      expect(gitlabApi.Groups.create).toHaveBeenCalledTimes(2)
+    })
+
     it('should return existing group', async () => {
       const projectSlug = 'project-1'
       const rootId = 123
@@ -1068,11 +1082,28 @@ describe('gitlab-client', () => {
       const name = 'User Name'
 
       gitlabApi.Users.create.mockRejectedValue(
-        makeGitbeakerRequestError({ status: 500, description: 'Internal Server Error' }),
+        makeGitbeakerRequestError({ status: 400, description: 'Bad Request' }),
       )
 
       await expect(service.createUser({ email, username, name })).rejects.toThrow()
       expect(gitlabApi.Users.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('should retry once on a transient 500 and succeed', async () => {
+      const email = 'user@example.com'
+      const username = 'user'
+      const name = 'User Name'
+      const user = makeExpandedUserSchema({ id: 3, username })
+
+      gitlabApi.Users.create.mockRejectedValueOnce(
+        makeGitbeakerRequestError({ status: 500, description: 'Internal Server Error' }),
+      )
+      gitlabApi.Users.create.mockResolvedValueOnce(user)
+
+      const result = await service.createUser({ email, username, name })
+
+      expect(result).toEqual(user)
+      expect(gitlabApi.Users.create).toHaveBeenCalledTimes(2)
     })
   })
 

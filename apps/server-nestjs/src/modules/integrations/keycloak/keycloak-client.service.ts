@@ -8,7 +8,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common'
 import { Interval } from '@nestjs/schedule'
 import { trace } from '@opentelemetry/api'
 import { keycloakConfigFactory } from '../../../config/keycloak.config'
-import { getErrorResponseStatus } from '../../../utils/http.utils'
+import { getErrorResponseStatus, withTransientRetry } from '../../../utils/http.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { ADMIN_AUTH_REALM, ADMIN_TOKEN_REFRESH_INTERVAL_MS, CONSOLE_GROUP_NAME, PASSWORD_GRANT_TYPE, REFRESH_TOKEN_GRANT_TYPE, SUBGROUPS_PAGINATE_QUERY_MAX } from './keycloak.constants'
 import { ensure, groupSchema, splitGroupPath } from './keycloak.utils'
@@ -139,7 +139,7 @@ export class KeycloakClientService implements OnModuleInit {
     this.logger.debug(`Creating Keycloak group ${name}`)
     const group = await ensure({
       create: async () => {
-        await this.client.groups.create({ name })
+        await withTransientRetry(() => this.client.groups.create({ name }))
       },
       reload: () => this.getRootGroupByName(name),
       onCollision: () => this.logger.verbose(`Keycloak group ${name} was created concurrently, fetching it`),
@@ -217,7 +217,7 @@ export class KeycloakClientService implements OnModuleInit {
     this.logger.debug(`Creating Keycloak subgroup ${name} under parentId=${parentId}`)
     const group = await ensure({
       create: async () => {
-        await this.client.groups.createChildGroup({ id: parentId }, { name })
+        await withTransientRetry(() => this.client.groups.createChildGroup({ id: parentId }, { name }))
       },
       reload: () => this.getSubGroupByName(parentId, name),
       onCollision: () => this.logger.verbose(`Keycloak subgroup ${name} was created concurrently under parentId=${parentId}, fetching it`),

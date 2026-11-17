@@ -21,6 +21,7 @@ import { defaultBranchName } from '@cpn-console/shared'
 import { Gitlab as GitlabRest } from '@gitbeaker/rest'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { gitlabConfigFactory } from '../../../config/gitlab.config'
+import { withTransientRetry } from '../../../utils/http.utils'
 import { find } from '../../../utils/iterable.utils'
 import {
   GITLAB_PAGE_SIZE,
@@ -141,7 +142,8 @@ export class GitlabClientService {
     this.logger.log(`Creating a GitLab group at path ${path}`)
     return ensure({
       create: async () => {
-        const created = await this.client.Groups.create(path, path)
+        // GitLab intermittently answers 500 on POST /groups, aborting a whole sync.
+        const created = await withTransientRetry(() => this.client.Groups.create(path, path))
         await this.setManagedGroupAttributesByPath(created.full_path, created.id)
         return created
       },
@@ -154,7 +156,7 @@ export class GitlabClientService {
     this.logger.log(`Creating a GitLab subgroup ${fullPath} (parentId=${parentGroup.id})`)
     return ensure({
       create: async () => {
-        const created = await this.client.Groups.create(name, name, { parentId: parentGroup.id })
+        const created = await withTransientRetry(() => this.client.Groups.create(name, name, { parentId: parentGroup.id }))
         await this.setManagedGroupAttributesByPath(fullPath, created.id)
         return created
       },
@@ -238,13 +240,13 @@ export class GitlabClientService {
     const parentGroup = await this.ensureProjectSubGroup(parts.join('/'))
     return ensure({
       create: async () => {
-        const created = await this.client.Projects.create({
+        const created = await withTransientRetry(() => this.client.Projects.create({
           name: repoName,
           path: repoName,
           namespaceId: parentGroup.id,
           defaultBranch: defaultBranchName,
           ciConfigPath,
-        })
+        }))
         this.logger.log(`Created a GitLab project repository (path=${fullPath}, repoId=${created.id})`)
         return created
       },
@@ -289,13 +291,13 @@ export class GitlabClientService {
   async createGroupRepo(groupId: number, repoName: string, description?: string) {
     this.logger.log(`Creating a GitLab repository in a standalone group (groupId=${groupId}, repoName=${repoName})`)
     return ensure({
-      create: () => this.client.Projects.create({
+      create: () => withTransientRetry(() => this.client.Projects.create({
         name: repoName,
         path: repoName,
         namespaceId: groupId,
         description,
         defaultBranch: defaultBranchName,
-      }),
+      })),
       reload: () => find(
         this.offsetPaginate(opts => this.client.Projects.all({
           search: repoName,
@@ -430,13 +432,13 @@ export class GitlabClientService {
 
   async createUser(user: EditUserOptions) {
     this.logger.log(`Creating a GitLab user (email=${user.email}, username=${user.username})`)
-    return await this.client.Users.create({
+    return await withTransientRetry(() => this.client.Users.create({
       ...user,
       canCreateGroup: false,
       forceRandomPassword: true,
       projectsLimit: 0,
       skipConfirmation: true,
-    }) as UserSchema
+    })) as UserSchema
   }
 
   async ensureUser(
@@ -464,7 +466,7 @@ export class GitlabClientService {
         return (existing as Record<string, unknown>)[key] !== value
       })
       if (hasDiff) {
-        await this.client.Users.edit(gitlabUser.id, editOptions)
+        await withTransientRetry(() => this.client.Users.edit(gitlabUser.id, editOptions))
       }
     }
     await this.setManagedUserAttributes(gitlabUser.id, options.cpnUserId)
@@ -490,13 +492,13 @@ export class GitlabClientService {
       this.logger.verbose(`GitLab project repository settings unchanged; skipping edit (path=${fullPath}, repoId=${repo.id})`)
       return repo
     }
-    const updated = await this.client.Projects.edit(repo.id, {
+    const updated = await withTransientRetry(() => this.client.Projects.edit(repo.id, {
       name: repoName,
       path: repoName,
       topics: [TOPIC_PLUGIN_MANAGED, ...(options.extraTopics ?? [])],
       description: options.description,
       ciConfigPath: options.ciConfigPath ?? '',
-    })
+    }))
     return updated
   }
 
