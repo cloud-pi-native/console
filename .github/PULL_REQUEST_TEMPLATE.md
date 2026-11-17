@@ -1,14 +1,14 @@
 ## Pourquoi
 
-<!-- Dérive, risque ou besoin auquel répond cette MR. -->
+<!-- Pour toute personne intéressée par le projet : pourquoi ce changement est-il utile et qui concerne-t-il ? Consulter la documentation officielle pour employer les termes du projet : https://cloud-pi-native.fr/ -->
 
 ## Quoi
 
-<!-- Synthèse et liste concise du périmètre livré. -->
+<!-- Expliquer simplement ce qui change et les limites importantes. Garder les détails de réalisation dans le code et sa documentation. -->
 
 ## Vérification
 
-<!-- Comment cela a été prouvé : la commande ou le contrôle exact et son résultat. Écrire « aucune » seulement si rien ne s'exécute (docs, commentaires). -->
+<!-- Résumer les vérifications et leurs résultats, en précisant les contrôles importants non réalisés. Pas de liste de commandes ni de nombres de tests : conserver les preuves détaillées utiles dans un commentaire séparé ou renvoyer vers une preuve existante. -->
 
 ## Références
 
