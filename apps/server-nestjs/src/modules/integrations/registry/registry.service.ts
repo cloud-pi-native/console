@@ -82,7 +82,7 @@ export class RegistryService {
 
   private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
-      generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
+      generateRobotPermissions(project, robotName, access, robotName === ROBOT_NAME_PROJECT ? -1 : this.harborConfig.robotExpirationDays),
     )
     if (!created) {
       throw new Error(`Harbor robot already exists (${robotName})`)
@@ -110,9 +110,9 @@ export class RegistryService {
       throw error
     })
 
-    const expiring = vaultRobotSecret
-      ? this.isRobotSecretExpiring(vaultRobotSecret)
-      : false
+    const expiring = robotName !== ROBOT_NAME_PROJECT
+      && !!vaultRobotSecret
+      && this.isRobotSecretExpiring(vaultRobotSecret)
 
     span?.setAttributes({
       'vault.secret.exists': !!vaultRobotSecret,

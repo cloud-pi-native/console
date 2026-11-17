@@ -312,6 +312,37 @@ describe('registryService', () => {
       }))
     })
 
+    it('keeps the project robot static while rotating the other robots', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
+      vault.read.mockResolvedValue(makeVaultSecret({
+        data: {
+          HOST: 'other.example',
+          DOCKER_CONFIG: '{}',
+          USERNAME: `robot$${project.slug}+robot`,
+          TOKEN: 'old',
+        },
+      }))
+      client.ensureRobot.mockResolvedValue({ id: 22, name: 'project-robot', secret: 'newsecret' })
+
+      await service.handleUpsert(project)
+
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'ro-robot',
+        duration: 90,
+      }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'rw-robot',
+        duration: 90,
+      }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+    })
+
     it('parses plugin config and enables project robot publishing', async () => {
       const project = makeProjectWithDetails({
         plugins: [
