@@ -76,11 +76,6 @@ services:
           target: /app/packages/shared
           ignore:
             - node_modules/
-        - action: sync
-          path: ../packages/hooks
-          target: /app/packages/hooks
-          ignore:
-            - node_modules/
         - action: rebuild
           path: ../apps/server-nestjs/package.json
     networks:

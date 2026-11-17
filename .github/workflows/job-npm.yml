@@ -58,8 +58,6 @@ jobs:
               - 'packages/eslintconfig/src/**'
             shared:
               - 'packages/shared/src/**'
-            hooks:
-              - 'packages/hooks/src/**'
             ts-config:
               - 'packages/tsconfig/**'
             logger:

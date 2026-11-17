@@ -19,7 +19,6 @@ COPY --chown=node:node apps/server-nestjs/package.json    ./apps/server-nestjs/p
 COPY --chown=node:node packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:node packages/shared/package.json       ./packages/shared/package.json
 COPY --chown=node:node packages/logger/package.json       ./packages/logger/package.json
-COPY --chown=node:node packages/hooks/package.json        ./packages/hooks/package.json
 COPY --chown=node:node packages/test-utils/package.json   ./packages/test-utils/package.json
 COPY --chown=node:node packages/tsconfig/package.json     ./packages/tsconfig/package.json
 
@@ -38,7 +37,6 @@ COPY --chown=node:node apps/server-nestjs/ ./apps/server-nestjs/
 
 RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
-RUN pnpm --filter @cpn-console/hooks run build
 
 # Réinjecter les libs buildées dans node_modules (injectWorkspacePackages copie au moment de l'install)
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
@@ -70,9 +68,6 @@ USER node
 # Build shared (génère dist/ et types/)
 RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
-
-# Build hooks (génère dist/ et types/ nécessaires aux imports)
-RUN pnpm --filter @cpn-console/hooks run build
 
 # Réinjecter shared buildé dans node_modules (injectWorkspacePackages copie au moment de l'install)
 RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile

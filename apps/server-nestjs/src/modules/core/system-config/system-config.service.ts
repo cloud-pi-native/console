@@ -1,45 +1,41 @@
 import type { PluginsUpdateBody } from '@cpn-console/shared'
-import { editStrippers, populatePluginManifests, servicesInfos } from '@cpn-console/hooks'
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
+import { buildEditStrippers, populateServiceManifest } from '../plugin/plugin-config.utils'
+import { PluginService } from '../plugin/plugin.service'
+import { listAdminPluginConfig, upsertAdminPluginConfig } from './system-config-queries.utils'
 
 @Injectable()
 export class SystemConfigService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(PluginService) private readonly plugins: PluginService,
+  ) {}
 
   async list() {
-    const globalConfig = await this.prisma.adminPlugin.findMany({
-      select: { key: true, value: true, pluginName: true },
-    })
-
-    return Object.values(servicesInfos).map(({ name, title, imgSrc, description }) => {
-      const manifest = populatePluginManifests({
+    const globalConfig = await listAdminPluginConfig(this.prisma)
+    return this.plugins.manifests().map((service) => {
+      const { name, title, imgSrc, description } = service
+      const manifest = populateServiceManifest({
+        service,
         data: { global: globalConfig },
         permissionTarget: 'admin',
-        pluginName: name,
-        select: { global: true, project: false },
+        select: { global: true },
       })
       return { imgSrc, title, name, manifest: manifest.global ?? [], description }
     }).filter(plugin => plugin.manifest.length > 0)
   }
 
   async update(body: PluginsUpdateBody) {
-    const parsedData = editStrippers.global.safeParse(body)
+    const parsedData = buildEditStrippers(this.plugins.manifests()).global.safeParse(body)
     if (!parsedData.success) {
       throw new BadRequestException(parsedData.error.message)
     }
-
-    const records = Object.entries(parsedData.data)
-      .flatMap(([pluginName, values]: [string, Record<string, string>]) => Object.entries(values)
-        .map(([key, value]) => ({ pluginName, key, value: String(value) })))
-
     await this.prisma.$transaction(async (tx) => {
-      for (const { pluginName, key, value } of records) {
-        await tx.adminPlugin.upsert({
-          create: { pluginName, key, value },
-          update: { key, value, pluginName },
-          where: { pluginName_key: { pluginName, key } },
-        })
+      for (const [pluginName, values] of Object.entries(parsedData.data)) {
+        for (const [key, value] of Object.entries(values)) {
+          await upsertAdminPluginConfig(tx, pluginName, key, String(value))
+        }
       }
     })
   }

@@ -1,4 +1,4 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from '../../core/plugin/plugin.types'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()

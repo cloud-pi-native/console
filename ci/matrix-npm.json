@@ -15,10 +15,6 @@
       "path": "./packages/shared"
     },
     {
-      "name": "@cpn-console/hooks",
-      "path": "./packages/hooks"
-    },
-    {
       "name": "@cpn-console/logger",
       "path": "./packages/logger"
     },

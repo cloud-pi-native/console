@@ -1,13 +1,11 @@
-# Plugins and hooks
+# Integration events and configuration
 
-Read when changing plugins, hook orchestration or NestJS event bridges.
+- Integrations live in `apps/server-nestjs/src/modules/integrations/` and are enabled through NestJS modules.
+- `core/plugin` owns service metadata, URL parameters and configuration helpers. `PluginService.manifests()` lists enabled integrations without resolving a project; `infos(projectId)` resolves project-specific links.
+- Project and system configuration use the same manifests and permission-aware validators. No global legacy registration is required.
+- The legacy hook engine and plugin loader are removed. Consult Git history for their implementation.
 
-- Lifecycle: `pre` → `main` → `post`; steps run sequentially and plugins run in parallel within a step. On failure: `revert`.
-- Legacy plugin loading: static imports in `apps/server/src/plugins.ts`, followed by dynamic loading of external plugins from `/plugins`. This is read-only reference behavior.
-- Each plugin contains `index.ts` (Plugin interface), `infos.ts` (metadata/config) and `functions.ts` (hook handlers).
-- Plugins use TypeScript module augmentation to extend `ProjectStore` and `Config` interfaces.
-
-## NestJS parity
+## NestJS events
 
 Every `eventEmitter.emitAsync('<entity>.<verb>')` must have a matching
 `@OnEvent` consumer bridging to `capturePluginResult`; otherwise Keycloak/GitLab

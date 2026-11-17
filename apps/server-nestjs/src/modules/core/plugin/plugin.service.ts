@@ -1,4 +1,4 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
+import type { ServiceInfos } from './plugin.types'
 import { Inject, Injectable, Logger, Optional } from '@nestjs/common'
 import { ArgoCDPluginService } from '../../integrations/argocd/argocd-plugin.service'
 import { GitlabPluginService } from '../../integrations/gitlab/gitlab-plugin.service'
@@ -23,6 +23,19 @@ export class PluginService {
     @Inject(SonarqubePluginService) @Optional() private readonly sonarqubePlugin?: SonarqubePluginService,
     @Inject(ObservabilityPluginService) @Optional() private readonly observabilityPlugin?: ObservabilityPluginService,
   ) {}
+
+  manifests(): ServiceInfos[] {
+    return [
+      this.argoCDPlugin?.infos(),
+      this.gitlabPlugin?.infos(),
+      this.registryPlugin?.manifest(),
+      this.keycloakPlugin.infos(),
+      this.nexusPlugin?.infos(),
+      this.sonarqubePlugin?.infos(),
+      this.vaultPlugin?.infos(),
+      this.observabilityPlugin?.manifest(),
+    ].filter((info): info is ServiceInfos => info !== undefined)
+  }
 
   async infos(projectId: string): Promise<ServiceInfos[]> {
     const plugins: Array<[string, () => ServiceInfos | undefined | Promise<ServiceInfos | undefined>]> = [

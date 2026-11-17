@@ -5,7 +5,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { harborConfigFactory } from '../../../config/harbor.config'
-import { makeToUrlParams } from '../../core/plugin/plugin.utils'
+import { makeToUrlParams } from '../../core/plugin/plugin-testing.utils'
 import { makeProjectWithDetails } from '../../core/project/project-testing.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
@@ -62,6 +62,15 @@ describe('registryPluginService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined()
+  })
+
+  it('exposes configuration without resolving a project or calling Harbor', () => {
+    const manifest = service.manifest()
+    expect(manifest.config?.global?.map(item => item.key)).toEqual(['publishProjectRobot', 'quotaHardLimit'])
+    expect(manifest.to).toBeUndefined()
+    expect(datastore.getProject).not.toHaveBeenCalled()
+    expect(registryClient.getProjectByName).not.toHaveBeenCalled()
+    expect(cache.get).not.toHaveBeenCalled()
   })
 
   describe('secrets', () => {

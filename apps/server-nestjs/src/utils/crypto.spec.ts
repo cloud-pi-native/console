@@ -1,21 +1,7 @@
-import { generateProjectKey as legacyGenerateProjectKey } from '@cpn-console/hooks'
 import { describe, expect, it } from 'vitest'
 import { generateProjectKey, generateTokenPair } from './crypto.utils'
 
 describe('generateProjectKey', () => {
-  it('matches the legacy @cpn-console/hooks implementation byte-for-byte', () => {
-    const cases: [string, string][] = [
-      ['my-app', 'my-repo'],
-      ['my-app', 'front'],
-      ['my-app-2', 'front'],
-      ['slug-with-many-dashes', 'repo-with-dashes'],
-      ['a', 'b'],
-    ]
-    for (const [slug, repo] of cases) {
-      expect(generateProjectKey(slug, repo)).toBe(legacyGenerateProjectKey(slug, repo))
-    }
-  })
-
   it('produces stable known keys', () => {
     // Golden values: existing SonarQube projects were created with these exact keys,
     // and reconciliation recomputes them to decide ownership. Any change here means

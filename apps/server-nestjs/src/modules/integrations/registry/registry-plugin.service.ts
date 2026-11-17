@@ -1,13 +1,13 @@
-import type { ServiceInfos } from '@cpn-console/hooks'
 import type { ConfigType } from '@nestjs/config'
 import type { Cache } from 'cache-manager'
+import type { ServiceInfos } from '../../core/plugin/plugin.types'
 import type { ProjectWithDetails } from './registry-datastore.service'
-import { defaultOrNullish, specificallyEnabled } from '@cpn-console/hooks'
 import { DISABLED } from '@cpn-console/shared'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { harborConfigFactory } from '../../../config/harbor.config'
 import { hasEntries } from '../../../utils/record.utils'
+import { defaultOrNullish, specificallyEnabled } from '../../core/plugin/plugin-config.utils'
 import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
@@ -75,15 +75,17 @@ export class RegistryPluginService {
   }
 
   async infos(projectId: string): Promise<ServiceInfos> {
-    const quotaDescription = '-1 -> illimité, sinon 100MB / 1.2GB (unités : B, KB, MB, GB, TB)), max 1024TB'
     const projectUrl = await this.resolveProjectUrl(projectId)
     if (!projectUrl) {
       throw new Error('Project not found')
     }
+    return { ...this.manifest(), to: () => projectUrl }
+  }
 
+  manifest(): ServiceInfos {
+    const quotaDescription = '-1 -> illimité, sinon 100MB / 1.2GB (unités : B, KB, MB, GB, TB)), max 1024TB'
     return {
       name: 'registry',
-      to: () => projectUrl,
       title: 'Harbor',
       imgSrc: '/img/harbor.svg',
       description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
