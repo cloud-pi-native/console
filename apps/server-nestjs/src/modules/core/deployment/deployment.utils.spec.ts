@@ -1,14 +1,19 @@
 import type {
   CreateDeployment,
   CreateDeploymentSource,
-  CreateDeploymentValueSource,
   UpdateDeployment,
   UpdateDeploymentSource,
-  UpdateDeploymentValueSource,
+  WritableDeploymentExternalValuesRef,
 } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
 import { describe, expect, it } from 'vitest'
-import { makeDeploymentExternalValueSource, makeDeploymentInternalValueSource, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
+import {
+  makeDeploymentExternalValueSource,
+  makeDeploymentExternalValuesRef,
+  makeDeploymentInternalValueSource,
+  makeDeploymentSource,
+  makeDeploymentWithRelations,
+} from './deployment-testing.utils'
 import {
   buildDeploymentSourceCreate,
   buildDeploymentSourceUpdate,
@@ -21,6 +26,7 @@ const repositoryId = faker.string.uuid()
 const externalRepositoryId = faker.string.uuid()
 const sourceId = faker.string.uuid()
 const internalId = faker.string.uuid()
+const externalId = faker.string.uuid()
 
 // Common top-level fields; tests only care about the deploymentSources they pass.
 function makeCreateDeployment(deploymentSources: CreateDeploymentSource[]): CreateDeployment {
@@ -37,34 +43,35 @@ function makeUpdateDeployment(deploymentSources: UpdateDeploymentSource[]): Upda
   return { ...makeCreateDeployment([]), deploymentSources }
 }
 
-function updateSourceWith(valueSources: UpdateDeploymentValueSource[]) {
-  const deployment = makeUpdateDeployment([
-    {
-      id: sourceId,
-      type: 'git',
-      repositoryId,
-      targetRevision: 'develop',
-      path: '/x',
-      helmValuesFiles: '',
-      valueSources,
-    },
-  ])
-  return parseUpdateDeployment(deployment).deploymentSourcesToUpdate[0]
+const sourceFields = {
+  id: sourceId,
+  type: 'git',
+  repositoryId,
+  targetRevision: 'develop',
+  path: '/x',
+  helmValuesFiles: '',
+} satisfies Pick<UpdateDeploymentSource, 'id' | 'type' | 'repositoryId' | 'targetRevision' | 'path' | 'helmValuesFiles'>
+
+function parseUpdateSource(source: UpdateDeploymentSource) {
+  return parseUpdateDeployment(makeUpdateDeployment([source])).deploymentSourcesToUpdate[0]
 }
 
-const internalValueSource = { type: 'internal', path: 'a.yaml' } satisfies CreateDeploymentValueSource
-const externalValueSource = {
-  type: 'external',
-  path: 'ext.yaml',
+const externalValuesRef = {
   ref: 'infra',
   targetRevision: 'main',
   repositoryId: externalRepositoryId,
-} satisfies CreateDeploymentValueSource
+} satisfies WritableDeploymentExternalValuesRef
+
+const externalRefFields = {
+  ref: 'infra',
+  targetRevision: 'main',
+  repository: { connect: { id: externalRepositoryId } },
+}
 
 describe('deploymentUtils', () => {
   describe('parseCreateDeployment', () => {
     it('should carry the top-level fields (dropping projectId, which the service connects itself)', () => {
-      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, valueSources: [] }])
+      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, useExternalValues: false, valueSources: [] }])
 
       const model = parseCreateDeployment(deployment)
 
@@ -72,7 +79,7 @@ describe('deploymentUtils', () => {
       expect(model).not.toHaveProperty('projectId')
     })
 
-    it('should partition value sources into internal list and single external, preserving list order', () => {
+    it('should nest external value sources under their shared ref, preserving list order', () => {
       const deployment = makeCreateDeployment([
         {
           type: 'git',
@@ -80,10 +87,13 @@ describe('deploymentUtils', () => {
           targetRevision: 'main',
           path: '/app',
           helmValuesFiles: 'values.yaml',
+          useExternalValues: true,
+          externalValuesRef,
           valueSources: [
             { type: 'internal', path: 'a.yaml' },
-            externalValueSource,
+            { type: 'external', path: 'ext.yaml' },
             { type: 'internal', path: 'b.yaml' },
+            { type: 'external', path: 'ext-2.yaml' },
           ],
         },
       ])
@@ -96,16 +106,30 @@ describe('deploymentUtils', () => {
         { path: 'b.yaml', order: 2 },
       ])
       expect(valueSources.external).toEqual({
-        path: 'ext.yaml',
-        ref: 'infra',
-        targetRevision: 'main',
-        repositoryId: externalRepositoryId,
-        order: 1,
+        ...externalValuesRef,
+        files: [
+          { path: 'ext.yaml', order: 1 },
+          { path: 'ext-2.yaml', order: 3 },
+        ],
       })
     })
 
-    it('should leave external undefined when no external value source is provided', () => {
-      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, valueSources: [internalValueSource] }])
+    it('should keep a ref without external files', () => {
+      const deployment = makeCreateDeployment([{
+        type: 'git',
+        repositoryId,
+        useExternalValues: true,
+        externalValuesRef,
+        valueSources: [{ type: 'internal', path: 'a.yaml' }],
+      }])
+
+      const { valueSources } = parseCreateDeployment(deployment).deploymentSources[0]
+
+      expect(valueSources.external).toEqual({ ...externalValuesRef, files: [] })
+    })
+
+    it('should leave external undefined when external values are not used', () => {
+      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, useExternalValues: false, valueSources: [{ type: 'internal', path: 'a.yaml' }] }])
 
       const { valueSources } = parseCreateDeployment(deployment).deploymentSources[0]
 
@@ -117,8 +141,8 @@ describe('deploymentUtils', () => {
   describe('parseUpdateDeployment', () => {
     it('should split deployment sources into create (no id) and update (id) buckets', () => {
       const deployment = makeUpdateDeployment([
-        { id: sourceId, type: 'git', repositoryId, valueSources: [] },
-        { type: 'oci', repositoryId, valueSources: [] },
+        { id: sourceId, type: 'git', repositoryId, useExternalValues: false, valueSources: [] },
+        { type: 'oci', repositoryId, useExternalValues: false, valueSources: [] },
       ])
 
       const model = parseUpdateDeployment(deployment)
@@ -130,30 +154,35 @@ describe('deploymentUtils', () => {
       expect(model.deploymentSourcesToCreate[0]).not.toHaveProperty('id')
     })
 
-    it('should split internal value sources by id and preserve order across the interleaved external', () => {
-      const deployment = makeUpdateDeployment([
-        { id: sourceId, type: 'git', repositoryId, valueSources: [
+    it('should split internal and external value sources by id and preserve the interleaved order', () => {
+      const { valueSources } = parseUpdateSource({
+        ...sourceFields,
+        useExternalValues: true,
+        externalValuesRef,
+        valueSources: [
           { type: 'internal', id: internalId, path: 'kept.yaml' },
+          { type: 'external', id: externalId, path: 'kept-ext.yaml' },
           { type: 'internal', path: 'new.yaml' },
-          externalValueSource,
-        ] },
-      ])
-
-      const { valueSources } = parseUpdateDeployment(deployment).deploymentSourcesToUpdate[0]
+          { type: 'external', path: 'ext.yaml' },
+        ],
+      })
 
       expect(valueSources.internalToUpdate).toEqual([{ id: internalId, path: 'kept.yaml', order: 0 }])
-      expect(valueSources.internalToCreate).toEqual([{ path: 'new.yaml', order: 1 }])
+      expect(valueSources.internalToCreate).toEqual([{ path: 'new.yaml', order: 2 }])
       expect(valueSources.external).toEqual({
-        path: 'ext.yaml',
-        ref: 'infra',
-        targetRevision: 'main',
-        repositoryId: externalRepositoryId,
-        order: 2,
+        ...externalValuesRef,
+        filesToUpdate: [{ id: externalId, path: 'kept-ext.yaml', order: 1 }],
+        filesToCreate: [{ path: 'ext.yaml', order: 3 }],
       })
     })
 
-    it('should parse the value sources of a new (no id) deployment source as fresh creates', () => {
-      const deployment = makeUpdateDeployment([{ type: 'git', repositoryId, valueSources: [internalValueSource] }])
+    it('should parse the value sources of a new (no id) deployment source as fresh creates, ignoring ids', () => {
+      const deployment = makeUpdateDeployment([{
+        type: 'git',
+        repositoryId,
+        useExternalValues: false,
+        valueSources: [{ type: 'internal', id: internalId, path: 'a.yaml' }],
+      }])
 
       const { valueSources } = parseUpdateDeployment(deployment).deploymentSourcesToCreate[0]
 
@@ -162,7 +191,7 @@ describe('deploymentUtils', () => {
   })
 
   describe('buildDeploymentSourceCreate', () => {
-    it('should build the nested create write with internal and external value sources', () => {
+    it('should build the nested create write with internal value sources and the ref owning its files', () => {
       const deployment = makeCreateDeployment([
         {
           type: 'git',
@@ -170,7 +199,9 @@ describe('deploymentUtils', () => {
           targetRevision: 'main',
           path: '/app',
           helmValuesFiles: 'values.yaml',
-          valueSources: [internalValueSource, externalValueSource],
+          useExternalValues: true,
+          externalValuesRef,
+          valueSources: [{ type: 'internal', path: 'a.yaml' }, { type: 'external', path: 'ext.yaml' }],
         },
       ])
 
@@ -183,34 +214,32 @@ describe('deploymentUtils', () => {
         path: '/app',
         helmValuesFiles: 'values.yaml',
         internalValueSources: { create: [{ path: 'a.yaml', order: 0 }] },
-        externalValueSource: {
-          create: {
-            order: 1,
-            path: 'ext.yaml',
-            ref: 'infra',
-            targetRevision: 'main',
-            repository: { connect: { id: externalRepositoryId } },
-          },
+        externalValuesRef: {
+          create: { ...externalRefFields, valueSources: { create: [{ path: 'ext.yaml', order: 1 }] } },
         },
       })
     })
 
-    it('should omit externalValueSource entirely when there is none', () => {
-      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, valueSources: [internalValueSource] }])
+    it('should omit the external ref entirely when external values are not used', () => {
+      const deployment = makeCreateDeployment([{ type: 'git', repositoryId, useExternalValues: false, valueSources: [{ type: 'internal', path: 'a.yaml' }] }])
 
       const result = buildDeploymentSourceCreate(parseCreateDeployment(deployment).deploymentSources[0])
 
       expect(result.internalValueSources).toEqual({ create: [{ path: 'a.yaml', order: 0 }] })
-      expect(result).not.toHaveProperty('externalValueSource')
+      expect(result).not.toHaveProperty('externalValuesRef')
     })
   })
 
   describe('buildDeploymentSourceUpdate', () => {
     it('should create/update internal sources by id and delete the ones no longer sent', () => {
-      const source = updateSourceWith([
-        { type: 'internal', id: internalId, path: 'kept.yaml' },
-        { type: 'internal', path: 'new.yaml' },
-      ])
+      const source = parseUpdateSource({
+        ...sourceFields,
+        useExternalValues: false,
+        valueSources: [
+          { type: 'internal', id: internalId, path: 'kept.yaml' },
+          { type: 'internal', path: 'new.yaml' },
+        ],
+      })
 
       expect(buildDeploymentSourceUpdate(source, false).internalValueSources).toEqual({
         deleteMany: { id: { notIn: [internalId] } },
@@ -224,39 +253,68 @@ describe('deploymentUtils', () => {
       })
     })
 
-    it('should upsert the external value source when present', () => {
-      const source = updateSourceWith([externalValueSource])
-      const externalWrite = {
-        order: 0,
-        path: 'ext.yaml',
-        ref: 'infra',
-        targetRevision: 'main',
-        repository: { connect: { id: externalRepositoryId } },
-      }
+    it('should update a kept ref and reconcile its files by id', () => {
+      const source = parseUpdateSource({
+        ...sourceFields,
+        useExternalValues: true,
+        externalValuesRef,
+        valueSources: [
+          { type: 'external', id: externalId, path: 'kept-ext.yaml' },
+          { type: 'external', path: 'ext.yaml' },
+        ],
+      })
 
-      expect(buildDeploymentSourceUpdate(source, false).externalValueSource).toEqual({ upsert: { update: externalWrite, create: externalWrite } })
+      expect(buildDeploymentSourceUpdate(source, true).externalValuesRef).toEqual({
+        update: {
+          ...externalRefFields,
+          valueSources: {
+            deleteMany: { id: { notIn: [externalId] } },
+            create: [{ path: 'ext.yaml', order: 1 }],
+            update: [{ where: { id: externalId }, data: { path: 'kept-ext.yaml', order: 0 } }],
+          },
+        },
+      })
     })
 
-    it('should delete the external value source when it was removed and one existed', () => {
-      const source = updateSourceWith([internalValueSource])
+    it('should create a new ref with all its files, ignoring ids that cannot exist yet', () => {
+      const source = parseUpdateSource({
+        ...sourceFields,
+        useExternalValues: true,
+        externalValuesRef,
+        valueSources: [
+          { type: 'external', path: 'ext.yaml' },
+          { type: 'external', id: externalId, path: 'stale-id.yaml' },
+        ],
+      })
 
-      expect(buildDeploymentSourceUpdate(source, true).externalValueSource).toEqual({ delete: true })
+      expect(buildDeploymentSourceUpdate(source, false).externalValuesRef).toEqual({
+        create: {
+          ...externalRefFields,
+          valueSources: { create: [{ path: 'ext.yaml', order: 0 }, { path: 'stale-id.yaml', order: 1 }] },
+        },
+      })
     })
 
-    it('should leave the external value source untouched when none existed and none was sent', () => {
-      const source = updateSourceWith([internalValueSource])
+    it('should delete the ref (its files cascade) when external values are no longer used and one existed', () => {
+      const source = parseUpdateSource({ ...sourceFields, useExternalValues: false, valueSources: [] })
 
-      expect(buildDeploymentSourceUpdate(source, false).externalValueSource).toEqual({})
+      expect(buildDeploymentSourceUpdate(source, true).externalValuesRef).toEqual({ delete: true })
+    })
+
+    it('should leave the ref untouched when none existed and none was sent', () => {
+      const source = parseUpdateSource({ ...sourceFields, useExternalValues: false, valueSources: [] })
+
+      expect(buildDeploymentSourceUpdate(source, false).externalValuesRef).toEqual({})
     })
   })
 
   describe('serializeDeployment', () => {
-    it('should merge the two value source relations into one list ordered by `order`', () => {
+    it('should tag a source with a ref and merge every value source into one list ordered by `order`', () => {
       const internalA = makeDeploymentInternalValueSource({ order: 0, path: 'a.yaml' })
       const internalB = makeDeploymentInternalValueSource({ order: 2, path: 'b.yaml' })
-      const external = makeDeploymentExternalValueSource({
-        order: 1,
-        path: 'ext.yaml',
+      const externalA = makeDeploymentExternalValueSource({ order: 1, path: 'ext.yaml' })
+      const externalB = makeDeploymentExternalValueSource({ order: 3, path: 'ext-2.yaml' })
+      const { valueSources: _files, ...ref } = makeDeploymentExternalValuesRef({
         ref: 'infra',
         targetRevision: 'main',
         repositoryId: externalRepositoryId,
@@ -264,44 +322,38 @@ describe('deploymentUtils', () => {
       const deployment = makeDeploymentWithRelations({
         deploymentSources: [makeDeploymentSource({
           internalValueSources: [internalA, internalB],
-          externalValueSource: external,
+          externalValuesRef: { ...ref, valueSources: [externalA, externalB] },
         })],
       })
 
       const [source] = serializeDeployment(deployment).deploymentSources
 
+      expect(source).toMatchObject({ useExternalValues: true, externalValuesRef: ref })
       expect(source.valueSources).toEqual([
         { type: 'internal', id: internalA.id, order: 0, path: 'a.yaml' },
-        {
-          type: 'external',
-          id: external.id,
-          order: 1,
-          path: 'ext.yaml',
-          ref: 'infra',
-          targetRevision: 'main',
-          repositoryId: externalRepositoryId,
-        },
+        { type: 'external', id: externalA.id, order: 1, path: 'ext.yaml' },
         { type: 'internal', id: internalB.id, order: 2, path: 'b.yaml' },
+        { type: 'external', id: externalB.id, order: 3, path: 'ext-2.yaml' },
       ])
     })
 
-    it('should drop the persisted relations from the serialized source', () => {
+    it('should tag a source without a ref and drop the persisted relations', () => {
+      const internal = makeDeploymentInternalValueSource()
       const deployment = makeDeploymentWithRelations({
-        deploymentSources: [makeDeploymentSource({
-          internalValueSources: [makeDeploymentInternalValueSource()],
-          externalValueSource: null,
-        })],
+        deploymentSources: [makeDeploymentSource({ internalValueSources: [internal], externalValuesRef: null })],
       })
 
       const [source] = serializeDeployment(deployment).deploymentSources
 
+      expect(source.useExternalValues).toBe(false)
+      expect(source).not.toHaveProperty('externalValuesRef')
       expect(source).not.toHaveProperty('internalValueSources')
-      expect(source).not.toHaveProperty('externalValueSource')
+      expect(source.valueSources).toEqual([{ type: 'internal', id: internal.id, order: internal.order, path: internal.path }])
     })
 
     it('should yield an empty list when a source has no value sources', () => {
       const deployment = makeDeploymentWithRelations({
-        deploymentSources: [makeDeploymentSource({ internalValueSources: [], externalValueSource: null })],
+        deploymentSources: [makeDeploymentSource({ internalValueSources: [], externalValuesRef: null })],
       })
 
       expect(serializeDeployment(deployment).deploymentSources[0].valueSources).toEqual([])

@@ -608,19 +608,22 @@ function formatDeploymentSourceValueSources(
     order: valueSource.order,
     value: { type: 'internal', path: valueSource.path } satisfies ValueSource,
   }))
-  const externalValueSource = source.externalValueSource
-    ? [{
-        order: source.externalValueSource.order,
+  // The chart contract repeats the shared ref on every external entry; dso-env
+  // dedupes the resulting ArgoCD `ref` sources by name.
+  const externalValuesRef = source.externalValuesRef
+  const externalValueSources = externalValuesRef
+    ? externalValuesRef.valueSources.map(valueSource => ({
+        order: valueSource.order,
         value: {
           type: 'external',
-          ref: source.externalValueSource.ref,
-          repoURL: `${gitlabPublicProjectUrl}/${source.externalValueSource.repository.internalRepoName}.git`,
-          targetRevision: source.externalValueSource.targetRevision || 'HEAD',
-          path: source.externalValueSource.path,
+          ref: externalValuesRef.ref,
+          repoURL: `${gitlabPublicProjectUrl}/${externalValuesRef.repository.internalRepoName}.git`,
+          targetRevision: externalValuesRef.targetRevision || 'HEAD',
+          path: valueSource.path,
         } satisfies ValueSource,
-      }]
+      }))
     : []
-  return [...internalValueSources, ...externalValueSource]
+  return [...internalValueSources, ...externalValueSources]
     .toSorted((a, b) => a.order - b.order)
     .map(entry => entry.value)
 }

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import type { UpdateDeploymentSource } from '@cpn-console/shared'
-
-type DeploymentSourceDraft = Partial<UpdateDeploymentSource>
+import type { DeploymentSourceDraft } from '@/utils/deployment-draft'
+import { newDeploymentSourceDraft } from '@/utils/deployment-draft'
 
 defineProps<{
   repoOptions: { text: string, value: string }[]
@@ -16,13 +15,7 @@ if (depots.value.length === 0) {
 }
 
 function addDepot() {
-  depots.value = [
-    ...depots.value,
-    {
-      type: 'git',
-      valueSources: [],
-    },
-  ]
+  depots.value = [...depots.value, newDeploymentSourceDraft()]
 }
 
 function removeDepot(index: number) {

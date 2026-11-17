@@ -1,6 +1,7 @@
 import type {
   Deployment,
   DeploymentExternalValueSource,
+  DeploymentExternalValuesRef,
   DeploymentInternalValueSource,
   DeploymentSource,
   Environment,
@@ -61,7 +62,11 @@ export function makeRepository(overrides: Partial<Repository> = {}): Repository 
 type DeploymentSourceWithRepository = DeploymentSource & {
   repository: Repository
   internalValueSources: DeploymentInternalValueSource[]
-  externalValueSource: DeploymentExternalValueSource | null
+  externalValuesRef: DeploymentExternalValuesRefWithValueSources | null
+}
+
+type DeploymentExternalValuesRefWithValueSources = DeploymentExternalValuesRef & {
+  valueSources: DeploymentExternalValueSource[]
 }
 
 export function makeDeploymentInternalValueSource(overrides: Partial<DeploymentInternalValueSource> = {}): DeploymentInternalValueSource {
@@ -81,12 +86,23 @@ export function makeDeploymentExternalValueSource(overrides: Partial<DeploymentE
     id: faker.string.uuid(),
     createdAt: faker.date.past(),
     updatedAt: faker.date.past(),
-    deploymentSourceId: faker.string.uuid(),
+    externalValuesRefId: faker.string.uuid(),
     order: 0,
     path: 'values.yaml',
+    ...overrides,
+  }
+}
+
+export function makeDeploymentExternalValuesRef(overrides: Partial<DeploymentExternalValuesRefWithValueSources> = {}): DeploymentExternalValuesRefWithValueSources {
+  return {
+    id: faker.string.uuid(),
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.past(),
+    deploymentSourceId: faker.string.uuid(),
     ref: 'main',
     targetRevision: '',
     repositoryId: faker.string.uuid(),
+    valueSources: [],
     ...overrides,
   }
 }
@@ -105,7 +121,7 @@ export function makeDeploymentSource(overrides: Partial<DeploymentSourceWithRepo
     helmValuesFiles: '',
     repository: makeRepository({ id: repositoryId }),
     internalValueSources: [],
-    externalValueSource: null,
+    externalValuesRef: null,
     ...overrides,
   }
 }
@@ -117,7 +133,7 @@ export type DeploymentWithRelations = Prisma.DeploymentGetPayload<{
       include: {
         repository: true
         internalValueSources: true
-        externalValueSource: true
+        externalValuesRef: { include: { valueSources: true } }
       }
     }
   }
