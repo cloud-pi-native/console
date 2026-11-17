@@ -78,6 +78,14 @@ describe('harborConfig', () => {
     expect(harborConfigFactory().robotExpirationDays).toBe(-1)
   })
 
+  it('rejects a zero robot duration', () => {
+    vi.stubEnv('HARBOR_URL', 'https://harbor.internal')
+    vi.stubEnv('HARBOR_ADMIN', 'admin')
+    vi.stubEnv('HARBOR_ADMIN_PASSWORD', 'pw')
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '0')
+    expect(() => harborConfigFactory()).toThrow(/must be -1 or a positive number/)
+  })
+
   it('throws when a required var is missing', () => {
     expect(() => harborConfigFactory()).toThrow()
   })

@@ -45,6 +45,7 @@ import {
   PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
+  ROBOT_DURATION_NEVER_EXPIRES,
   ROBOT_NAME_PROJECT,
   ROBOT_NAME_RO,
   ROBOT_NAME_RW,
@@ -82,7 +83,7 @@ export class RegistryService {
 
   private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
-      generateRobotPermissions(project, robotName, access, robotName === ROBOT_NAME_PROJECT ? -1 : this.harborConfig.robotExpirationDays),
+      generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
     )
     if (!created) {
       throw new Error(`Harbor robot already exists (${robotName})`)
@@ -120,6 +121,15 @@ export class RegistryService {
     })
 
     if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
+      if (robotName === ROBOT_NAME_PROJECT) {
+        const existing = await this.getRobot(project, harborProjectId, robotName)
+        if (existing?.id && existing.duration !== ROBOT_DURATION_NEVER_EXPIRES) {
+          await this.client.updateRobot(
+            existing.id,
+            generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
+          )
+        }
+      }
       span?.setAttribute('vault.secret.reused', true)
       return vaultRobotSecret.data
     }
@@ -452,7 +462,7 @@ function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
 function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
   return {
     name: robotName,
-    duration: durationDays,
+    duration: robotName === ROBOT_NAME_PROJECT ? ROBOT_DURATION_NEVER_EXPIRES : durationDays,
     description: 'robot for ci builds',
     disable: false,
     level: 'project',

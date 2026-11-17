@@ -21,7 +21,7 @@ const harborFeatureSchema = z.object({
   HARBOR_RULE_COUNT: z.coerce.number().int().positive().optional(),
   HARBOR_RETENTION_CRON: cronSchema.default('0 22 2 * * *'),
   HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS: z.coerce.number().int().positive().default(60),
-  HARBOR_ROBOT_EXPIRATION_DAYS: z.coerce.number().int().min(-1).default(90),
+  HARBOR_ROBOT_EXPIRATION_DAYS: z.coerce.number().int().refine(days => days === -1 || days > 0, 'Harbor robot duration must be -1 or a positive number').default(90),
   HARBOR_PROJECT_SLUG_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
 }).superRefine((raw, ctx) => {
   // Rotation must trigger strictly before expiration, otherwise robots die
