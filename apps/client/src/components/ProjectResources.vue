@@ -12,6 +12,7 @@ import { useStageStore } from '@/stores/stage.js'
 import { useUserStore } from '@/stores/user.js'
 import { useZoneStore } from '@/stores/zone.js'
 import { clickInDialog, getRandomId } from '@/utils/func.js'
+import { copyToClipboard as copyWithFeedback } from '@/utils/clipboard.js'
 import { getProjectResourceUsage } from '@/utils/project-resource-usage.js'
 import { toCreateRepositoryBody, toUpdateRepositoryBody } from '@/utils/repository-utils.js'
 
@@ -187,17 +188,8 @@ function closeModal() {
 }
 
 // Allow the copy to clipboard on click
-const copiedText = ref('')
-const MILLISECONDS_UNTIL_CLIPBOARD_CLEAR = 2000
-
 async function copyToClipboard(text: string) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copiedText.value = text
-    setTimeout(() => (copiedText.value = ''), MILLISECONDS_UNTIL_CLIPBOARD_CLEAR)
-  } catch (err) {
-    logger.error({ err }, 'Clipboard write failed')
-  }
+  await copyWithFeedback(text, snackbarStore)
 }
 </script>
 
