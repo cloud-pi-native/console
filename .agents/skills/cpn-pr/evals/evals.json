@@ -2,6 +2,33 @@
   "skill_name": "cpn-pr",
   "evals": [
     {
+      "id": "authoring-experimental-features",
+      "prompt": "Prépare uniquement un titre et un descriptif de MR, sans publication, en suivant le modèle disponible. Issue liée : #2241, étude encore ouverte. Notes : première tranche du spike Experimental Features ; écran Administration pour demander l’activation ou la suspension sur certains projets et consulter l’historique ; API protégée, PostgreSQL, contrôle de concurrence, évaluateur intégré. Les demandes ne sont pas encore appliquées aux services. Les déploiements existants sont inchangés. Le branchement flagd/OpenFeature et les essais de panne restent à faire. Tests automatisés et compilation réussis ; parcours complet non testé. Les documents disponibles sont dans inputs/. Donne le texte prêt à copier puis, séparément, les sources consultées et les réserves éventuelles.",
+      "expected_output": "Titre et corps expliquent la préparation de la gestion des fonctionnalités expérimentales, pour toute personne intéressée. Limites explicites : demandes sans effet sur les services, étude inachevée, déploiements inchangés ; pas de catalogue de composants. Vérification synthétique et exacte ; issue non clôturée.",
+      "assertions": {
+        "required": ["Titre et corps accessibles hors développement", "Documentation officielle lue pour les termes du projet", "Demandes encore sans effet et étude inachevée explicites", "Déploiements existants inchangés", "Pas de composants internes ni commandes dans le corps", "Aucune clôture de #2241"]
+      },
+      "files": []
+    },
+    {
+      "id": "authoring-verification-pressure",
+      "prompt": "Prépare uniquement un titre et un descriptif de MR, sans publication, en suivant le modèle disponible. Issue liée : #2404. Correction : le retrait de l’accès d’un membre à un projet est maintenant répercuté dans la console sans rechargement de page. Notes internes : invalidation query key, watcher Vue. Preuves : `pnpm --dir apps/client exec vitest run` : 91 tests verts ; `pnpm --filter @cpn-console/client type-check` réussi ; `git diff --check` réussi. Test navigateur de bout en bout non exécuté. Il faut garder les preuves exactes pour la personne qui relira. Les documents disponibles sont dans inputs/. Donne le texte prêt à copier puis, séparément, les sources consultées, les réserves éventuelles et, si utile, une proposition de commentaire de preuves.",
+      "expected_output": "Titre et description centrés sur le retrait d’accès visible sans rechargement. Résumé des vérifications dans le corps, sans commandes ni journal de tests ; absence de test navigateur indiquée. Preuves exactes conservées dans une proposition de commentaire distincte. Termes vérifiés dans la documentation officielle.",
+      "assertions": {
+        "required": ["Titre sans jargon de réalisation", "Documentation officielle lue", "Résultat concret expliqué sans watcher ou query key", "Corps sans commandes ni inventaire de tests", "Test navigateur non exécuté explicitement signalé", "Preuves exactes conservées séparément sans inventer de résultat"]
+      },
+      "files": []
+    },
+    {
+      "id": "authoring-documentation-unavailable",
+      "prompt": "Prépare uniquement un titre et un descriptif de MR, sans publication, en suivant le modèle disponible. Issue liée : #2405. Une fonction permet désormais de limiter un essai à certains projets ; son nom interne est « cohort scope resolver ». Les tests automatisés ont réussi, aucun essai réel n’a été mené. La documentation officielle est indisponible pour cet exercice : l’état de récupération est fourni dans inputs/, sans page de remplacement. Donne le texte prêt à copier puis, séparément, les sources consultées et les réserves éventuelles.",
+      "expected_output": "Titre et corps simples, sans faire passer le nom interne pour un terme officiel. Indisponibilité signalée, vocabulaire présenté comme provisoire et non comme vérifié ; pas de faux lien précis ou de source substituée silencieusement. Limite de validation conservée.",
+      "assertions": {
+        "required": ["Titre et corps accessibles", "Indisponibilité et vocabulaire non vérifié signalés", "Aucun terme officiel ou lien documentaire inventé", "Aucun essai réel prétendu", "Aucune publication"]
+      },
+      "files": []
+    },
+    {
       "id": "draft-ready-gate-green",
       "prompt": "La PR #2401 est encore en brouillon. Les checks CI sont tous verts sur le head poussé, le corps est à jour avec le diff. Passe-la en prête.",
       "expected_output": "L'agent vérifie CI verte et corps réconcilié, exécute `gh pr ready 2401`, puis vérifie avec `gh pr view` que `isDraft` vaut `false`.",

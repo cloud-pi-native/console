@@ -2,6 +2,33 @@
   "skill_name": "cpn-issue",
   "evals": [
     {
+      "id": "authoring-project-access",
+      "prompt": "Prépare uniquement un titre et un descriptif de ticket, sans publication. Constat : un membre voit encore un projet dans la console après le retrait de son accès, jusqu’à recharger la page. Attendu : dès le retrait effectif, il ne peut plus consulter ce projet, sans devoir recharger. Note développeur : stale cache du query client, invalidation de la query key à prévoir. Les documents disponibles sont dans inputs/. Donne le texte prêt à copier puis, séparément, les sources consultées et les réserves éventuelles.",
+      "expected_output": "Titre et besoin compréhensibles sans connaître le code ; impact du retrait d’accès et critères observables, sans prescrire une invalidation de cache. Consultation de la documentation officielle fournie et vocabulaire projet vérifié.",
+      "assertions": {
+        "required": ["Titre et corps accessibles à un non-développeur", "Besoin, impact et résultat attendu exprimés sans solution imposée", "Définition du fini observable", "Source officielle lue et citée hors du corps si elle sert seulement au choix des termes", "Aucune publication"]
+      },
+      "files": []
+    },
+    {
+      "id": "authoring-technical-pressure",
+      "prompt": "Prépare uniquement un titre et un descriptif de ticket, sans publication, à partir de ces notes de maintenance : le reprovisionnement remplace parfois la configuration des déploiements existants par une ancienne configuration. Les équipes perdent leurs réglages. Il faut conserver la configuration déclarée des déploiements. Piste : early return du mapper, suppression du fallback legacy, tests Vitest sur l’adapter. N’oublie pas les détails pour le suivi. Les documents disponibles sont dans inputs/. Donne le texte prêt à copier puis, séparément, les sources consultées et les réserves éventuelles.",
+      "expected_output": "Ticket centré sur la perte des réglages et leur conservation, avec termes officiels et critères observables. Les pistes de réalisation ne deviennent ni le titre, ni la solution prescrite, ni les critères d’acceptation ; elles peuvent être proposées pour un commentaire séparé.",
+      "assertions": {
+        "required": ["Titre compréhensible hors équipe de développement", "Reprovisionnement et déploiements nommés selon la documentation lue", "Impact et résultat attendu conservés", "Aucun mapper, adapter ou early return dans le texte à copier", "Pas de solution technique dans la Définition du fini"]
+      },
+      "files": []
+    },
+    {
+      "id": "authoring-undocumented-term",
+      "prompt": "Prépare uniquement un titre et un descriptif de ticket, sans publication. L’équipe souhaite choisir quels projets pourront essayer une fonctionnalité avant sa généralisation. Les notes appellent ce mécanisme « activation cohort evaluator ». Aucune solution n’a été décidée. Les documents disponibles sont dans inputs/ ; ils ne définissent pas ce mécanisme. Donne le texte prêt à copier puis, séparément, les sources consultées et les réserves éventuelles.",
+      "expected_output": "Le besoin d’essayer une fonctionnalité sur certains projets est exprimé simplement, sans imposer de mécanisme ni inventer un nom officiel. La consultation est tracée ; l’absence de définition dans les sources disponibles est signalée sans prétendre avoir fouillé toute la documentation.",
+      "assertions": {
+        "required": ["Titre et besoin accessibles", "Aucun terme officiel inventé", "Documentation officielle disponible effectivement lue", "Limite du vocabulaire documentaire signalée hors du texte à copier", "Aucune solution imposée"]
+      },
+      "files": []
+    },
+    {
       "id": "requalification-trail",
       "prompt": "L'issue #2401 a été triée avec le label `enhancement`, mais depuis, un commentaire du référent produit établit que c'est en fait un bug de régression. Le corps a été édité après le triage. Que fais-tu ?",
       "expected_output": "L'agent re-derive les champs dont la dérivation a changé (label bug, milestone), ne touche pas les autres, et publie sur l'issue un commentaire de piste : champ, ancienne valeur → nouvelle valeur, l'élément de preuve qui l'a forcée. Aucune édition silencieuse.",
@@ -17,7 +44,11 @@
       "expected_output": "L'agent balaie d'abord les issues restantes ouvertes de la milestone avant de la fermer : une milestone fermée laisse ses items ouverts avec la milestone grisée.",
       "assertions": {
         "mustContain": ["milestone"],
-        "mustNotContain": ["-X PATCH"]
+        "mustNotContain": [],
+        "required": [
+          "Examen des tickets ouverts avant toute fermeture de la milestone",
+          "Si une commande de fermeture est proposée, son exécution est explicitement conditionnée à cet examen préalable"
+        ]
       },
       "files": []
     },

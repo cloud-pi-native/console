@@ -1,11 +1,11 @@
 ---
 name: cpn-issue
 description:
-  "Use when opening, triaging, or closing an issue in this repo: French
-  templates, acceptance ledger, additive triage."
+  "Use when drafting or revising issue titles and descriptions, opening,
+  triaging, or closing an issue in this repo."
 license: Apache-2.0
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # Console issues
@@ -24,6 +24,17 @@ gh api repos/cloud-pi-native/console --jq .viewerPermission # write to triage
 ```
 
 An unmet requirement is a reported blocker, never a silent scope change.
+
+## Write for everyone interested in the project
+
+Apply these rules when drafting or revising a **title and description**, not only when opening an issue. A drafting request does not authorize publication or metadata changes.
+
+- Write in French for anyone connected to or interested in the project, including non-developers. Explain the need, who is affected, its impact and the expected outcome. Take a step back from the implementation notes; do not merely translate their jargon.
+- **Before writing, systematically consult the relevant pages of https://cloud-pi-native.fr/** to choose the project's precise terms. Use the available browsing tools or identifiable official excerpts supplied for the task. Record the pages consulted separately from the copy-ready text; add a page to Références only when it helps understand the need, not just to prove a vocabulary lookup.
+- Preserve documented project terms and exact interface labels. Documentation guides vocabulary, but an old description does not prove current behavior. Check the reported facts separately. If a term is absent from the consulted pages, ambiguous or contradicted by current evidence, state the gap and scope of the lookup separately; use a plain description without inventing an official name. If the documentation cannot be reached, report it and mark the wording as provisional rather than claiming it is verified.
+- Make the title name the problem or expected outcome, not a component or proposed implementation. Keep the repository's title markers. For example: « 🐛 [BUG] - Préserver la configuration des déploiements lors du reprovisionnement », not « Corriger le fallback du mapper ».
+- Keep the description focused on the need and observable acceptance criteria. Leave hypotheses, component names and implementation proposals in analysis comments; detailed technical explanations belong with the code and its documentation. Do not copy an undefined internal name into the context just because it appeared in the notes. Explain an indispensable technical term briefly, without replacing precise project vocabulary with vague wording.
+- Reread the title and body together: can someone unfamiliar with the code explain why this work matters and what result is expected? Remove repetitions and details that do not help answer that question. Do not impose an arbitrary word count or fill missing facts with invented detail.
 
 ## Open
 
@@ -96,6 +107,12 @@ silent metadata edit is the defect this rule prevents.
   `gh issue close <N> --comment "<evidence>"`. Never rely on PR-merge
   auto-close, never close silently — state why (duplicate → link the
   canonical issue).
+
+## Pitfalls
+
+- French prose is not necessarily accessible: « spike », internal component names or unexplained acronyms can still obscure the need.
+- A well-structured issue can still be an implementation plan. Keep its acceptance criteria about the expected result, not the proposed code changes.
+- A documentation link is not proof that its terms were checked; read the relevant content and report unavailable or missing definitions honestly.
 
 ## Verify
 
