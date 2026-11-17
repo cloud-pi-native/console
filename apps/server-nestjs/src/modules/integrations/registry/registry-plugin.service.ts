@@ -85,7 +85,7 @@ export class RegistryPluginService {
   manifest(): ServiceInfos {
     const quotaDescription = '-1 -> illimité, sinon 100MB / 1.2GB (unités : B, KB, MB, GB, TB)), max 1024TB'
     return {
-      name: 'registry',
+      name: PLUGIN_NAME,
       title: 'Harbor',
       imgSrc: '/img/harbor.svg',
       description: 'Harbor stocke, analyse et distribue vos images de conteneurs',
