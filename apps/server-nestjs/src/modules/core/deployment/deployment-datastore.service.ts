@@ -9,7 +9,7 @@ export type DeploymentWithRelations = Prisma.DeploymentGetPayload<{
       include: {
         repository: true
         internalValueSources: true
-        externalValueSource: true
+        externalValuesRef: { include: { valueSources: true } }
       }
     }
   }
@@ -21,7 +21,7 @@ const deploymentRelations = {
     include: {
       repository: true,
       internalValueSources: { orderBy: { order: 'asc' } },
-      externalValueSource: true,
+      externalValuesRef: { include: { valueSources: { orderBy: { order: 'asc' } } } },
     },
   },
 } satisfies Prisma.DeploymentInclude

@@ -13,10 +13,22 @@ const internalValueSourceFields = {
 
 const externalValueSourceFields = {
   path: z.string(),
-  ref: z.string().min(1, 'Une source de valeurs externe doit avoir un nom de référence'),
-  targetRevision: z.string().default(''),
-  repositoryId: z.string().uuid('Une source de valeurs externe doit référencer un dépôt'),
 }
+
+// The external repository is declared once per deployment source; every external
+// value source resolves its path against it as `$<ref>/<path>`.
+const externalValuesRefFields = {
+  ref: z.string().min(1, 'Les values externes doivent avoir un nom de référence'),
+  targetRevision: z.string().default(''),
+  repositoryId: z.string().uuid('Les values externes doivent référencer un dépôt'),
+}
+
+export const DeploymentExternalValuesRefSchema = z.object({
+  id: z.string().uuid(),
+  ...externalValuesRefFields,
+})
+
+export const WritableDeploymentExternalValuesRefSchema = z.object(externalValuesRefFields)
 
 export const DeploymentInternalValueSourceSchema = z.object({
   id: z.string().uuid(),
@@ -30,12 +42,14 @@ export const DeploymentExternalValueSourceSchema = z.object({
   ...externalValueSourceFields,
 })
 
+const TypedDeploymentInternalValueSourceSchema = DeploymentInternalValueSourceSchema.extend({ type: z.literal('internal') })
+
 export const DeploymentValueSourceSchema = z.discriminatedUnion('type', [
-  DeploymentInternalValueSourceSchema.extend({ type: z.literal('internal') }),
+  TypedDeploymentInternalValueSourceSchema,
   DeploymentExternalValueSourceSchema.extend({ type: z.literal('external') }),
 ])
 
-export const DeploymentSourceSchema = z.object({
+export const DeploymentSourceBaseSchema = z.object({
   id: z.string()
     .uuid(),
   deploymentId: z.string()
@@ -48,8 +62,21 @@ export const DeploymentSourceSchema = z.object({
   targetRevision: z.string().optional(),
   path: z.string().optional(),
   helmValuesFiles: z.string().optional(),
-  valueSources: DeploymentValueSourceSchema.array().default([]),
 }).extend(AtDatesToStringExtend)
+
+// `useExternalValues` tags which value sources a deployment source may hold: the
+// external ref, and external entries resolving against it, only exist when true.
+export const DeploymentSourceSchema = z.discriminatedUnion('useExternalValues', [
+  DeploymentSourceBaseSchema.extend({
+    useExternalValues: z.literal(false),
+    valueSources: TypedDeploymentInternalValueSourceSchema.array(),
+  }),
+  DeploymentSourceBaseSchema.extend({
+    useExternalValues: z.literal(true),
+    externalValuesRef: DeploymentExternalValuesRefSchema,
+    valueSources: DeploymentValueSourceSchema.array(),
+  }),
+])
 
 export const DeploymentSchema = z.object({
   id: z.string()
@@ -67,44 +94,50 @@ export const DeploymentSchema = z.object({
   deploymentSources: DeploymentSourceSchema.array(),
 }).extend(AtDatesToStringExtend)
 
-export const CreateDeploymentValueSourceSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('internal'), ...internalValueSourceFields }),
-  z.object({ type: z.literal('external'), ...externalValueSourceFields }),
-])
-export const UpdateDeploymentValueSourceSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('internal'), id: z.string().uuid().optional(), ...internalValueSourceFields }),
-  z.object({ type: z.literal('external'), id: z.string().uuid().optional(), ...externalValueSourceFields }),
-])
+const CreateInternalValueSourceSchema = z.object({ type: z.literal('internal'), ...internalValueSourceFields })
+const CreateExternalValueSourceSchema = z.object({ type: z.literal('external'), ...externalValueSourceFields })
+const UpdateInternalValueSourceSchema = CreateInternalValueSourceSchema.extend({ id: z.string().uuid().optional() })
+const UpdateExternalValueSourceSchema = CreateExternalValueSourceSchema.extend({ id: z.string().uuid().optional() })
 
-// A deployment source may carry at most one external value source (internal ones are unlimited).
-function refineSingleExternalValueSource(valueSources: { type: 'internal' | 'external' }[], ctx: Zod.RefinementCtx): void {
-  if (valueSources.filter(valueSource => valueSource.type === 'external').length > 1) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Une seule source de valeurs externe est autorisée par source de déploiement',
-    })
-  }
-}
+export const CreateDeploymentValueSourceSchema = z.discriminatedUnion('type', [CreateInternalValueSourceSchema, CreateExternalValueSourceSchema])
+export const UpdateDeploymentValueSourceSchema = z.discriminatedUnion('type', [UpdateInternalValueSourceSchema, UpdateExternalValueSourceSchema])
 
-const writableDeploymentSourceOmit = {
+const WritableDeploymentSourceBaseSchema = DeploymentSourceBaseSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   deploymentId: true,
   repository: true,
-  valueSources: true,
-} as const
-
-// First-class writable deployment source schemas, built on the value source
-// definitions above. CreateDeploymentSchema / UpdateDeploymentSchema compose these.
-export const CreateDeploymentSourceSchema = DeploymentSourceSchema.omit(writableDeploymentSourceOmit).extend({
-  valueSources: CreateDeploymentValueSourceSchema.array().superRefine(refineSingleExternalValueSource).default([]),
 })
 
-export const UpdateDeploymentSourceSchema = CreateDeploymentSourceSchema.extend({
-  id: z.string().uuid().optional(),
-  valueSources: UpdateDeploymentValueSourceSchema.array().superRefine(refineSingleExternalValueSource).default([]),
-})
+// First-class writable deployment source schemas, tagged like DeploymentSourceSchema:
+// parsing proves the ref is present whenever external entries are.
+// CreateDeploymentSchema / UpdateDeploymentSchema compose these.
+export const CreateDeploymentSourceSchema = z.discriminatedUnion('useExternalValues', [
+  WritableDeploymentSourceBaseSchema.extend({
+    useExternalValues: z.literal(false),
+    valueSources: CreateInternalValueSourceSchema.array().default([]),
+  }),
+  WritableDeploymentSourceBaseSchema.extend({
+    useExternalValues: z.literal(true),
+    externalValuesRef: WritableDeploymentExternalValuesRefSchema,
+    valueSources: CreateDeploymentValueSourceSchema.array().default([]),
+  }),
+])
+
+export const UpdateDeploymentSourceSchema = z.discriminatedUnion('useExternalValues', [
+  WritableDeploymentSourceBaseSchema.extend({
+    id: z.string().uuid().optional(),
+    useExternalValues: z.literal(false),
+    valueSources: UpdateInternalValueSourceSchema.array().default([]),
+  }),
+  WritableDeploymentSourceBaseSchema.extend({
+    id: z.string().uuid().optional(),
+    useExternalValues: z.literal(true),
+    externalValuesRef: WritableDeploymentExternalValuesRefSchema,
+    valueSources: UpdateDeploymentValueSourceSchema.array().default([]),
+  }),
+])
 
 export const CreateDeploymentSchema = DeploymentSchema.omit({
   id: true,
@@ -121,10 +154,13 @@ export const UpdateDeploymentSchema = CreateDeploymentSchema.extend({
 
 export type DeploymentInternalValueSource = Zod.infer<typeof DeploymentInternalValueSourceSchema>
 export type DeploymentExternalValueSource = Zod.infer<typeof DeploymentExternalValueSourceSchema>
+export type DeploymentExternalValuesRef = Zod.infer<typeof DeploymentExternalValuesRefSchema>
+export type WritableDeploymentExternalValuesRef = Zod.infer<typeof WritableDeploymentExternalValuesRefSchema>
 export type DeploymentValueSource = Zod.infer<typeof DeploymentValueSourceSchema>
 export type DeploymentSource = Zod.infer<typeof DeploymentSourceSchema>
 export type CreateDeploymentValueSource = Zod.infer<typeof CreateDeploymentValueSourceSchema>
 export type UpdateDeploymentValueSource = Zod.infer<typeof UpdateDeploymentValueSourceSchema>
+export type UpdateDeploymentInternalValueSource = Zod.infer<typeof UpdateInternalValueSourceSchema>
 export type CreateDeploymentSource = Zod.infer<typeof CreateDeploymentSourceSchema>
 export type UpdateDeploymentSource = Zod.infer<typeof UpdateDeploymentSourceSchema>
 export type Deployment = Zod.infer<typeof DeploymentSchema>

@@ -43,7 +43,7 @@ describe('deploymentDatastoreService', () => {
       include: {
         repository: true,
         internalValueSources: { orderBy: { order: 'asc' } },
-        externalValueSource: true,
+        externalValuesRef: { include: { valueSources: { orderBy: { order: 'asc' } } } },
       },
     },
   }

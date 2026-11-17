@@ -2302,6 +2302,7 @@ export const data = {
   ],
   deployment: [],
   deploymentSource: [],
+  deploymentExternalValuesRef: [],
   deploymentExternalValueSource: [],
   deploymentInternalValueSource: [],
 }

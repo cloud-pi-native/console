@@ -300,7 +300,7 @@ pnpm docker:dev
 
 | Variable | Défaut | Description |
 |----------|--------|-------------|
-| `DSO_ENV_CHART_VERSION` | `dso-env-1.6.0` | Version du chart dso-env |
+| `DSO_ENV_CHART_VERSION` | `dso-env-1.9.6` | Version du chart dso-env |
 | `DSO_NS_CHART_VERSION` | `dso-ns-1.1.5` | Version du chart dso-ns |
 
 ### Racine des projets

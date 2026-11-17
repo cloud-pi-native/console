@@ -36,6 +36,7 @@ export function loadFixtures(input: typeof data = data) {
 export async function resetFixtures(prisma: PrismaClient, fixtures = loadFixtures()): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await tx.deploymentExternalValueSource.deleteMany()
+    await tx.deploymentExternalValuesRef.deleteMany()
     await tx.deploymentInternalValueSource.deleteMany()
     await tx.deploymentSource.deleteMany()
     await tx.deployment.deleteMany()
@@ -78,6 +79,7 @@ export async function resetFixtures(prisma: PrismaClient, fixtures = loadFixture
     await tx.deployment.createMany({ data: fixtures.deployment })
     await tx.deploymentSource.createMany({ data: fixtures.deploymentSource })
     await tx.deploymentInternalValueSource.createMany({ data: fixtures.deploymentInternalValueSource })
+    await tx.deploymentExternalValuesRef.createMany({ data: fixtures.deploymentExternalValuesRef })
     await tx.deploymentExternalValueSource.createMany({ data: fixtures.deploymentExternalValueSource })
     await tx.log.createMany({ data: fixtures.log })
 
