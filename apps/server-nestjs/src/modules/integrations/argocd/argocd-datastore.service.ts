@@ -89,15 +89,20 @@ export const projectSelect = {
               path: true,
             },
           },
-          externalValueSource: {
+          externalValuesRef: {
             select: {
-              order: true,
-              path: true,
               ref: true,
               targetRevision: true,
               repository: {
                 select: {
                   internalRepoName: true,
+                },
+              },
+              valueSources: {
+                orderBy: { order: 'asc' },
+                select: {
+                  order: true,
+                  path: true,
                 },
               },
             },

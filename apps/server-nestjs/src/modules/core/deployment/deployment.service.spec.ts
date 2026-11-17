@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { AppEventsService } from '../events/app-events.service'
 import { DeploymentDatastoreService } from './deployment-datastore.service'
-import { makeDeployment, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
+import { makeDeployment, makeDeploymentExternalValuesRef, makeDeploymentSource, makeDeploymentWithRelations } from './deployment-testing.utils'
 import { DeploymentService } from './deployment.service'
 import { serializeDeployment } from './deployment.utils'
 
@@ -35,6 +35,7 @@ describe('deploymentService', () => {
         targetRevision: 'main',
         path: '/app',
         helmValuesFiles: 'values.yaml',
+        useExternalValues: false,
         valueSources: [],
       },
     ],
@@ -50,6 +51,7 @@ describe('deploymentService', () => {
         targetRevision: 'develop',
         path: '/updated-app',
         helmValuesFiles: 'updated-values.yaml',
+        useExternalValues: false,
         valueSources: [],
       },
     ],
@@ -126,16 +128,19 @@ describe('deploymentService', () => {
       expect(result).toEqual(createdDeployment)
     })
 
-    it('should nest internal and external value sources', async () => {
+    it('should nest internal value sources and external ones under their shared ref', async () => {
       const valueRepositoryId = '77777777-7777-7777-7777-777777777777'
       const createWithValueSources = {
         ...validCreateDeployment,
         deploymentSources: [
           {
             ...validCreateDeployment.deploymentSources[0],
+            useExternalValues: true,
+            externalValuesRef: { ref: 'infra-values', targetRevision: 'main', repositoryId: valueRepositoryId },
             valueSources: [
-              { type: 'internal' as const, path: 'values.yaml' },
-              { type: 'external' as const, ref: 'infra-values', path: 'values-prod.yaml', targetRevision: 'main', repositoryId: valueRepositoryId },
+              { type: 'internal', path: 'values.yaml' },
+              { type: 'external', path: 'values-prod.yaml' },
+              { type: 'external', path: 'values-secrets.yaml' },
             ],
           },
         ],
@@ -156,13 +161,17 @@ describe('deploymentService', () => {
                     { order: 0, path: 'values.yaml' },
                   ],
                 },
-                externalValueSource: {
+                externalValuesRef: {
                   create: {
-                    order: 1,
-                    path: 'values-prod.yaml',
                     ref: 'infra-values',
                     targetRevision: 'main',
                     repository: { connect: { id: valueRepositoryId } },
+                    valueSources: {
+                      create: [
+                        { order: 1, path: 'values-prod.yaml' },
+                        { order: 2, path: 'values-secrets.yaml' },
+                      ],
+                    },
                   },
                 },
               }),
@@ -208,6 +217,39 @@ describe('deploymentService', () => {
 
       expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('deployment.upsert', projectId, { action: 'Update Deployment', userId, requestId })
       expect(result).toEqual(updatedDeployment)
+    })
+
+    it('should delete the external ref (and with it its files) of a kept source that stops using external values', async () => {
+      const sourceId = '55555555-5555-5555-5555-555555555555'
+      datastore.getDeploymentById.mockResolvedValue(makeDeploymentWithRelations({
+        id: deploymentId,
+        projectId,
+        deploymentSources: [makeDeploymentSource({
+          id: sourceId,
+          deploymentId,
+          externalValuesRef: makeDeploymentExternalValuesRef({ deploymentSourceId: sourceId }),
+        })],
+      }))
+      datastore.updateDeployment.mockResolvedValue(makeDeployment({ id: deploymentId, projectId }))
+      appEvents.emitProjectResourceEvent.mockResolvedValue(okArgoCDResults)
+
+      await service.updateDeployment(projectId, deploymentId, validUpdateDeployment, userId, requestId)
+
+      expect(datastore.updateDeployment).toHaveBeenCalledWith(
+        deploymentId,
+        expect.objectContaining({
+          deploymentSources: expect.objectContaining({
+            update: [
+              {
+                where: { id: sourceId },
+                data: expect.objectContaining({
+                  externalValuesRef: { delete: true },
+                }),
+              },
+            ],
+          }),
+        }),
+      )
     })
 
     it('should not update when the deployment does not exist', async () => {

@@ -53,11 +53,11 @@ export class DeploymentService {
       .filter(source => !keptDeploymentSourceIds.has(source.id))
       .map(source => source.id)
 
-    // Tracks which existing deployment sources already own an external value
-    // source, so the update knows when it must delete a removed one.
-    const sourcesWithExternal = new Set(
+    // Tracks which existing deployment sources already own an external ref, so
+    // the update knows when it must delete a removed one.
+    const sourcesWithExternalValuesRef = new Set(
       existing.deploymentSources
-        .filter(source => source.externalValueSource)
+        .filter(source => source.externalValuesRef)
         .map(source => source.id),
     )
 
@@ -72,7 +72,7 @@ export class DeploymentService {
         create: model.deploymentSourcesToCreate.map(buildDeploymentSourceCreate),
         update: model.deploymentSourcesToUpdate.map(source => ({
           where: { id: source.id },
-          data: buildDeploymentSourceUpdate(source, sourcesWithExternal.has(source.id)),
+          data: buildDeploymentSourceUpdate(source, sourcesWithExternalValuesRef.has(source.id)),
         })),
       },
     })
