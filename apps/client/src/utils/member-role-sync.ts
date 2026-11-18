@@ -23,8 +23,11 @@ export function createMemberRoleSync(patch: MemberPatch, onSynced: () => void): 
     for (;;) {
       const roles = desired.get(userId)
       if (!roles) return
-      desired.delete(userId)
-      await patch({ userId, roles })
+      try {
+        await patch({ userId, roles })
+      } finally {
+        if (desired.get(userId) === roles) desired.delete(userId)
+      }
       onSynced()
     }
   }
