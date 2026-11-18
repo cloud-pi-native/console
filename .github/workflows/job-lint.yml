@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checks-out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
@@ -54,7 +56,7 @@ jobs:
 
       - name: Check lint error
         run: |
-          ./ci/scripts/run-tests.sh -l
+          ./ci/scripts/run-tests.sh -l -c
 
       - name: Validate client routing directly to NestJS
         run: bash ci/scripts/test-client-routing.sh
