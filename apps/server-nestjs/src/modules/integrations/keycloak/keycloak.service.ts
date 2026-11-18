@@ -3,7 +3,7 @@ import type { AdminRoleEventPayload } from '../../core/events/app-events.service
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
-import { getBaseRoleType, isExternalRoleType } from '@cpn-console/shared'
+import { getBaseRoleType, isExternalRoleType, reconcile } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -13,7 +13,7 @@ import { capturePluginResult } from '../../core/plugin/plugin.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, isOwnerRole, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
+import { isNonEmptyGroupPath, isOwnedProjectGroup, isOwnerRole, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -207,21 +207,22 @@ export class KeycloakService {
 
     let addedCount = 0
     let removedCount = 0
-
-    await Promise.all([
-      ...Array.from(desiredUserIds, async (userId) => {
-        if (!groupMembers.some(m => m.id === userId)) {
-          addedCount++
-          await this.maybeAddUserToGroup(userId, roleGroup.id, roleGroup.name)
+    await reconcile({
+      current: groupMembers,
+      desired: desiredUserIds,
+      keyOf: member => member.id,
+      add: async (userId) => {
+        addedCount++
+        await this.maybeAddUserToGroup(userId, roleGroup.id, roleGroup.name)
+      },
+      remove: async (member) => {
+        if (!member.id) {
+          throw new Error(`Failed to reconcile Keycloak admin role group (roleId=${role.id})`)
         }
-      }),
-      ...groupMembers.map(async (member) => {
-        if (member.id && !desiredUserIds.has(member.id)) {
-          removedCount++
-          await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
-        }
-      }),
-    ])
+        removedCount++
+        await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
+      },
+    })
 
     span?.setAttribute('keycloak.group.members.added', addedCount)
     span?.setAttribute('keycloak.group.members.removed', removedCount)
@@ -302,21 +303,22 @@ export class KeycloakService {
 
     let addedCount = 0
     let removedCount = 0
-
-    await Promise.all([
-      ...Array.from(desiredUserIds, async (userId) => {
-        if (!groupMembers.some(m => m.id === userId)) {
-          addedCount++
-          await this.maybeAddUserToGroup(userId, group.id, group.name)
+    await reconcile({
+      current: groupMembers,
+      desired: desiredUserIds,
+      keyOf: member => member.id,
+      add: async (userId) => {
+        addedCount++
+        await this.maybeAddUserToGroup(userId, group.id, group.name)
+      },
+      remove: async (member) => {
+        if (!member.id) {
+          throw new Error(`Failed to reconcile Keycloak group for project ${project.slug}`)
         }
-      }),
-      ...groupMembers.map(async (member) => {
-        if (member.id && !desiredUserIds.has(member.id)) {
-          removedCount++
-          await this.maybeRemoveUserFromGroup(member.id, group.id, group.name)
-        }
-      }),
-    ])
+        removedCount++
+        await this.maybeRemoveUserFromGroup(member.id, group.id, group.name)
+      },
+    })
 
     span?.setAttribute('keycloak.group.members.added', addedCount)
     span?.setAttribute('keycloak.group.members.removed', removedCount)
@@ -421,10 +423,7 @@ export class KeycloakService {
 
     switch (getBaseRoleType(role.type)) {
       case 'managed':
-        await Promise.all([
-          this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers),
-          this.purgeOrphanRoleGroupMembers(project, role, roleGroup, groupMembers),
-        ])
+        await this.syncRoleGroupMembers(project, role, roleGroup, groupMembers)
         break
       case 'external':
         await this.ensureRoleGroupMembers(project, role, roleGroup, groupMembers)
@@ -476,7 +475,7 @@ export class KeycloakService {
   }
 
   @StartActiveSpan()
-  private async purgeOrphanRoleGroupMembers(
+  private async syncRoleGroupMembers(
     project: ProjectWithDetails,
     role: ProjectWithDetails['roles'][number],
     group: GroupRepresentationWithIdNamePath,
@@ -485,23 +484,39 @@ export class KeycloakService {
     const span = trace.getActiveSpan()
     span?.setAttribute('project.slug', project.slug)
     span?.setAttribute('role.id', role.id)
-    span?.setAttribute('role.type', role.type)
-    span?.setAttribute('keycloak.group.id', group.id)
     span?.setAttribute('keycloak.group.members.current', members.length)
 
+    const desiredUserIds = new Set(project.members
+      .filter(m => m.roleIds.includes(role.id))
+      .map(m => m.user.id))
+    if (isOwnerRole(project, role)) desiredUserIds.add(project.ownerId)
+    let addedCount = 0
     let removedCount = 0
-    await Promise.all(members.map(async (member) => {
-      const memberRecord = project.members.find(m => m.user.id === member.id)
-      const sharingGroup = project.roles.some(r => r.oidcGroup === role.oidcGroup && !!memberRecord && memberRecord.roleIds.includes(r.id))
-      const lostRole = !!memberRecord && member.id !== project.ownerId && !sharingGroup
-      if (!isMember(project, member) || lostRole) {
+    // Holders of a sibling role mapped to the same group keep access
+    // even when this role is withdrawn (single group, several roles).
+    const siblingKeep = project.members
+      .filter(m => m.user.id !== project.ownerId
+        && project.roles.some(r => r.oidcGroup === role.oidcGroup && m.roleIds.includes(r.id)))
+      .map(m => m.user.id)
+    await reconcile({
+      current: members,
+      desired: desiredUserIds,
+      keep: new Set([project.ownerId, ...siblingKeep]),
+      keyOf: member => member.id,
+      add: async (userId) => {
+        addedCount++
+        await this.maybeAddUserToGroup(userId, group.id, group.name)
+      },
+      remove: async (member) => {
         if (!member.id) {
           throw new Error(`Failed to create or retrieve role group for ${role.oidcGroup}`)
         }
         removedCount++
         await this.maybeRemoveUserFromGroup(member.id, group.id, group.name)
-      }
-    }))
+      },
+    })
+
+    span?.setAttribute('keycloak.group.members.added', addedCount)
     span?.setAttribute('keycloak.group.members.removed', removedCount)
   }
 }
