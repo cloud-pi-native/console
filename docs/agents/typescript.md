@@ -5,7 +5,6 @@ Read when writing TypeScript or changing compiler configuration.
 ## Compiler configuration
 
 - Shared base: `packages/tsconfig/tsconfig.base.json` — ESNext, NodeNext, strict, `@/*` → `src/*` alias.
-- Legacy server: extends the shared base and uses `ts-patch`/`tspc` for path transformation in emitted JavaScript (read-only reference).
 - Client: does not extend the shared base; uses `Bundler` module resolution.
 - `server-nestjs`: standalone configuration with `emitDecoratorMetadata` and `experimentalDecorators`.
 
