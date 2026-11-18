@@ -491,7 +491,9 @@ export class KeycloakService {
 
     let removedCount = 0
     await Promise.all(members.map(async (member) => {
-      if (!isMember(project, member)) {
+      const memberRecord = project.members.find(m => m.user.id === member.id)
+      const lostRole = !!memberRecord && member.id !== project.ownerId && !memberRecord.roleIds.includes(role.id)
+      if (!isMember(project, member) || lostRole) {
         if (!member.id) {
           throw new Error(`Failed to create or retrieve role group for ${role.oidcGroup}`)
         }
