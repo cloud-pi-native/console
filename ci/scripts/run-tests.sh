@@ -22,10 +22,13 @@ RUN_LINT="false"
 RUN_UNIT_TESTS="false"
 RUN_E2E_TESTS="false"
 RUN_STATUS_CHECK="false"
+RUN_COMMITLINT="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to run application tests.
 Following flags are available:
+
+  -c    Validate commit messages in the PR range
 
   -e    Run e2e tests
 
@@ -44,9 +47,11 @@ print_help() {
 }
 
 # Parse options
-while getopts heklst:u flag
+while getopts heklst:uc flag
 do
   case "${flag}" in
+    c)
+      RUN_COMMITLINT=true;;
     e)
       RUN_E2E_TESTS=true;;
     l)
@@ -65,7 +70,7 @@ done
 
 
 # Script condition
-if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ]; then
+if [ "$RUN_LINT" == "false" ] && [ "$RUN_UNIT_TESTS" == "false" ] && [ "$RUN_E2E_TESTS" == "false" ] && [ "$RUN_STATUS_CHECK" == "false" ] && [ "$RUN_COMMITLINT" == "false" ]; then
   printf "\nArgument(s) missing, you don't specify any kind of test to run.\n"
   print_help
   exit 1
@@ -108,6 +113,12 @@ cd "$PROJECT_DIR"
 # Run lint
 if [ "$RUN_LINT" == "true" ]; then
   npm run lint
+fi
+
+# Validate commit messages
+if [ "$RUN_COMMITLINT" == "true" ]; then
+  git rev-parse --verify -q origin/main >/dev/null || git fetch --no-tags origin main
+  pnpm exec commitlint --from origin/main --to HEAD --verbose
 fi
 
 
