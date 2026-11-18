@@ -47,8 +47,8 @@ export function parseGroupPaths(rawGroupPaths: string): string[] {
     .filter(Boolean)
 }
 
-export function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): string[] {
-  return parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`)
+export function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`))
 }
 
 export function generateAdminRoleMapping(
@@ -66,13 +66,13 @@ export function generateAdminRoleMapping(
 
 export function generateAccessLevelMapping(
   project: ProjectWithDetails,
-  groupPaths: { reporter: string[], developer: string[], maintainer: string[] },
+  groupPaths: { reporter: Set<string>, developer: Set<string>, maintainer: Set<string> },
 ): Map<string, ProjectAccessLevel> {
   const getAccessLevelFromOidcGroup = (oidcGroup: string | null): ProjectAccessLevel | null => {
     if (!oidcGroup) return null
-    if (groupPaths.maintainer.includes(oidcGroup)) return AccessLevel.MAINTAINER
-    if (groupPaths.developer.includes(oidcGroup)) return AccessLevel.DEVELOPER
-    if (groupPaths.reporter.includes(oidcGroup)) return AccessLevel.REPORTER
+    if (groupPaths.maintainer.has(oidcGroup)) return AccessLevel.MAINTAINER
+    if (groupPaths.developer.has(oidcGroup)) return AccessLevel.DEVELOPER
+    if (groupPaths.reporter.has(oidcGroup)) return AccessLevel.REPORTER
     return null
   }
 

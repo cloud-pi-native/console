@@ -33,6 +33,7 @@ export const DEFAULT_PROJECT_DEVOPS_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_SECURITY_SUFFIX = '/console/security'
 export const DEFAULT_PROJECT_READONLY_SUFFIX = '/console/readonly'
+export const BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
 
 // Admin plugin config keys for overriding defaults
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'

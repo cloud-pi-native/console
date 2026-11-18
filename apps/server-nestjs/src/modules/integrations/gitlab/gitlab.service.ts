@@ -21,6 +21,7 @@ import { GitlabDatastoreService } from './gitlab-datastore.service'
 import {
   ADMIN_GROUP_PATH_PLUGIN_KEY,
   AUDITOR_GROUP_PATH_PLUGIN_KEY,
+  BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX,
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_AUDITOR_GROUP_PATH,
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
@@ -402,7 +403,7 @@ export class GitlabService {
     return getProjectPluginConfig(project, key) ?? undefined
   }
 
-  private async getProjectRoleGroupPaths(project: ProjectWithDetails): Promise<{ reporter: string[], developer: string[], maintainer: string[] }> {
+  private async getProjectRoleGroupPaths(project: ProjectWithDetails): Promise<{ reporter: Set<string>, developer: Set<string>, maintainer: Set<string> }> {
     const [reporter, developer, maintainer] = await Promise.all([
       this.getProjectReporterGroupPaths(project),
       this.getProjectDeveloperGroupPaths(project),
@@ -416,25 +417,25 @@ export class GitlabService {
     }
   }
 
-  private async getProjectReporterGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectReporterGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_REPORTER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX
-    return generateProjectRoleGroupPath(project.slug, raw)
+    return generateProjectRoleGroupPath(project.slug, `${raw},${BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX}`)
   }
 
   @StartActiveSpan()

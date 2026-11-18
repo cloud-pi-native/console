@@ -18,6 +18,7 @@ import { isVaultNotFound } from '../vault/vault.utils'
 import { NexusClientService } from './nexus-client.service'
 import { NexusDatastoreService } from './nexus-datastore.service'
 import {
+  BASE_WRITE_PROJECT_GROUP_PATH_SUFFIX,
   DEFAULT_MAVEN_RELEASE_WRITE_POLICY,
   DEFAULT_MAVEN_SNAPSHOT_WRITE_POLICY,
   DEFAULT_NPM_WRITE_POLICY,
@@ -500,7 +501,7 @@ export class NexusService {
     const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
       ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
 
-    const writeGroupPaths = generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES)
+    const writeGroupPaths = generateProjectRoleGroupPath(project, `${rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES},${BASE_WRITE_PROJECT_GROUP_PATH_SUFFIX}`)
     const readGroupPaths = generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES)
 
     const byId = generateRolePrivilegesMapping({
@@ -553,12 +554,13 @@ export class NexusService {
     const rawReadSuffixes = await this.getOptionalConfigValue(project, PROJECT_READ_GROUP_PATH_SUFFIXES_PLUGIN_KEY)
       ?? DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES
 
-    const groupPaths = [
+    const groupPaths = new Set([
       ...generateProjectRoleGroupPath(project, rawWriteSuffixes || DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES),
       ...generateProjectRoleGroupPath(project, rawReadSuffixes || DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES),
-    ]
+      ...generateProjectRoleGroupPath(project, BASE_WRITE_PROJECT_GROUP_PATH_SUFFIX),
+    ])
 
-    const ids = [...new Set(groupPaths.map(generateRoleId))]
+    const ids = [...new Set([...groupPaths].map(generateRoleId))]
     await Promise.all(ids.map(id => this.client.deleteSecurityRoles(id)))
   }
 
@@ -627,12 +629,12 @@ function generateNpmGroupPrivilegeNameReadonly(project: ProjectWithDetails) {
   return `${generateNpmGroupPrivilegeName(project)}-ro`
 }
 
-function generateProjectRoleGroupPath(project: ProjectWithDetails, rawGroupPathSuffixes: string) {
-  return rawGroupPathSuffixes
+function generateProjectRoleGroupPath(project: ProjectWithDetails, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(rawGroupPathSuffixes
     .split(',')
     .map(path => path.trim())
     .filter(Boolean)
-    .map(path => `/${project.slug}${path}`)
+    .map(path => `/${project.slug}${path}`))
 }
 
 function parseOidcGroupPaths(rawGroupPaths: string) {
@@ -642,7 +644,7 @@ function parseOidcGroupPaths(rawGroupPaths: string) {
     .filter(Boolean)
 }
 
-function generateRolePrivilegesMapping(args: { readGroupPaths: string[], writeGroupPaths: string[], readOnlyPrivileges: string[], writePrivileges: string[] }) {
+function generateRolePrivilegesMapping(args: { readGroupPaths: Iterable<string>, writeGroupPaths: Iterable<string>, readOnlyPrivileges: string[], writePrivileges: string[] }) {
   const byId = new Map<string, string[]>()
   for (const groupPath of args.readGroupPaths) byId.set(generateRoleId(groupPath), args.readOnlyPrivileges)
   for (const groupPath of args.writeGroupPaths) byId.set(generateRoleId(groupPath), args.writePrivileges)
