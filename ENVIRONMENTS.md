@@ -239,7 +239,10 @@ pnpm docker:dev
 | `HARBOR_RULE_TEMPLATE` | — | Template de règle de rétention |
 | `HARBOR_RULE_COUNT` | — | Nombre de règles de rétention |
 | `HARBOR_RETENTION_CRON` | `0 22 2 * * *` | Cron de nettoyage Harbor |
-| `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS` | `90` | Seuil de rotation des robots (jours) |
+| `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS` | `30` | Seuil de rotation des robots expirants (jours) |
+| `HARBOR_ROBOT_EXPIRATION_RO_DAYS` | `60` | Durée du robot `ro-robot` (`-1` : jamais) |
+| `HARBOR_ROBOT_EXPIRATION_RW_DAYS` | `60` | Durée du robot `rw-robot` (`-1` : jamais) |
+| `HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS` | `-1` | Durée du robot `project-robot` (`-1` : jamais) |
 | `HARBOR_PROJECT_SLUG_CACHE_TTL_MS` | `300000` (5 min) | Cache TTL des slugs projet (ms) |
 
 ### Variables Nexus
