@@ -441,7 +441,7 @@ export class VaultClientService {
     }
     const path = `auth/approle/role/${roleName}/secret-id`
     this.logger.verbose(`Creating Vault AppRole secret-id for ${roleName}`)
-    const response = await this.http.fetch<VaultSecretIdResponse>(path, { method: 'POST' })
+    const response = await this.http.fetch<VaultSecretIdResponse>(path, { method: 'POST', retry: false })
     const secretId = response?.data?.secret_id
     if (!secretId) {
       throw new VaultError('InvalidResponse', `Vault secret-id not generated for role ${roleName}`, { method: 'POST', path })

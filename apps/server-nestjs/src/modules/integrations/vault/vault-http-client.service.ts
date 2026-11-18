@@ -9,6 +9,7 @@ import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decora
 export interface VaultFetchOptions {
   method?: string
   body?: unknown
+  retry?: boolean
 }
 
 export type VaultErrorKind
@@ -83,7 +84,7 @@ export class VaultHttpClientService {
       const parsed = await this.handleResponse<T>(response, method, path)
       this.logger.verbose(`Completed Vault request: ${method} ${path} status=${response.status} outcome=${parsed === null ? 'no-content' : 'ok'}`)
       return parsed
-    })
+    }, { attempts: options.retry === false ? 1 : undefined })
   }
 
   private get apiBaseUrl() {

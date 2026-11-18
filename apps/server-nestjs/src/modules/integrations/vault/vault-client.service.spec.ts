@@ -204,6 +204,23 @@ describe('vault', () => {
       expect(persisted).toEqual({ data: { secret_id: 'minted-secret' } })
     })
 
+    it('does not replay a non-idempotent secret-id mint after a transient error', async () => {
+      const projectSlug = makeProjectSlug()
+      let mints = 0
+      server.use(
+        http.get(`${vaultUrl}/v1/kv/data/*`, () => {
+          return HttpResponse.json({}, { status: HttpStatus.NOT_FOUND })
+        }),
+        http.post(`${vaultUrl}/v1/auth/approle/role/*/secret-id`, () => {
+          mints += 1
+          return HttpResponse.json({ errors: ['upstream down'] }, { status: HttpStatus.SERVICE_UNAVAILABLE })
+        }),
+      )
+
+      await expect(service.ensureAuthApproleRoleSecretId(projectSlug)).rejects.toBeInstanceOf(VaultError)
+      expect(mints).toBe(1)
+    })
+
     it('reuses a persisted secret-id on subsequent syncs without minting', async () => {
       const projectSlug = makeProjectSlug()
       let minted = false
