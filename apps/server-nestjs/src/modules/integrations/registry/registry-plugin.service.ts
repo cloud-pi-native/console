@@ -161,16 +161,26 @@ export class RegistryPluginService {
     if (!project) return {}
     const harborUrl = new URL(`${project.slug}/`, this.harborConfig.url)
     const registryBasePath = `${harborUrl.host}${harborUrl.pathname}`
+    const robotDurations = {
+      'Durée du robot RO': formatRobotDuration(this.harborConfig.robotExpirationRoDays),
+      'Durée du robot RW': formatRobotDuration(this.harborConfig.robotExpirationRwDays),
+      'Durée du robot projet': formatRobotDuration(this.harborConfig.robotExpirationProjectDays),
+    }
     if (!(await this.isProjectRobotEnabled(project))) {
-      return { 'Registry base path': registryBasePath }
+      return { 'Registry base path': registryBasePath, ...robotDurations }
     }
     const robot = await this.vault.readProjectRobotRegistrySecrets(project.slug)
     if (!hasEntries(robot)) {
-      return { 'Registry base path': registryBasePath, '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' }
+      return { 'Registry base path': registryBasePath, ...robotDurations, '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' }
     }
     return {
       'Registry base path': registryBasePath,
+      ...robotDurations,
       ...robot,
     }
   }
+}
+
+function formatRobotDuration(days: number): string {
+  return days < 0 ? 'jamais' : `${days} jours`
 }

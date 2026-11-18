@@ -34,6 +34,9 @@ describe('registryPluginService', () => {
       ruleCount: undefined,
       retentionCron: '0 22 2 * * *',
       robotRotationThresholdDays: 90,
+      robotExpirationRoDays: 60,
+      robotExpirationRwDays: 60,
+      robotExpirationProjectDays: -1,
       projectSlugCacheTtlMs: 300000,
     })
     datastore = mockDeep<RegistryDatastoreService>({
@@ -111,7 +114,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais' })
       expect(vault.readProjectRobotRegistrySecrets).not.toHaveBeenCalled()
     })
 
@@ -124,7 +127,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais' })
       expect(vault.readProjectRobotRegistrySecrets).not.toHaveBeenCalled()
     })
 
@@ -137,7 +140,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', HOST: 'harbor.example', TOKEN: 'tok' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais', HOST: 'harbor.example', TOKEN: 'tok' })
     })
 
     it('returns the fallback message when the robot is published but missing from Vault', async () => {
@@ -149,7 +152,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais', '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner' })
     })
 
     it('defaults to the admin config when the project has no robot setting', async () => {
@@ -159,7 +162,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', HOST: 'harbor.example' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais', HOST: 'harbor.example' })
     })
 
     it('defaults to the admin config when the project robot setting is default', async () => {
@@ -172,7 +175,7 @@ describe('registryPluginService', () => {
 
       const result = await service.secrets('test-project-id')
 
-      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', HOST: 'harbor.example' })
+      expect(result).toEqual({ 'Registry base path': 'harbor.example/test-project/', 'Durée du robot RO': '60 jours', 'Durée du robot RW': '60 jours', 'Durée du robot projet': 'jamais', HOST: 'harbor.example' })
     })
   })
 
