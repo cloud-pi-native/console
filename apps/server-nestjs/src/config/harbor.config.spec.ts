@@ -3,7 +3,7 @@ import { resetEnvs } from './config-testing.utils'
 import { harborConfigFactory } from './harbor.config'
 
 describe('harborConfig', () => {
-  beforeEach(() => { resetEnvs(['HARBOR_URL', 'HARBOR_INTERNAL_URL', 'HARBOR_ADMIN', 'HARBOR_ADMIN_PASSWORD', 'HARBOR_RULE_TEMPLATE', 'HARBOR_RULE_COUNT', 'HARBOR_RETENTION_CRON', 'HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS', 'HARBOR_ROBOT_EXPIRATION_DAYS', 'HARBOR_PROJECT_SLUG_CACHE_TTL_MS']) })
+  beforeEach(() => { resetEnvs(['HARBOR_URL', 'HARBOR_INTERNAL_URL', 'HARBOR_ADMIN', 'HARBOR_ADMIN_PASSWORD', 'HARBOR_RULE_TEMPLATE', 'HARBOR_RULE_COUNT', 'HARBOR_RETENTION_CRON', 'HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS', 'HARBOR_ROBOT_EXPIRATION_RO_DAYS', 'HARBOR_ROBOT_EXPIRATION_RW_DAYS', 'HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS', 'HARBOR_PROJECT_SLUG_CACHE_TTL_MS']) })
   afterEach(() => { vi.unstubAllEnvs() })
 
   it('parses a full config', () => {
@@ -14,8 +14,11 @@ describe('harborConfig', () => {
     vi.stubEnv('HARBOR_RULE_TEMPLATE', 'always')
     vi.stubEnv('HARBOR_RULE_COUNT', '3')
     vi.stubEnv('HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS', '30')
-    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '60')
-    expect(harborConfigFactory()).toMatchObject({
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RO_DAYS', '60')
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RW_DAYS', '120')
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS', '-1')
+    const cfg = harborConfigFactory()
+    expect(cfg).toMatchObject({
       url: 'https://harbor.internal',
       internalUrl: 'https://harbor.internal:8080',
       admin: 'admin',
@@ -24,9 +27,11 @@ describe('harborConfig', () => {
       ruleCount: 3,
       retentionCron: '0 22 2 * * *',
       robotRotationThresholdDays: 30,
-      robotExpirationDays: 60,
       projectSlugCacheTtlMs: 300_000,
     })
+    expect(cfg.robotExpirationRoDays).toBe(60)
+    expect(cfg.robotExpirationRwDays).toBe(120)
+    expect(cfg.robotExpirationProjectDays).toBe(-1)
   })
 
   it('falls back to public url when internal url is absent', () => {
@@ -48,8 +53,10 @@ describe('harborConfig', () => {
     expect(cfg.ruleTemplate).toBeUndefined()
     expect(cfg.ruleCount).toBeUndefined()
     expect(cfg.retentionCron).toBe('0 22 2 * * *')
-    expect(cfg.robotRotationThresholdDays).toBe(60)
-    expect(cfg.robotExpirationDays).toBe(90)
+    expect(cfg.robotRotationThresholdDays).toBe(30)
+    expect(cfg.robotExpirationRoDays).toBe(60)
+    expect(cfg.robotExpirationRwDays).toBe(60)
+    expect(cfg.robotExpirationProjectDays).toBe(-1)
   })
 
   it('throws when rotation threshold is not strictly lower than expiration', () => {
@@ -57,8 +64,8 @@ describe('harborConfig', () => {
     vi.stubEnv('HARBOR_ADMIN', 'admin')
     vi.stubEnv('HARBOR_ADMIN_PASSWORD', 'pw')
     vi.stubEnv('HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS', '180')
-    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '180')
-    expect(() => harborConfigFactory()).toThrow(/must be strictly lower than HARBOR_ROBOT_EXPIRATION_DAYS/)
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RO_DAYS', '180')
+    expect(() => harborConfigFactory()).toThrow(/must be strictly lower than HARBOR_ROBOT_EXPIRATION_RO_DAYS/)
   })
 
   it('throws when rotation threshold exceeds expiration', () => {
@@ -66,7 +73,7 @@ describe('harborConfig', () => {
     vi.stubEnv('HARBOR_ADMIN', 'admin')
     vi.stubEnv('HARBOR_ADMIN_PASSWORD', 'pw')
     vi.stubEnv('HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS', '365')
-    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '90')
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RO_DAYS', '90')
     expect(() => harborConfigFactory()).toThrow()
   })
 
@@ -74,15 +81,15 @@ describe('harborConfig', () => {
     vi.stubEnv('HARBOR_URL', 'https://harbor.internal')
     vi.stubEnv('HARBOR_ADMIN', 'admin')
     vi.stubEnv('HARBOR_ADMIN_PASSWORD', 'pw')
-    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '-1')
-    expect(harborConfigFactory().robotExpirationDays).toBe(-1)
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RO_DAYS', '-1')
+    expect(harborConfigFactory().robotExpirationRoDays).toBe(-1)
   })
 
   it('rejects a zero robot duration', () => {
     vi.stubEnv('HARBOR_URL', 'https://harbor.internal')
     vi.stubEnv('HARBOR_ADMIN', 'admin')
     vi.stubEnv('HARBOR_ADMIN_PASSWORD', 'pw')
-    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_DAYS', '0')
+    vi.stubEnv('HARBOR_ROBOT_EXPIRATION_RO_DAYS', '0')
     expect(() => harborConfigFactory()).toThrow(/must be -1 or a positive number/)
   })
 
