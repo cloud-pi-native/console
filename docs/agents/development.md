@@ -4,12 +4,12 @@ Read when setting up the workspace, configuring environments or starting Docker 
 
 ## Environment files
 
-- `.env`, `.env.docker` and `.env.integ` live in `apps/client/`, `apps/server/` and `apps/server-nestjs/`.
+- `.env`, `.env.docker` and `.env.integ` templates live in `apps/client/` and `apps/server-nestjs/`.
 - Templates use the `*-example` suffix, not `.example`; templates are Git-tracked and active files are ignored.
-- Override order, weakest to strongest: `.env` < `.env.docker` (if `DOCKER=true`) < `.env.integ` (if `INTEGRATION=true`) < explicit environment variables.
-- Legacy server loader: `apps/server/src/utils/env.ts` (read-only reference). Client loader: `apps/client/vite.config.ts`.
+- NestJS uses `apps/server-nestjs/src/utils/dotenv.utils.ts` through `ConfigModule`: `.env` is selected unless `DOCKER=true`, `.env.integ` when `INTEGRATION=true`, then `.env.docker` when `DOCKER=true`. NestJS gives the first selected file precedence; explicit environment variables take precedence over files.
+- Client loader: `apps/client/vite.config.ts` loads `.env.integ` first when `INTEGRATION=true`, then `.env` unless `DOCKER=true`, using `process.loadEnvFile` without overriding existing environment variables. Docker-provided variables are configured by the Compose files.
 - `bash ci/scripts/init-env.sh` copies templates to active files without overwriting existing files. Run it if required `.env` files are missing.
-- The frozen `apps/server` boundary also applies to its environment files; do not redesign legacy configuration.
+- The legacy server and its environment loader are removed; use Git history for comparisons.
 - For NestJS service configuration injection, read [Backend](backend.md).
 
 ## Commands

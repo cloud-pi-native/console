@@ -3,9 +3,9 @@
 Read when locating code or understanding workspace boundaries.
 
 - `apps/client`: Vue 3 + Vite + vue-dsfr (French government design system), Pinia, UnoCSS.
-- `apps/server`: Fastify 4 + Prisma 6 (PostgreSQL), contract-first API via @ts-rest; frozen, read-only reference.
-- `apps/server-nestjs`: NestJS rewrite in progress; the only modifiable backend target.
-- `plugins/*`: argocd, gitlab, harbor, keycloak, kubernetes, nexus, sonarqube, vault.
+- `apps/server-nestjs`: NestJS backend with Prisma (PostgreSQL) and shared @ts-rest API contracts; the only backend target.
+- `apps/server-nestjs/src/modules/integrations/`: internal integrations with external services.
+- The legacy server, nginx strangler and standalone plugins are removed. Use Git history for legacy comparisons.
 - `packages/shared`: API contracts (@ts-rest), types, permissions (BigInt bitmasks).
 - `packages/test-utils`, `packages/eslintconfig`, `packages/tsconfig`: shared test and tooling configuration.
 - `playwright/`: dedicated E2E workspace.
