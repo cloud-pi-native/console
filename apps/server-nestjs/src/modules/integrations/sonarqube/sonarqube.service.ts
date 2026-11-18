@@ -18,6 +18,7 @@ import { SonarqubeClientService } from './sonarqube-client.service'
 import { SonarqubeDatastoreService } from './sonarqube-datastore.service'
 import {
   ADMIN_GROUP_PATH_PLUGIN_KEY,
+  BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX,
   DEFAULT_ADMIN_GROUP_PATH,
   DEFAULT_PERMISSION_TEMPLATE_NAME,
   DEFAULT_PROJECT_ADMIN_SUFFIX,
@@ -46,11 +47,11 @@ import {
 } from './sonarqube.constants'
 
 interface SonarqubeRolePaths {
-  admin: string[]
-  devops: string[]
-  developer: string[]
-  security: string[]
-  readonly: string[]
+  admin: Set<string>
+  devops: Set<string>
+  developer: Set<string>
+  security: Set<string>
+  readonly: Set<string>
 }
 
 @Injectable()
@@ -414,35 +415,35 @@ export class SonarqubeService implements OnModuleInit {
     return { admin, devops, developer, security, readonly }
   }
 
-  private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_ADMIN_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_ADMIN_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_ADMIN_SUFFIX
-    return generateProjectRoleGroupPath(project.slug, raw)
+    return generateProjectRoleGroupPath(project.slug, `${raw},${BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX}`)
   }
 
-  private async getProjectDevopsGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectDevopsGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_DEVOPS_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVOPS_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVOPS_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_DEVELOPER_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_DEVELOPER_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectSecurityGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectSecurityGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_SECURITY_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_SECURITY_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_SECURITY_SUFFIX
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectReadonlyGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectReadonlyGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const projectConfig = getProjectPluginConfig(project, PROJECT_READONLY_SUFFIX_PLUGIN_KEY)
     const globalConfig = await this.getAdminOrProjectPluginConfig(project, PROJECT_READONLY_SUFFIX_PLUGIN_KEY)
     const raw = projectConfig ?? globalConfig ?? DEFAULT_PROJECT_READONLY_SUFFIX
@@ -467,12 +468,12 @@ function getProjectPluginConfig(project: ProjectWithDetails, key: string) {
   return project.plugins?.find(p => p.key === key)?.value
 }
 
-function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): string[] {
-  return rawGroupPathSuffixes
+function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(rawGroupPathSuffixes
     .split(',')
     .map(path => path.trim())
     .filter(Boolean)
-    .map(suffix => `/${projectSlug}${suffix}`)
+    .map(suffix => `/${projectSlug}${suffix}`))
 }
 
 function buildGroupPermissions(
@@ -481,11 +482,11 @@ function buildGroupPermissions(
   securityGroupPath: string,
 ): { groupName: string, permissions: readonly string[] }[] {
   return [
-    ...rolePaths.admin.map(groupName => ({ groupName, permissions: PROJECT_ADMIN_PERMISSIONS })),
-    ...rolePaths.devops.map(groupName => ({ groupName, permissions: PROJECT_DEVOPS_PERMISSIONS })),
-    ...rolePaths.developer.map(groupName => ({ groupName, permissions: PROJECT_DEVELOPER_PERMISSIONS })),
-    ...rolePaths.security.map(groupName => ({ groupName, permissions: PROJECT_SECURITY_PERMISSIONS })),
-    ...rolePaths.readonly.map(groupName => ({ groupName, permissions: PROJECT_READONLY_PERMISSIONS })),
+    ...[...rolePaths.admin].map(groupName => ({ groupName, permissions: PROJECT_ADMIN_PERMISSIONS })),
+    ...[...rolePaths.devops].map(groupName => ({ groupName, permissions: PROJECT_DEVOPS_PERMISSIONS })),
+    ...[...rolePaths.developer].map(groupName => ({ groupName, permissions: PROJECT_DEVELOPER_PERMISSIONS })),
+    ...[...rolePaths.security].map(groupName => ({ groupName, permissions: PROJECT_SECURITY_PERMISSIONS })),
+    ...[...rolePaths.readonly].map(groupName => ({ groupName, permissions: PROJECT_READONLY_PERMISSIONS })),
     { groupName: securityGroupPath, permissions: PROJECT_SECURITY_PERMISSIONS },
     { groupName: readonlyGroupPath, permissions: PROJECT_READONLY_PERMISSIONS },
   ]

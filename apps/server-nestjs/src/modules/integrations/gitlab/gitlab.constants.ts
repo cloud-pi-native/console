@@ -28,6 +28,7 @@ export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly,/console/security'
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin,/console/devops,/console/owner'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly,/console/security'
+export const BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
 
 // Plugin configuration keys
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'

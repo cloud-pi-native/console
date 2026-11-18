@@ -14,6 +14,7 @@ export const DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES = '/console/admin,/consol
 export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES = '/console/developer'
 export const DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES = '/console/security,/console/readonly'
+export const BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
 
 // Platform group path plugin configuration keys
 export const PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY = 'platformAdminGroupPath'
