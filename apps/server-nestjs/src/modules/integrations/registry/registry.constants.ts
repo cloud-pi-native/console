@@ -31,9 +31,6 @@ export const ROBOT_NAME_RO = 'ro-robot'
 export const ROBOT_NAME_RW = 'rw-robot'
 export const ROBOT_NAME_PROJECT = 'project-robot'
 
-// Harbor treats a negative robot duration as "never expires".
-export const ROBOT_DURATION_NEVER_EXPIRES = -1
-
 // Page size used when listing robots. A project only ever owns a handful of
 // robots (ro, rw and optionally the project robot — 3 in practice), so a single
 // page is plenty; this simply bounds each pagination request.

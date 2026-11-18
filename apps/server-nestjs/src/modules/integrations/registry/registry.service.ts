@@ -45,7 +45,6 @@ import {
   PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
-  ROBOT_DURATION_NEVER_EXPIRES,
   ROBOT_NAME_PROJECT,
   ROBOT_NAME_RO,
   ROBOT_NAME_RW,
@@ -81,9 +80,15 @@ export class RegistryService {
     return find(this.client.getProjectRobots(harborProjectId), r => r?.name === fullName)
   }
 
+  private robotExpirationDays(robotName: string): number {
+    if (robotName === ROBOT_NAME_RO) return this.harborConfig.robotExpirationRoDays
+    if (robotName === ROBOT_NAME_RW) return this.harborConfig.robotExpirationRwDays
+    return this.harborConfig.robotExpirationProjectDays
+  }
+
   private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
-      generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
+      generateRobotPermissions(project, robotName, access, this.robotExpirationDays(robotName)),
     )
     if (!created) {
       throw new Error(`Harbor robot already exists (${robotName})`)
@@ -111,7 +116,7 @@ export class RegistryService {
       throw error
     })
 
-    const expiring = robotName !== ROBOT_NAME_PROJECT
+    const expiring = this.robotExpirationDays(robotName) > 0
       && !!vaultRobotSecret
       && this.isRobotSecretExpiring(vaultRobotSecret)
 
@@ -121,14 +126,13 @@ export class RegistryService {
     })
 
     if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
-      if (robotName === ROBOT_NAME_PROJECT) {
-        const existing = await this.getRobot(project, harborProjectId, robotName)
-        if (existing?.id && existing.duration !== ROBOT_DURATION_NEVER_EXPIRES) {
-          await this.client.updateRobot(
-            existing.id,
-            generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
-          )
-        }
+      const targetDuration = this.robotExpirationDays(robotName)
+      const existing = await this.getRobot(project, harborProjectId, robotName)
+      if (existing?.id && existing.duration !== targetDuration) {
+        await this.client.updateRobot(
+          existing.id,
+          generateRobotPermissions(project, robotName, access, targetDuration),
+        )
       }
       span?.setAttribute('vault.secret.reused', true)
       return vaultRobotSecret.data
@@ -462,7 +466,7 @@ function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
 function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
   return {
     name: robotName,
-    duration: robotName === ROBOT_NAME_PROJECT ? ROBOT_DURATION_NEVER_EXPIRES : durationDays,
+    duration: durationDays,
     description: 'robot for ci builds',
     disable: false,
     level: 'project',
