@@ -15,6 +15,7 @@ import { VaultError } from './vault-http-client.service'
 import {
   ADMIN_GROUP_PATH_PLUGIN_KEY,
   AUDITOR_GROUP_PATH_PLUGIN_KEY,
+  BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX,
   CONSOLE_ADMIN_GROUP_NAME,
   CONSOLE_READONLY_GROUP_NAME,
   CONSOLE_SECURITY_GROUP_NAME,
@@ -198,7 +199,7 @@ export class VaultService {
       this.getProjectSecurityGroupPathSuffix(project),
     ])
     return {
-      admin: generateProjectRoleGroupPaths(project, maintainer),
+      admin: generateProjectRoleGroupPaths(project, `${maintainer},${BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX}`),
       devops: generateProjectRoleGroupPaths(project, devops),
       developer: generateProjectRoleGroupPaths(project, developer),
       readonly: generateProjectRoleGroupPaths(project, reporter),
@@ -625,24 +626,25 @@ interface ProjectRoleGroup {
 function generateProjectRoleGroups(
   project: ProjectWithDetails,
   scope: ProjectScope,
-  groupPaths: string[],
+  groupPaths: Set<string>,
 ): ProjectRoleGroup[] {
   const canonicalPath = `/${project.slug}/console/${scope}`
-  const primaryPath = groupPaths.includes(canonicalPath) ? canonicalPath : groupPaths[0]
+  const paths = [...groupPaths]
+  const primaryPath = groupPaths.has(canonicalPath) ? canonicalPath : paths[0]
   const primaryName = generateProjectGroupName(project, scope)
-  return groupPaths.map((groupPath) => {
+  return paths.map((groupPath) => {
     if (groupPath === primaryPath) return { name: primaryName, groupPath }
     const leaf = groupPath.split('/').findLast(Boolean)
     return { name: `project-${project.slug}-${leaf}`, groupPath }
   })
 }
 
-function generateProjectRoleGroupPaths(project: ProjectWithDetails, rawGroupPathSuffixes: string) {
-  return rawGroupPathSuffixes
+function generateProjectRoleGroupPaths(project: ProjectWithDetails, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(rawGroupPathSuffixes
     .split(',')
     .map(path => path.trim())
     .filter(Boolean)
-    .map(path => `/${project.slug}${path}`)
+    .map(path => `/${project.slug}${path}`))
 }
 
 function generateZoneName(name: string) {

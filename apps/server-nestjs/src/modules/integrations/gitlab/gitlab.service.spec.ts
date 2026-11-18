@@ -410,6 +410,35 @@ describe('gitlabService', () => {
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.DEVELOPER)
     })
 
+    it('should map the owner role to maintainer even when a persisted suffix omits it', async () => {
+      const project = makeProjectWithDetails({
+        slug: 'project-1',
+        roles: [{ id: 'r-owner', oidcGroup: '/project-1/console/owner' }],
+        members: [
+          { user: { id: 'u2', email: 'owner-role@example.com', firstName: 'Owner', lastName: 'Role', adminRoleIds: [] }, roleIds: ['r-owner'] },
+        ],
+      })
+      const group = makeGroupSchema({ id: 123, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+
+      vi.mocked(datastore.getAdminPluginConfig).mockImplementation(async (_pluginName: string, key: string) =>
+        key === 'projectMaintainerGroupPathSuffix' ? '/console/admin' : null,
+      )
+      try {
+        gitlab.ensureProjectSubGroup.mockResolvedValue(group)
+        gitlab.getGroupMembers.mockResolvedValue([])
+        gitlab.ensureUser.mockResolvedValue(makeExpandedUserSchema({ id: 102, email: 'owner-role@example.com' }))
+        gitlab.getGroupRepos.mockReturnValue((async function* () { })())
+        gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
+        gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
+
+        await service.handleUpsert(project)
+      } finally {
+        vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue(null)
+      }
+
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 102, AccessLevel.MAINTAINER)
+    })
+
     it('should prioritize higher access level when oidc group appears in multiple paths', async () => {
       const project = makeProjectWithDetails({
         slug: 'project-1',

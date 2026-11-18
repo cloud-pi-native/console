@@ -22,6 +22,7 @@ export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
 export const DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX = '/console/security'
+export const BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
 
 // Plugin configuration keys for custom group paths
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'

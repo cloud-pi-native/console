@@ -26,6 +26,7 @@ import { RegistryClientService, roAccess, rwAccess } from './registry-client.ser
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { RegistryPluginService } from './registry-plugin.service'
 import {
+  BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX,
   DEFAULT_PLATFORM_ADMIN_GROUP_PATHS,
   DEFAULT_PLATFORM_GUEST_GROUP_PATHS,
   DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES,
@@ -366,22 +367,22 @@ export class RegistryService {
     return parseGroupPaths(raw)
   }
 
-  private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectAdminGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_ADMIN_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_PROJECT_ADMIN_GROUP_PATH_SUFFIXES
-    return generateProjectRoleGroupPath(project.slug, raw)
+    return generateProjectRoleGroupPath(project.slug, `${raw},${BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX}`)
   }
 
-  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectMaintainerGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectDeveloperGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES
     return generateProjectRoleGroupPath(project.slug, raw)
   }
 
-  private async getProjectGuestGroupPaths(project: ProjectWithDetails): Promise<string[]> {
+  private async getProjectGuestGroupPaths(project: ProjectWithDetails): Promise<Set<string>> {
     const raw = await this.getAdminOrProjectPluginConfig(project, PROJECT_GUEST_GROUP_PATH_SUFFIXES_PLUGIN_KEY) ?? DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES
     return generateProjectRoleGroupPath(project.slug, raw)
   }
@@ -429,11 +430,11 @@ function parseGroupPaths(raw: string): string[] {
     .filter(Boolean)
 }
 
-function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string) {
-  return parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`)
+function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`))
 }
 
-function generateHarborAccessLevelMapping(args: { guest: string[], developer: string[], maintainer: string[], admin: string[], platformAdmin: string[], platformGuest: string[] }) {
+function generateHarborAccessLevelMapping(args: { guest: Iterable<string>, developer: Iterable<string>, maintainer: Iterable<string>, admin: Iterable<string>, platformAdmin: Iterable<string>, platformGuest: Iterable<string> }) {
   const byGroupName = new Map<string, number>()
   for (const groupName of args.guest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
   for (const groupName of args.developer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)

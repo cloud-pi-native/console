@@ -22,6 +22,7 @@ export const DEFAULT_PLATFORM_READ_GROUP_PATHS = '/console/readonly,/console/sec
 // Default group path suffixes granting write and read access at the project level
 export const DEFAULT_PROJECT_WRITE_GROUP_PATH_SUFFIXES = '/console/admin,/console/devops,/console/owner'
 export const DEFAULT_PROJECT_READ_GROUP_PATH_SUFFIXES = '/console/readonly,/console/security,/console/developer'
+export const BASE_WRITE_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
 
 // Plugin configuration keys for platform-level group paths
 export const PLATFORM_WRITE_GROUP_PATHS_PLUGIN_KEY = 'platformWriteGroupPaths'
