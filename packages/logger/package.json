@@ -17,10 +17,6 @@
     "./browser": {
       "types": "./types/browser.d.ts",
       "default": "./dist/browser.js"
-    },
-    "./hooks": {
-      "types": "./types/hooks.d.ts",
-      "default": "./dist/hooks.js"
     }
   },
   "files": [
