@@ -37,7 +37,7 @@ function toHttpException(error: ClusterError): Error {
       ClusterNotFound: () => new NotFoundException('Cluster not found'),
       LabelTaken: () => new ConflictException('Ce label existe déjà pour un autre cluster'),
       EnvironmentsActive: () => new BadRequestException('Impossible de supprimer le cluster, des environnements en activité y sont déployés'),
-      HookFailed: ({ event }) => new UnprocessableEntityException(`Echec des services (${event})`),
+      HookFailed: ({ message }) => new UnprocessableEntityException(message),
     }),
   )
 }

@@ -13,6 +13,7 @@ export class EnvironmentsActive extends Schema.TaggedError<EnvironmentsActive>()
 
 export class HookFailed extends Schema.TaggedError<HookFailed>()('HookFailed', {
   event: Schema.String,
+  message: Schema.String,
 }) {}
 /* eslint-enable unicorn/throw-new-error */
 

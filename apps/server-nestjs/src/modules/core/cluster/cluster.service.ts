@@ -26,13 +26,14 @@ function emitClusterEventOrFail(
   event: ClusterEventName,
   payload: ClusterEventPayload,
   context: EventContext,
+  message: string,
 ): Effect.Effect<void, HookFailed, AppEvents> {
   return Effect.flatMap(
     Effect.service(AppEvents),
     appEvents => Effect.promise(() => appEvents.emitClusterEvent(event, payload, context)),
   ).pipe(
     Effect.flatMap(results => getFailedPlugins(results).length
-      ? Effect.fail(new HookFailed({ event }))
+      ? Effect.fail(new HookFailed({ event, message }))
       : Effect.succeed(void 0)),
   )
 }
@@ -77,7 +78,7 @@ export function createCluster(
       action: 'Create Cluster',
       userId,
       requestId,
-    })
+    }, 'Echec des services à la création du cluster')
 
     return yield* getClusterDetailsRecord(clusterCreated.id)
   })
@@ -100,7 +101,7 @@ export function updateCluster(
       action: 'Update Cluster',
       userId,
       requestId,
-    })
+    }, 'Echec des services à la mise à jour du cluster')
 
     return yield* getClusterDetailsRecord(clusterId)
   })
@@ -126,7 +127,7 @@ export function deleteCluster({
       action: 'Delete Cluster',
       userId,
       requestId,
-    })
+    }, 'Echec des services à la suppression du cluster')
 
     let forcedCount = 0
     if (force && environment) {

@@ -126,6 +126,23 @@ describe('clusterService', () => {
     ), layer))).rejects.toBeInstanceOf(HookFailed)
   })
 
+  it('carries the action-specific 422 message through HookFailed on update', async () => {
+    const record = makeClusterDetailsRecord()
+    prisma.cluster.findUnique.mockResolvedValue(record)
+    prisma.cluster.update.mockResolvedValue(record)
+    prisma.cluster.findUniqueOrThrow.mockResolvedValue(record)
+    appEvents.emitClusterEvent.mockResolvedValue({ gitlab: { status: 'KO', message: 'boom', executionTime: 1, error: new Error('boom') } })
+
+    await expect(Effect.runPromise(Effect.provide(updateCluster(
+      { label: 'new-label' },
+      record.id,
+      faker.string.uuid(),
+      faker.string.uuid(),
+    ), layer))).rejects.toMatchObject({
+      message: 'Echec des services à la mise à jour du cluster',
+    })
+  })
+
   it('fails with LabelTaken when the label already exists', async () => {
     prisma.cluster.findUnique.mockResolvedValue(makeCluster())
 
