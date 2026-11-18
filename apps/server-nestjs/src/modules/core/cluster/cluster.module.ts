@@ -5,7 +5,6 @@ import { EventsModule } from '../../infrastructure/events/events.module'
 import { UserPermissionModule } from '../../infrastructure/permission/user/user.module'
 import { AppEventsModule } from '../events/app-events.module'
 import { ClusterController } from './cluster.controller'
-import { ClusterService } from './cluster.service'
 
 @Module({
   imports: [
@@ -16,7 +15,5 @@ import { ClusterService } from './cluster.service'
     UserPermissionModule,
   ],
   controllers: [ClusterController],
-  providers: [ClusterService],
-  exports: [ClusterService],
 })
 export class ClusterModule {}
