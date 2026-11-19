@@ -17,7 +17,7 @@ describe('argocdConfig', () => {
       url: 'https://argocd.internal',
       internalUrl: 'https://argocd.internal:8080',
       extraRepositories: ['repo1'],
-      dsoEnvChartVersion: 'dso-env-1.6.0',
+      dsoEnvChartVersion: 'dso-env-1.9.6',
       dsoNsChartVersion: 'dso-ns-1.1.5',
       vaultDeployVaultConnectionInNs: true,
     })

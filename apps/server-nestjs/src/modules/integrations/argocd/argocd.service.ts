@@ -25,6 +25,7 @@ import {
   PROJECT_ADMIN_GROUP_PATH_SUFFIX,
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
+  PROJECT_OWNER_GROUP_PATH_SUFFIX,
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
 } from './argocd.constants'
@@ -521,6 +522,7 @@ interface ValuesSchema {
     projectAdminGroup: string
     projectDevopsGroup: string
     projectDevelopperGroup: string
+    projectOwnerGroup: string
     projectSecurityGroup: string
     projectReadonlyGroup: string
   }
@@ -662,6 +664,7 @@ function formatEnvironmentValues(
     projectAdminGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_ADMIN_GROUP_PATH_SUFFIX),
     projectDevopsGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVOPS_GROUP_PATH_SUFFIX),
     projectDevelopperGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_DEVELOPER_GROUP_PATH_SUFFIX),
+    projectOwnerGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_OWNER_GROUP_PATH_SUFFIX),
     projectSecurityGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_SECURITY_GROUP_PATH_SUFFIX),
     projectReadonlyGroup: generateProjectConsoleGroupPath(project.slug, PROJECT_READONLY_GROUP_PATH_SUFFIX),
   } satisfies ValuesSchema['environment']

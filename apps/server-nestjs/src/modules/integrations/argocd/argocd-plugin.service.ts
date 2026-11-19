@@ -17,6 +17,7 @@ import {
   PROJECT_DEVELOPER_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX,
   PROJECT_DEVOPS_GROUP_PATH_SUFFIX_PLUGIN_KEY,
+  PROJECT_OWNER_GROUP_PATH_SUFFIX,
   PROJECT_READONLY_GROUP_PATH_SUFFIX,
   PROJECT_READONLY_GROUP_PATH_SUFFIX_PLUGIN_KEY,
   PROJECT_SECURITY_GROUP_PATH_SUFFIX,
@@ -128,6 +129,16 @@ export class ArgoCDPluginService {
           title: 'Project Security Group Path Suffix',
           value: PROJECT_SECURITY_GROUP_PATH_SUFFIX,
           description: 'Suffixe du chemin du groupe sécurité de projet',
+        }, {
+          key: 'projectOwnerGroupPathSuffix',
+          kind: 'text',
+          permissions: {
+            admin: { read: true, write: true },
+            user: { read: false, write: false },
+          },
+          title: 'Project Owner Group Path Suffix',
+          value: PROJECT_OWNER_GROUP_PATH_SUFFIX,
+          description: 'Suffixe du chemin du groupe propriétaire de projet',
         }, {
           key: DSO_ENV_CHART_VERSION_PLUGIN_KEY,
           kind: 'text',
