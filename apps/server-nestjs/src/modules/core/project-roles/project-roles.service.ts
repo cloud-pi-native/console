@@ -42,7 +42,7 @@ export class ProjectRolesService {
       await this.prisma.projectRole.update({ where: { id }, data: role })
     }
 
-    await this.emitProjectUpsert(projectId)
+    await this.emitProjectRoleEvent(projectId, 'projectRole.upsert')
     return this.list(projectId)
   }
 
@@ -73,7 +73,7 @@ export class ProjectRolesService {
       },
     })
 
-    await this.emitProjectUpsert(projectId)
+    await this.emitProjectRoleEvent(projectId, 'projectRole.upsert')
     return this.list(projectId)
   }
 
@@ -121,10 +121,10 @@ export class ProjectRolesService {
       }
     })
 
-    await this.emitProjectUpsert(role.projectId)
+    await this.emitProjectRoleEvent(role.projectId, 'projectRole.delete')
   }
 
-  private async emitProjectUpsert(projectId: string): Promise<void> {
-    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action: 'Upsert Project Role' })
+  private async emitProjectRoleEvent(projectId: string, event: 'projectRole.upsert' | 'projectRole.delete'): Promise<void> {
+    await this.appEvents.emitProjectResourceEvent(event, projectId, { action: 'Upsert Project Role' })
   }
 }

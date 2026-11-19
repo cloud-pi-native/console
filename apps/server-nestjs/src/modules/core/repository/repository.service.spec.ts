@@ -98,7 +98,7 @@ describe('repositoryService', () => {
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
 
@@ -114,8 +114,8 @@ describe('repositoryService', () => {
       })
       // The token must reach Vault before the reconciliation reads it.
       expect(vault.writeGitlabMirrorCreds.mock.invocationCallOrder[0])
-        .toBeLessThan(appEvents.emitProjectEvent.mock.invocationCallOrder[0])
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+        .toBeLessThan(appEvents.emitProjectResourceEvent.mock.invocationCallOrder[0])
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, {
         action: 'Create Repository',
         userId,
         requestId,
@@ -128,7 +128,7 @@ describe('repositoryService', () => {
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
 
@@ -145,7 +145,7 @@ describe('repositoryService', () => {
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.createRepository(projectId, projectSlug, withoutExternalSource, userId, requestId)
 
@@ -164,12 +164,12 @@ describe('repositoryService', () => {
       } satisfies CreateRepository
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(makeRepository({ projectId, internalRepoName: publicRepository.internalRepoName, isPrivate: false }))
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.createRepository(projectId, projectSlug, publicRepository, userId, requestId)
 
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
     })
 
     it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
@@ -177,7 +177,7 @@ describe('repositoryService', () => {
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId))
         .rejects.toThrow(UnprocessableEntityException)
@@ -193,7 +193,7 @@ describe('repositoryService', () => {
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
       appEvents.emitRepositoryEvent.mockResolvedValue({
         gitlab: { status: 'KO', message: 'Unable to find mirror repository', executionTime: 1, error: new Error('boom') },
       })
@@ -206,7 +206,7 @@ describe('repositoryService', () => {
       const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName })
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
       appEvents.emitRepositoryEvent.mockResolvedValue({})
 
       const result = await service.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
@@ -221,7 +221,7 @@ describe('repositoryService', () => {
         .rejects.toThrow(BadRequestException)
       expect(datastore.createRepository).not.toHaveBeenCalled()
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectResourceEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -232,7 +232,7 @@ describe('repositoryService', () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.updateRepository.mockResolvedValue(updated)
       vault.writeGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await service.updateRepository(projectId, projectSlug, repositoryId, { isPrivate: true, externalToken }, userId, requestId)
 
@@ -241,8 +241,8 @@ describe('repositoryService', () => {
         GIT_INPUT_PASSWORD: externalToken,
       })
       expect(vault.writeGitlabMirrorCreds.mock.invocationCallOrder[0])
-        .toBeLessThan(appEvents.emitProjectEvent.mock.invocationCallOrder[0])
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+        .toBeLessThan(appEvents.emitProjectResourceEvent.mock.invocationCallOrder[0])
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, {
         action: 'Update Repository',
         userId,
         requestId,
@@ -255,33 +255,33 @@ describe('repositoryService', () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.updateRepository.mockResolvedValue(updated)
       vault.deleteGitlabMirrorCreds.mockResolvedValue(undefined)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.updateRepository(projectId, projectSlug, repositoryId, { isPrivate: false }, userId, requestId)
 
       expect(vault.deleteGitlabMirrorCreds).toHaveBeenCalledWith(projectSlug, updated.internalRepoName)
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
     })
 
     it('leaves Vault untouched when the update carries no credential change', async () => {
       const updated = makeRepository({ id: repositoryId, projectId })
       datastore.getRepositoryById.mockResolvedValue(updated)
       datastore.updateRepository.mockResolvedValue(updated)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.updateRepository(projectId, projectSlug, repositoryId, { deployRevision: faker.git.branch() }, userId, requestId)
 
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
     })
 
     it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
       const repository = makeRepository({ id: repositoryId, projectId })
       datastore.getRepositoryById.mockResolvedValue(repository)
       datastore.updateRepository.mockResolvedValue(repository)
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.updateRepository(projectId, projectSlug, repositoryId, validUpdateRepository, userId, requestId))
         .rejects.toThrow(UnprocessableEntityException)
@@ -296,7 +296,7 @@ describe('repositoryService', () => {
       expect(datastore.updateRepository).not.toHaveBeenCalled()
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectResourceEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -376,12 +376,12 @@ describe('repositoryService', () => {
     it('deletes the repository and triggers the project reconciliation', async () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.deleteRepository.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.deleteRepository(projectId, repositoryId, userId, requestId)
 
       expect(datastore.deleteRepository).toHaveBeenCalledWith(repositoryId)
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, {
         action: 'Delete Repository',
         userId,
         requestId,
@@ -391,7 +391,7 @@ describe('repositoryService', () => {
     it('waits for the reconciliation and rejects with 422 when a plugin fails', async () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.deleteRepository.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.deleteRepository(projectId, repositoryId, userId, requestId))
         .rejects.toThrow(UnprocessableEntityException)
@@ -404,7 +404,7 @@ describe('repositoryService', () => {
       await expect(service.deleteRepository(projectId, repositoryId, userId, requestId))
         .rejects.toThrow(NotFoundException)
       expect(datastore.deleteRepository).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectResourceEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -427,38 +427,38 @@ describe('repositoryService', () => {
       const repository = makeRepository({ id: repositoryId, projectId, internalRepoName: validCreateRepository.internalRepoName, isPrivate: true })
       datastore.hasRepositoryWithName.mockResolvedValue(false)
       datastore.createRepository.mockResolvedValue(repository)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await vaultlessService.createRepository(projectId, projectSlug, validCreateRepository, userId, requestId)
 
       expect(result).toEqual(repository)
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Create Repository' }))
     })
 
     it('updates a repository without applying the credential intent', async () => {
       const updated = makeRepository({ id: repositoryId, projectId, isPrivate: true })
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.updateRepository.mockResolvedValue(updated)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await vaultlessService.updateRepository(projectId, projectSlug, repositoryId, { isPrivate: true, externalToken: faker.string.alphanumeric(16) }, userId, requestId)
 
       expect(result).toEqual(updated)
       expect(vault.writeGitlabMirrorCreds).not.toHaveBeenCalled()
       expect(vault.deleteGitlabMirrorCreds).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Update Repository' }))
     })
 
     it('deletes a repository', async () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
       datastore.deleteRepository.mockResolvedValue(makeRepository({ id: repositoryId, projectId }))
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await vaultlessService.deleteRepository(projectId, repositoryId, userId, requestId)
 
       expect(datastore.deleteRepository).toHaveBeenCalledWith(repositoryId)
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, expect.objectContaining({ action: 'Delete Repository' }))
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('repository.upsert', projectId, expect.objectContaining({ action: 'Delete Repository' }))
     })
   })
 })
