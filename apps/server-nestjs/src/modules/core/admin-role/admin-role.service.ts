@@ -38,19 +38,11 @@ export class AdminRoleService {
     const span = trace.getActiveSpan()
     this.logger.log(`adminRole.create started (name=${body.name})`)
 
-    const { role: createdRole, members: createdMembers } = await this.prisma.$transaction(async (tx) => {
+    const { role: createdRole } = await this.prisma.$transaction(async (tx) => {
       return createAdminRole(tx, body.name)
     })
 
-    await this.eventEmitter.emitAsync('adminRole.upsert', {
-      ...createdRole,
-      members: createdMembers.map(({ id, email, firstName, lastName }) => ({
-        id,
-        email,
-        firstName,
-        lastName,
-      })),
-    })
+    await this.eventEmitter.emitAsync('adminRole.upsert', { id: createdRole.id })
 
     span?.setAttribute('admin_role.id', createdRole.id)
     this.logger.log(`adminRole.create completed (id=${createdRole.id})`)
@@ -123,10 +115,7 @@ export class AdminRoleService {
       return results
     })
 
-    await Promise.all(patchResult.map(({ role, members }) => this.eventEmitter.emitAsync('adminRole.upsert', {
-      ...role,
-      members,
-    })))
+    await Promise.all(patchResult.map(({ role }) => this.eventEmitter.emitAsync('adminRole.upsert', { id: role.id })))
 
     span?.setAttribute('admin_role.updated.count', patchResult.length)
     this.logger.log(`adminRole.patch completed (updated=${patchResult.length})`)
@@ -149,6 +138,18 @@ export class AdminRoleService {
     const span = trace.getActiveSpan()
     this.logger.log(`adminRole.delete started (id=${roleId})`)
 
+    const existingRole = await this.prisma.adminRole.findUnique({
+      where: { id: roleId },
+      select: { id: true },
+    })
+    if (!existingRole) {
+      throw new NotFoundException()
+    }
+
+    // Emit before the transaction: listeners refetch the intact role and its
+    // members by id (same shape as project.delete).
+    await this.eventEmitter.emitAsync('adminRole.delete', { id: roleId })
+
     await this.prisma.$transaction(async (tx) => {
       const [role] = await tx.adminRole.findMany({
         where: { id: roleId },
@@ -158,24 +159,9 @@ export class AdminRoleService {
         throw new NotFoundException()
       }
 
-      const members = await tx.user.findMany({
-        where: { adminRoleIds: { has: roleId } },
-        select: { id: true, email: true, firstName: true, lastName: true },
-      })
-
       const users = await tx.user.findMany({
         where: { adminRoleIds: { has: roleId } },
         select: { id: true, adminRoleIds: true },
-      })
-
-      await this.eventEmitter.emitAsync('adminRole.delete', {
-        ...role,
-        members: members.map(({ id, email, firstName, lastName }) => ({
-          id,
-          email,
-          firstName,
-          lastName,
-        })),
       })
 
       for (const user of users) {

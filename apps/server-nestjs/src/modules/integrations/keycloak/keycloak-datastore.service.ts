@@ -87,6 +87,13 @@ export class KeycloakDatastoreService {
     })
   }
 
+  async getAdminRoleMembers(roleId: string): Promise<{ id: string }[]> {
+    return this.prisma.user.findMany({
+      where: { adminRoleIds: { has: roleId } },
+      select: { id: true },
+    })
+  }
+
   async getAllUsersWithAdminRoleIds(): Promise<UserWithAdminRoles[]> {
     return this.prisma.user.findMany({
       select: userAdminRoleSelect,

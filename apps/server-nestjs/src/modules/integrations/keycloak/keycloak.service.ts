@@ -82,17 +82,22 @@ export class KeycloakService {
   }
 
   @StartActiveSpan()
-  private async revokeAdminRoleGroup(role: AdminRoleEventPayload) {
+  private async revokeAdminRoleGroup({ id: roleId }: AdminRoleEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('admin_role.id', role.id)
-    const roleGroupPath = toGroupPath(role.oidcGroup)
+    span?.setAttribute('admin_role.id', roleId)
+    // Emit runs before the deleting transaction, so the intact role row is still
+    // readable here — the members list drives the per-user group revocation.
+    const roles = await this.datastore.getAllAdminRoles()
+    const role = roles.find(({ id }) => id === roleId)
+    const roleGroupPath = toGroupPath(role?.oidcGroup ?? null)
     if (!roleGroupPath) return
     const roleGroup = await this.keycloak.getGroupByPath(roleGroupPath)
     if (!roleGroup?.id) {
-      this.logger.warn(`Keycloak group not found for deleted admin role (roleId=${role.id}, path=${roleGroupPath})`)
+      this.logger.warn(`Keycloak group not found for deleted admin role (roleId=${roleId}, path=${roleGroupPath})`)
       return
     }
-    for (const member of role.members) {
+    const members = await this.datastore.getAdminRoleMembers(roleId)
+    for (const member of members) {
       await this.maybeRemoveUserFromGroup(member.id, roleGroup.id, roleGroup.name)
     }
   }

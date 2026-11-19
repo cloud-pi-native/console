@@ -116,13 +116,19 @@ export class GitlabService {
     span?.setAttribute('admin_role.id', role.id)
     this.logger.log(`Handling an admin role ${enabled ? 'upsert' : 'delete'} event for ${role.id}`)
 
-    const { isAdminRole, isAuditorRole } = await this.getAdminRoleFlags(role)
+    const roleData = await this.datastore.getAdminRoleWithMembers(role.id)
+    if (!roleData) {
+      this.logger.warn(`adminRole event skipped: role not found (roleId=${role.id})`)
+      return
+    }
+
+    const { isAdminRole, isAuditorRole } = await this.getAdminRoleFlags(roleData.oidcGroup)
     if (!isAdminRole && !isAuditorRole) {
       this.logger.verbose(`Not a managed role for GitLab plugin (roleId=${role.id})`)
       return
     }
 
-    for (const member of role.members) {
+    for (const member of roleData.members) {
       await this.gitlab.ensureUser({
         email: member.email,
         username: generateUsername(member.email),
@@ -135,11 +141,11 @@ export class GitlabService {
     }
   }
 
-  private async getAdminRoleFlags(role: AdminRoleEventPayload) {
-    const oidcGroup = role.oidcGroup ?? ''
+  private async getAdminRoleFlags(oidcGroup: string | null) {
+    const group = oidcGroup ?? ''
     return {
-      isAdminRole: parseGroupPaths(await this.getAdminGroupPath()).includes(oidcGroup),
-      isAuditorRole: parseGroupPaths(await this.getAuditorGroupPath()).includes(oidcGroup),
+      isAdminRole: parseGroupPaths(await this.getAdminGroupPath()).includes(group),
+      isAuditorRole: parseGroupPaths(await this.getAuditorGroupPath()).includes(group),
     }
   }
 
