@@ -97,7 +97,8 @@ describe('argoCDService', () => {
       gitlab.generateCreateOrUpdateAction.mockResolvedValue(null)
       gitlab.maybeCreateCommit.mockResolvedValue(undefined)
 
-      const result = await service.handleUpsert(mockProject)
+      datastore.getProject.mockResolvedValue(mockProject)
+      const result = await service.handleUpsert({ projectId: mockProject.id })
 
       expect(result).toEqual({
         argocd: expect.objectContaining({
@@ -122,7 +123,8 @@ describe('argoCDService', () => {
       const error = new Error('GitLab unreachable')
       gitlab.ensureInfraGroupRepo.mockRejectedValue(error)
 
-      const result = await service.handleUpsert(mockProject)
+      datastore.getProject.mockResolvedValue(mockProject)
+      const result = await service.handleUpsert({ projectId: mockProject.id })
 
       expect(result).toEqual({
         argocd: expect.objectContaining({
@@ -163,7 +165,8 @@ describe('argoCDService', () => {
             makeRepositoryTreeSchema({ name: 'values.yaml', path: 'Project 1/cluster-2/prod/values.yaml' }),
           ])
 
-      const result = await service.handleDelete(mockProject)
+      datastore.getProject.mockResolvedValue(mockProject)
+      const result = await service.handleDelete({ projectId: mockProject.id })
 
       expect(result).toEqual({
         argocd: expect.objectContaining({ status: 'OK' }),
@@ -199,7 +202,8 @@ describe('argoCDService', () => {
       gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
       gitlab.listFiles.mockResolvedValue([])
 
-      const result = await service.handleDelete(mockProject)
+      datastore.getProject.mockResolvedValue(mockProject)
+      const result = await service.handleDelete({ projectId: mockProject.id })
 
       expect(result).toEqual({
         argocd: expect.objectContaining({ status: 'OK' }),
@@ -219,7 +223,8 @@ describe('argoCDService', () => {
       const error = new Error('GitLab unreachable')
       gitlab.ensureInfraGroupRepo.mockRejectedValue(error)
 
-      const result = await service.handleDelete(mockProject)
+      datastore.getProject.mockResolvedValue(mockProject)
+      const result = await service.handleDelete({ projectId: mockProject.id })
 
       expect(result).toEqual({
         argocd: expect.objectContaining({

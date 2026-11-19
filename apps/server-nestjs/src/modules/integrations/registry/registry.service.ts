@@ -1,5 +1,6 @@
 import type { ConfigType } from '@nestjs/config'
 import type { RuleTemplate } from '../../../config/harbor.config'
+import type { ProjectEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type {
@@ -308,8 +309,15 @@ export class RegistryService {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
-    return capturePluginResult('harbor', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'harbor'>> {
+    return capturePluginResult('harbor', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -325,8 +333,15 @@ export class RegistryService {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'harbor'>> {
-    return capturePluginResult('harbor', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'harbor'>> {
+    return capturePluginResult('harbor', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @StartActiveSpan()

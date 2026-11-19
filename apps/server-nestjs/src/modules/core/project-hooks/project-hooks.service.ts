@@ -19,7 +19,7 @@ export class ProjectHooksService {
       data: { locked },
       select: projectSelect,
     })
-    await this.appEvents.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
+    await this.appEvents.emitProjectEvent('project.upsert', project.id, { action: 'Update Project' })
   }
 
   async replay(projectId: string, requestorUserId?: string, requestId?: string): Promise<void> {
@@ -36,7 +36,7 @@ export class ProjectHooksService {
       throw new ForbiddenException('Veuillez déverrouiller le projet pour rejouer les webhooks')
     }
     span?.setAttribute('project.slug', project.slug)
-    await this.appEvents.emitProjectEvent('project.upsert', project, {
+    await this.appEvents.emitProjectEvent('project.upsert', project.id, {
       action: 'Replay hooks for Project',
       userId: requestorUserId,
       requestId,
