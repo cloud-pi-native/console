@@ -1,4 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
+import type { ProjectEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { NexusPrivilege } from './nexus-client.service'
 import type { ProjectWithDetails } from './nexus-datastore.service'
@@ -65,8 +66,15 @@ export class NexusService {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
-    return capturePluginResult('nexus', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'nexus'>> {
+    return capturePluginResult('nexus', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -80,8 +88,15 @@ export class NexusService {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'nexus'>> {
-    return capturePluginResult('nexus', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'nexus'>> {
+    return capturePluginResult('nexus', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @StartActiveSpan()

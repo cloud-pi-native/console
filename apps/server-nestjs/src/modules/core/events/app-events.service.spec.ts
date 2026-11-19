@@ -10,7 +10,6 @@ import { mockDeep } from 'vitest-mock-extended'
 import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
-import { projectSelect } from '../project/project-queries.utils'
 import { makeProject } from '../project/project-testing.utils'
 import { AppEventsService } from './app-events.service'
 
@@ -60,11 +59,7 @@ describe('appEventsService', () => {
       requestId: 'request-id',
     })
 
-    expect(prisma.project.findUnique).toHaveBeenCalledWith({
-      where: { id: project.id },
-      select: projectSelect,
-    })
-    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', project)
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', { projectId: project.id })
     expect(results).toEqual({
       gitlab: expect.objectContaining({ status: 'OK' }),
       argocd: expect.objectContaining({ status: 'KO' }),
@@ -75,7 +70,7 @@ describe('appEventsService', () => {
       requestId: 'request-id',
       projectId: project.id,
       data: {
-        args: project,
+        args: { projectId: project.id },
         failed: ['argocd'],
         results: {
           gitlab: {
@@ -100,7 +95,7 @@ describe('appEventsService', () => {
       { argocd: { status: 'KO', message: 'Sync failed', executionTime: 20, error: new Error('Sync failed') } },
     ])
 
-    await service.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
+    await service.emitProjectEvent('project.upsert', project.id, { action: 'Update Project' })
 
     expect(prisma.project.updateMany).toHaveBeenCalledWith({
       where: { id: project.id, status: { not: 'archived' } },
@@ -114,7 +109,7 @@ describe('appEventsService', () => {
       { gitlab: { status: 'OK', message: 'Up to date', executionTime: 10 } },
     ])
 
-    await service.emitProjectEvent('project.upsert', project, { action: 'Create Project' })
+    await service.emitProjectEvent('project.upsert', project.id, { action: 'Create Project' })
 
     expect(prisma.project.update).toHaveBeenCalledWith({
       where: { id: project.id },
@@ -128,7 +123,7 @@ describe('appEventsService', () => {
       { keycloak: { status: 'KO', message: 'unknown_error', executionTime: 20, error: new Error('unknown_error') } },
     ])
 
-    await service.emitProjectEvent('project.delete', project, { action: 'Delete all project resources' })
+    await service.emitProjectEvent('project.delete', project.id, { action: 'Delete all project resources' })
 
     expect(prisma.project.updateMany).toHaveBeenCalledWith({
       where: { id: project.id, status: { not: 'archived' } },
@@ -142,7 +137,7 @@ describe('appEventsService', () => {
       { gitlab: { status: 'OK', message: 'Up to date', executionTime: 10 } },
     ])
 
-    await service.emitProjectEvent('project.delete', project, { action: 'Delete all project resources' })
+    await service.emitProjectEvent('project.delete', project.id, { action: 'Delete all project resources' })
 
     expect(prisma.project.update).not.toHaveBeenCalled()
   })
@@ -150,16 +145,16 @@ describe('appEventsService', () => {
   it('uses a provided project snapshot without fetching it again', async () => {
     const project = makeProject()
 
-    await service.emitProjectEvent('project.delete', project, { action: 'Delete all project resources' })
+    await service.emitProjectEvent('project.delete', project.id, { action: 'Delete all project resources' })
 
     expect(prisma.project.findUnique).not.toHaveBeenCalled()
-    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.delete', project)
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.delete', { projectId: project.id })
   })
 
   it('defaults the log userId and requestId to null', async () => {
     const project = makeProject()
 
-    await service.emitProjectEvent('project.upsert', project, { action: 'Update Project' })
+    await service.emitProjectEvent('project.upsert', project.id, { action: 'Update Project' })
 
     expect(logs.addLog).toHaveBeenCalledWith(expect.objectContaining({
       action: 'Update Project',
@@ -168,14 +163,12 @@ describe('appEventsService', () => {
     }))
   })
 
-  it('skips emitting and logging when the project cannot be found', async () => {
-    prisma.project.findUnique.mockResolvedValue(null)
-
+  it('emits by id without loading the project row: listeners own the refetch and skip when it is gone', async () => {
     const results = await service.emitProjectEvent('project.upsert', 'missing-id', { action: 'Update Project' })
 
+    expect(prisma.project.findUnique).not.toHaveBeenCalled()
+    expect(eventEmitter.emitAsync).toHaveBeenCalledWith('project.upsert', { projectId: 'missing-id' })
     expect(results).toEqual({})
-    expect(eventEmitter.emitAsync).not.toHaveBeenCalled()
-    expect(logs.addLog).not.toHaveBeenCalled()
   })
 
   it('emits and logs project member events with their payload as args', async () => {

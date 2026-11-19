@@ -116,7 +116,8 @@ describe('vaultService', () => {
   it('should upsert project on event', async () => {
     const project = makeProjectWithDetails()
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.createSysMount).toHaveBeenCalledWith(project.slug, expect.any(Object))
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`, expect.any(Object))
@@ -164,7 +165,8 @@ describe('vaultService', () => {
   it('should keep a distinct Vault identity group per alias path', async () => {
     const project = makeProjectWithDetails()
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
       name: `/${project.slug}/console/admin`,
@@ -190,7 +192,8 @@ describe('vaultService', () => {
       },
     }))
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
       name: `/${project.slug}/console/admin`,
@@ -203,7 +206,8 @@ describe('vaultService', () => {
   it('should delete project and destroy secrets on event', async () => {
     const project = makeProjectWithDetails()
 
-    await service.handleDelete(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleDelete({ projectId: project.id })
 
     expect(client.deleteSysMounts).toHaveBeenCalledWith(project.slug)
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`app--${project.slug}--admin`)
@@ -224,7 +228,8 @@ describe('vaultService', () => {
   it('should create the mount when absent on project upsert', async () => {
     const project = makeProjectWithDetails()
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.listSysMounts).toHaveBeenCalledWith()
     expect(client.createSysMount).toHaveBeenCalledWith(project.slug, {
@@ -243,7 +248,8 @@ describe('vaultService', () => {
     const project = makeProjectWithDetails()
     client.listSysMounts.mockResolvedValue({ [`${project.slug}/`]: { accessor: `kv-${project.slug}`, type: 'kv' } })
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.createSysMount).not.toHaveBeenCalled()
     expect(client.tuneSysMount).toHaveBeenCalledWith(project.slug, {
@@ -261,7 +267,8 @@ describe('vaultService', () => {
     })
     client.listKvMetadata.mockResolvedValue(['repo-1-mirror', 'repo-2-mirror', 'SONAR'])
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.listKvMetadata).toHaveBeenCalledWith('forge-dso', `forge/${project.slug}`)
     expect(client.deleteGitlabMirrorCreds).toHaveBeenCalledTimes(1)

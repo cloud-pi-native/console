@@ -108,7 +108,8 @@ describe('registryService', () => {
     it('adds expected Harbor group memberships based on defaults', async () => {
       const project = makeProjectWithDetails()
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       const expected = [
         { groupName: `/${project.slug}`, roleId: 5 },
@@ -141,7 +142,8 @@ describe('registryService', () => {
         { id: 10, entity_name: `/${project.slug}/console/admin`, entity_type: 'g', role_id: 3 },
       ]))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.removeGroupMember).toHaveBeenCalledWith(project.slug, 10)
       expect(client.ensureGroupMember).toHaveBeenCalledWith(project.slug, {
@@ -161,7 +163,8 @@ describe('registryService', () => {
         }
       })
 
-      await expect(service.handleUpsert(project)).resolves.toEqual({
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleUpsert({ projectId: project.id })).resolves.toEqual({
         harbor: expect.objectContaining({
           status: 'KO',
           message: expect.stringContaining('Harbor create member failed'),
@@ -179,13 +182,15 @@ describe('registryService', () => {
 
     it('updates quota when it differs', async () => {
       client.listQuotas.mockResolvedValueOnce(makeOkResponse([{ ref: { id: 123 }, hard: { storage: -1 } }]))
-
-      await service.handleUpsert(makeProjectWithDetails({
+      const project = makeProjectWithDetails({
         slug: 'myproj',
         plugins: [
           { pluginName: PLUGIN_NAME, key: REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT, value: '1024' },
         ],
-      }))
+      })
+      datastore.getProject.mockResolvedValue(project)
+
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.updateQuota).toHaveBeenCalledWith(123, 1024)
     })
@@ -193,7 +198,8 @@ describe('registryService', () => {
     it('reuses robot secret when vault secret host matches', async () => {
       const project = makeProjectWithDetails()
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(vault.read).toHaveBeenCalledTimes(2)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
@@ -234,7 +240,8 @@ describe('registryService', () => {
       client.deleteRobot.mockResolvedValue(makeNoContent())
       client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.deleteRobot).toHaveBeenCalledWith(11)
       expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
@@ -275,7 +282,8 @@ describe('registryService', () => {
       client.deleteRobot.mockResolvedValue(makeNoContent())
       client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.deleteRobot).toHaveBeenCalledWith(11)
       expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({ name: 'ro-robot' }))
@@ -303,7 +311,8 @@ describe('registryService', () => {
       client.deleteRobot.mockResolvedValue(makeNoContent())
       client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+ro-robot`, secret: 'newsecret' })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
         name: 'ro-robot',
@@ -330,7 +339,8 @@ describe('registryService', () => {
       }))
       client.ensureRobot.mockResolvedValue({ id: 22, name: 'project-robot', secret: 'newsecret' })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
         name: 'ro-robot',
@@ -352,8 +362,9 @@ describe('registryService', () => {
       client.getProjectRobots.mockImplementation(async function* () {
         yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: 90 }
       })
+      datastore.getProject.mockResolvedValue(project)
 
-      await service.handleUpsert(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.updateRobot).toHaveBeenCalledWith(42, expect.objectContaining({
         name: ROBOT_NAME_PROJECT,
@@ -370,8 +381,9 @@ describe('registryService', () => {
       client.getProjectRobots.mockImplementation(async function* () {
         yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: -1 }
       })
+      datastore.getProject.mockResolvedValue(project)
 
-      await service.handleUpsert(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.updateRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
@@ -388,7 +400,8 @@ describe('registryService', () => {
       client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
       registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.updateQuota).toHaveBeenCalledWith(1, 1024 ** 3)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
@@ -407,7 +420,8 @@ describe('registryService', () => {
       datastore.getAdminPluginConfig.mockResolvedValue('enabled')
       registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
     })
@@ -424,7 +438,8 @@ describe('registryService', () => {
       })
       client.deleteRobot.mockResolvedValue(makeNoContent())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.deleteRobot).toHaveBeenCalledWith(42)
       expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
@@ -436,7 +451,8 @@ describe('registryService', () => {
       registryPlugin.isProjectRobotEnabled.mockResolvedValue(false)
       vault.delete.mockRejectedValue(new VaultError('NotFound', 'missing'))
 
-      await expect(service.handleUpsert(project)).resolves.toEqual({
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleUpsert({ projectId: project.id })).resolves.toEqual({
         harbor: expect.objectContaining({ status: 'OK' }),
       })
 
@@ -451,7 +467,8 @@ describe('registryService', () => {
       })
       client.deleteRobot.mockRejectedValue(new Error('Harbor delete robot failed (500)'))
 
-      await expect(service.handleUpsert(project)).resolves.toEqual({
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleUpsert({ projectId: project.id })).resolves.toEqual({
         harbor: expect.objectContaining({
           status: 'KO',
           message: expect.stringContaining('Harbor delete robot failed'),
@@ -469,7 +486,8 @@ describe('registryService', () => {
         throw new Error('Harbor list failed (500)')
       })
 
-      await expect(service.handleUpsert(project)).resolves.toEqual({
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleUpsert({ projectId: project.id })).resolves.toEqual({
         harbor: expect.objectContaining({
           status: 'KO',
           message: expect.stringContaining('Harbor list failed'),
@@ -497,7 +515,8 @@ describe('registryService', () => {
   describe('handleDelete', () => {
     it('should delete project when it exists', async () => {
       const project = makeProjectWithDetails()
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
       expect(client.deleteProjectByName).toHaveBeenCalledWith(project.slug)
     })
 
@@ -508,7 +527,8 @@ describe('registryService', () => {
         yield { name: `${project.slug}/repo-b` }
       })
 
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
 
       expect(client.deleteRepository).toHaveBeenCalledTimes(2)
       expect(client.deleteRepository).toHaveBeenCalledWith(project.slug, 'repo-a')
@@ -520,7 +540,8 @@ describe('registryService', () => {
       const project = makeProjectWithDetails()
       client.deleteProjectByName.mockResolvedValueOnce({ status: HttpStatus.PRECONDITION_FAILED, data: null })
 
-      await expect(service.handleDelete(project)).resolves.toEqual({
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleDelete({ projectId: project.id })).resolves.toEqual({
         harbor: expect.objectContaining({
           status: 'KO',
           message: 'Harbor delete project failed (412)',
@@ -529,8 +550,10 @@ describe('registryService', () => {
     })
 
     it('should not delete project when it does not exist', async () => {
+      const project = makeProjectWithDetails()
       client.getProjectByName.mockResolvedValueOnce({ status: HttpStatus.NOT_FOUND, data: null })
-      await service.handleDelete(makeProjectWithDetails())
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
       expect(client.deleteProjectByName).not.toHaveBeenCalled()
     })
   })

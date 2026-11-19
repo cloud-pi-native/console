@@ -76,4 +76,11 @@ export class ObservabilityDatastoreService {
       select: projectInfosSelect,
     })
   }
+
+  async getProject(id: string): Promise<ProjectWithDetails | null> {
+    return this.prisma.project.findUnique({
+      where: { id },
+      select: projectSelect,
+    })
+  }
 }

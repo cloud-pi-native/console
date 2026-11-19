@@ -1,6 +1,6 @@
 import type { MemberSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { AdminRoleEventPayload, ProjectMemberEventPayload, RepositorySyncEventPayload, ZoneEventPayload } from '../../core/events/app-events.service'
+import type { AdminRoleEventPayload, ProjectEventPayload, ProjectMemberEventPayload, RepositorySyncEventPayload, ZoneEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { MirrorUserSecret, VaultSecret } from '../vault/vault-client.service'
 import type { GroupSchemaWith } from './gitlab-client.service'
@@ -68,8 +68,15 @@ export class GitlabService {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
-    return capturePluginResult('gitlab', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -82,8 +89,15 @@ export class GitlabService {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'gitlab'>> {
-    return capturePluginResult('gitlab', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
+    return capturePluginResult('gitlab', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @OnEvent('adminRole.upsert')

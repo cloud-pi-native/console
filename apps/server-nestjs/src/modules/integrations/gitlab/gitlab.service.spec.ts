@@ -148,7 +148,8 @@ describe('gitlabService', () => {
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
       gitlab.ensureUser.mockResolvedValue(makeExpandedUserSchema({ id: 123, username: 'user' }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.ensureProjectSubGroup).toHaveBeenCalledWith(project.slug)
       expect(gitlab.getGroupMembers).toHaveBeenCalledWith(group)
@@ -167,7 +168,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.removeGroupMember).toHaveBeenCalledWith(group, 999)
     })
@@ -184,7 +186,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.removeGroupMember).not.toHaveBeenCalled()
     })
@@ -199,7 +202,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.removeGroupMember).not.toHaveBeenCalled()
     })
@@ -223,7 +227,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'orphan-repo')
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
@@ -248,7 +253,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'orphan-repo')
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
@@ -272,7 +278,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'user-repo')
@@ -296,7 +303,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledTimes(1)
       expect(gitlab.deleteProjectGroupRepo).toHaveBeenCalledWith(project.slug, 'user-repo')
@@ -319,7 +327,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.deleteProjectGroupRepo).not.toHaveBeenCalled()
     })
@@ -345,7 +354,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'new@example.com' }),
@@ -401,7 +411,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 101, AccessLevel.REPORTER)
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 102, AccessLevel.DEVELOPER)
@@ -431,7 +442,8 @@ describe('gitlabService', () => {
         gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
         gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-        await service.handleUpsert(project)
+        datastore.getProject.mockResolvedValue(project)
+        await service.handleUpsert({ projectId: project.id })
       } finally {
         vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue(null)
       }
@@ -465,7 +477,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 101, AccessLevel.MAINTAINER)
     })
@@ -496,7 +509,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.REPORTER)
     })
@@ -522,7 +536,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.editGroupMember).toHaveBeenCalledWith(group, 105, AccessLevel.GUEST)
       expect(gitlab.removeGroupMember).not.toHaveBeenCalledWith(group, 105)
@@ -562,7 +577,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'admin@example.com', admin: true }),
@@ -599,7 +615,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
         expect.objectContaining({ email: 'owner@example.com', admin: undefined, auditor: undefined }),
@@ -644,7 +661,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(datastore.getAdminRolesByOidcGroups).toHaveBeenCalledWith(['/console/admin', '/console/readonly', '/console/security'])
       expect(gitlab.ensureUser).toHaveBeenCalledWith(
@@ -688,7 +706,8 @@ describe('gitlabService', () => {
       gitlab.ensureProjectMirrorRepo.mockResolvedValue(makeProjectSchema({ id: 1, name: 'mirror', path: 'mirror', path_with_namespace: 'forge/console/project-1/mirror', empty_repo: false }))
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.createMirrorAccessToken).toHaveBeenCalledWith('project-1')
       expect(gitlab.ensureProjectMirrorRepo).toHaveBeenCalledWith('project-1')
@@ -745,7 +764,8 @@ describe('gitlabService', () => {
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
       vault.readTechnReadOnlyCreds.mockResolvedValue(recentSecret)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.revokeProjectToken).not.toHaveBeenCalled()
       expect(gitlab.createMirrorAccessToken).not.toHaveBeenCalled()
@@ -792,7 +812,8 @@ describe('gitlabService', () => {
       gitlab.ensureMirrorPipelineTriggerToken.mockResolvedValue(makePipelineTriggerToken())
       vault.readTechnReadOnlyCreds.mockResolvedValue(staleSecret)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(gitlab.revokeProjectToken).toHaveBeenCalledWith(group, 11)
       expect(gitlab.createMirrorAccessToken).toHaveBeenCalledWith('project-1')
@@ -856,7 +877,8 @@ describe('gitlabService', () => {
       gitlab.getGroupByPath.mockResolvedValue(group)
       gitlab.deleteGroup.mockResolvedValue(undefined)
 
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
 
       expect(gitlab.getGroupByPath).toHaveBeenCalledWith('forge/project-1')
       expect(gitlab.deleteGroup).toHaveBeenCalledWith(group)
@@ -867,7 +889,8 @@ describe('gitlabService', () => {
 
       gitlab.getGroupByPath.mockResolvedValue(undefined)
 
-      await expect(service.handleDelete(project)).resolves.not.toThrow()
+      datastore.getProject.mockResolvedValue(project)
+      await expect(service.handleDelete({ projectId: project.id })).resolves.not.toThrow()
 
       expect(gitlab.deleteGroup).not.toHaveBeenCalled()
     })
