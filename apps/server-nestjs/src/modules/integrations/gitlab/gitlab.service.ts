@@ -204,8 +204,15 @@ export class GitlabService {
 
   @StartActiveSpan()
   private async syncRepositoryMirror(payload: RepositorySyncEventPayload) {
-    const { projectSlug, internalRepoName, syncAllBranches } = payload
+    const { repositoryId, syncAllBranches } = payload
     const span = trace.getActiveSpan()
+    span?.setAttribute('repository.id', repositoryId)
+    const repository = await this.datastore.getRepositoryWithProjectSlug(repositoryId)
+    if (!repository) {
+      this.logger.warn(`repository.sync skipped: repository not found (repositoryId=${repositoryId})`)
+      return
+    }
+    const { projectSlug, internalRepoName } = repository
     span?.setAttribute('project.slug', projectSlug)
     span?.setAttribute('repository.name', internalRepoName)
     this.logger.log(`Handling a repository sync event for ${projectSlug}/${internalRepoName}`)
