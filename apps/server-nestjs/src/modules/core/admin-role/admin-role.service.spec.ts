@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common'
 import type { EventEmitter2 } from '@nestjs/event-emitter'
 import type { PrismaService } from '../../infrastructure/database/prisma.service'
 import { adminRoleContract } from '@cpn-console/shared'
@@ -71,12 +72,6 @@ describe('adminRoleService', () => {
     })
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith('adminRole.upsert', {
       id: existingRole.id,
-      name: 'New role',
-      oidcGroup: '',
-      permissions: 0n,
-      position: 6,
-      type: 'managed',
-      members: [],
     })
   })
 
@@ -114,5 +109,15 @@ describe('adminRoleService', () => {
     expect(counts).toEqual({ [managedRole.id]: 2, [otherManagedRole.id]: 1 })
     expect(Object.values(counts).every(Number.isFinite)).toBe(true)
     expect(adminRoleContract.adminRoleMemberCounts.responses[200].safeParse(counts).success).toBe(true)
+  })
+
+  it('delete rejects an unknown role without emitting adminRole.delete', async () => {
+    prisma.adminRole.findUnique.mockResolvedValue(null)
+
+    const service = new AdminRoleService(prisma, eventEmitter)
+
+    await expect(service.delete('missing')).rejects.toBeInstanceOf(NotFoundException)
+    expect(eventEmitter.emitAsync).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
   })
 })

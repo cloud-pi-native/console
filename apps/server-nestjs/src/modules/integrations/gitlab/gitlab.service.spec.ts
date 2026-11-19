@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { gitlabConfigFactory } from '../../../config/gitlab.config'
-import { makeAdminRoleEventMember, makeAdminRoleEventPayload, makeZoneEventPayload } from '../../core/events/app-events-testing.utils'
+import { makeAdminRoleEventPayload, makeZoneEventPayload } from '../../core/events/app-events-testing.utils'
 import { OBSERVABILITY_REPOSITORY } from '../observability/observability.constants'
 import { VaultClientService } from '../vault/vault-client.service'
 import { GitlabClientService } from './gitlab-client.service'
@@ -898,32 +898,27 @@ describe('gitlabService', () => {
 
   describe('handleAdminRoleUpsert', () => {
     it('should skip roles outside managed group paths', async () => {
-      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ oidcGroup: '/other' }))
+      datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/other', members: [] })
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1' }))
 
       expect(gitlab.ensureUser).not.toHaveBeenCalled()
     })
 
     it('should flag admin for the admin group and auditor otherwise', async () => {
-      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
-        oidcGroup: '/console/admin',
-        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
-      }))
+      datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/console/admin', members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }] })
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1' }))
       expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: true }), expect.anything())
 
-      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
-        oidcGroup: '/console/readonly',
-        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
-      }))
+      datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/console/readonly', members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }] })
+      await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1' }))
       expect(gitlab.ensureUser).toHaveBeenLastCalledWith(expect.objectContaining({ auditor: true, admin: undefined }), expect.anything())
     })
 
     it('should recognize every configured admin group path', async () => {
       vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue('/console/admin,/console/ops')
       try {
-        await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({
-          oidcGroup: '/console/ops',
-          members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
-        }))
+        datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/console/ops', members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }] })
+        await service.handleAdminRoleUpsert(makeAdminRoleEventPayload({ id: 'role-1' }))
       } finally {
         vi.mocked(datastore.getAdminPluginConfig).mockResolvedValue(undefined)
       }
@@ -982,19 +977,15 @@ describe('gitlabService', () => {
 
   describe('handleAdminRoleDelete', () => {
     it('should clear the admin flag on revoke', async () => {
-      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
-        oidcGroup: '/console/admin',
-        members: [makeAdminRoleEventMember({ id: 'u1', email: 'a@b.c' })],
-      }))
+      datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/console/admin', members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }] })
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'role-1' }))
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })
 
     it('should provision absent GitLab members on revoke', async () => {
-      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({
-        oidcGroup: '/console/admin',
-        members: [makeAdminRoleEventMember({ id: 'u1', email: 'ghost@b.c' })],
-      }))
+      datastore.getAdminRoleWithMembers.mockResolvedValue({ id: 'role-1', oidcGroup: '/console/admin', members: [{ id: 'u1', email: 'ghost@b.c', firstName: 'A', lastName: 'B' }] })
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'role-1' }))
 
       expect(gitlab.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ admin: false }), expect.anything())
     })

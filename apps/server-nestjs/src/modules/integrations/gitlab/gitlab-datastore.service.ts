@@ -109,6 +109,22 @@ export class GitlabDatastoreService {
     return result?.value ?? null
   }
 
+  async getAdminRoleWithMembers(id: string): Promise<{ id: string, oidcGroup: string | null, members: { id: string, email: string, firstName: string, lastName: string }[] } | null> {
+    const role = await this.prisma.adminRole.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        oidcGroup: true,
+      },
+    })
+    if (!role) return null
+    const members = await this.prisma.user.findMany({
+      where: { adminRoleIds: { has: id } },
+      select: { id: true, email: true, firstName: true, lastName: true },
+    })
+    return { ...role, members }
+  }
+
   async getAdminRolesByOidcGroups(oidcGroups: string[]): Promise<{ id: string, oidcGroup: string }[]> {
     return this.prisma.adminRole.findMany({
       where: {
