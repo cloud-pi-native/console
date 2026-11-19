@@ -529,7 +529,7 @@ describe('keycloakService', () => {
 
   describe('handleAdminRoleDelete', () => {
     it('should warn and no-op when the role no longer exists', async () => {
-      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'gone', oidcGroup: '/console/admin', members: [] }))
+      await service.handleAdminRoleDelete(makeAdminRoleEventPayload({ id: 'gone' }))
 
       expect(keycloak.ensureGroupByPath).not.toHaveBeenCalled()
     })
