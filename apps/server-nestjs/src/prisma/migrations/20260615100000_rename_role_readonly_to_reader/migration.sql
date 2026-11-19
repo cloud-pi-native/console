@@ -55,3 +55,17 @@ UPDATE "ProjectPlugin"
 SET "key" = 'projectReaderGroupPathSuffixes'
 WHERE "pluginName" = 'nexus' AND "key" = 'projectReadGroupPathSuffixes';
 
+-- Global (AdminPlugin) overrides of project-level suffixes are read by the same
+-- getAdminOrProjectPluginConfig path; rename them too or they fall back to defaults.
+UPDATE "AdminPlugin"
+SET "key" = 'projectReaderGroupPathSuffix'
+WHERE "pluginName" = 'argocd' AND "key" = 'projectReadonlyGroupPathSuffix';
+
+UPDATE "AdminPlugin"
+SET "key" = 'projectReaderSuffix'
+WHERE "pluginName" = 'sonarqube' AND "key" = 'projectReadonlySuffix';
+
+UPDATE "AdminPlugin"
+SET "key" = 'projectReaderGroupPathSuffixes'
+WHERE "pluginName" = 'nexus' AND "key" = 'projectReadGroupPathSuffixes';
+
