@@ -823,13 +823,13 @@ describe('gitlabService', () => {
   describe('handleRepositorySync', () => {
     const payload = {
       projectId: 'p1',
-      projectSlug: 'project-1',
-      internalRepoName: 'repo-1',
+      repositoryId: 'r1',
       syncAllBranches: false,
       branchName: 'main',
     }
 
     it('should trigger the mirror and report an OK plugin result', async () => {
+      datastore.getRepositoryWithProjectSlug.mockResolvedValue({ internalRepoName: 'repo-1', projectSlug: 'project-1' })
       gitlab.triggerMirror.mockResolvedValue(makePipeline())
 
       const result = await service.handleRepositorySync(payload)
@@ -838,9 +838,19 @@ describe('gitlabService', () => {
       expect(result.gitlab.status).toBe('OK')
     })
 
+    it('should no-op with an OK plugin result when the repository no longer exists', async () => {
+      datastore.getRepositoryWithProjectSlug.mockResolvedValue(undefined)
+
+      const result = await service.handleRepositorySync(payload)
+
+      expect(gitlab.triggerMirror).not.toHaveBeenCalled()
+      expect(result.gitlab.status).toBe('OK')
+    })
+
     // capturePluginResult swallows the throw so the emitter can merge every listener's
     // outcome; the failure has to surface as a KO result, not as a rejected promise.
     it('should report a KO plugin result when the mirror cannot be triggered', async () => {
+      datastore.getRepositoryWithProjectSlug.mockResolvedValue({ internalRepoName: 'repo-1', projectSlug: 'project-1' })
       gitlab.triggerMirror.mockRejectedValue(new Error('Unable to find mirror repository'))
 
       const result = await service.handleRepositorySync(payload)
