@@ -12,8 +12,8 @@ export interface MemberRoleSync {
 // Serializes role patches per member: rapid toggles accumulate their intent and a
 // per-member drain loop ships the latest desired list once per burst, so a stale
 // snapshot can never overwrite a toggle issued while a previous patch was in flight.
-// Intent consumed before the patch await: a toggle arriving during a patch is shipped
-// by the next loop turn. A failed patch drops that burst's intent; the caller reloads
+// Intent is kept during the patch await: a toggle arriving mid-flight becomes the
+// next patch's base. A failed patch drops that burst's intent; the caller reloads
 // server state on error.
 export function createMemberRoleSync(patch: MemberPatch, onSynced: () => void): MemberRoleSync {
   const queue = new Map<string, Promise<unknown>>()
@@ -23,8 +23,11 @@ export function createMemberRoleSync(patch: MemberPatch, onSynced: () => void): 
     for (;;) {
       const roles = desired.get(userId)
       if (!roles) return
-      desired.delete(userId)
-      await patch({ userId, roles })
+      try {
+        await patch({ userId, roles })
+      } finally {
+        if (desired.get(userId) === roles) desired.delete(userId)
+      }
       onSynced()
     }
   }
