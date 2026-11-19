@@ -28,8 +28,7 @@ export interface ProjectMemberEventPayload {
 
 export type RepositorySyncEventPayload = {
   projectId: string
-  projectSlug: string
-  internalRepoName: string
+  repositoryId: string
 } & (
   { syncAllBranches: true }
   | { syncAllBranches: false, branchName: string }

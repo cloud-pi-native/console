@@ -204,20 +204,25 @@ export class GitlabService {
 
   @StartActiveSpan()
   private async syncRepositoryMirror(payload: RepositorySyncEventPayload) {
-    const { projectSlug, internalRepoName, syncAllBranches } = payload
     const span = trace.getActiveSpan()
-    span?.setAttribute('project.slug', projectSlug)
-    span?.setAttribute('repository.name', internalRepoName)
-    this.logger.log(`Handling a repository sync event for ${projectSlug}/${internalRepoName}`)
+    span?.setAttribute('repository.id', payload.repositoryId)
+    const repository = await this.datastore.getRepositoryWithProjectSlug(payload.repositoryId)
+    if (!repository) {
+      this.logger.warn(`repository.sync skipped: repository not found (repositoryId=${payload.repositoryId})`)
+      return
+    }
+    span?.setAttribute('project.slug', repository.projectSlug)
+    span?.setAttribute('repository.name', repository.internalRepoName)
+    this.logger.log(`Handling a repository sync event for ${repository.projectSlug}/${repository.internalRepoName}`)
     // A full sync has no branch to designate; the client turns that into an empty
     // GIT_BRANCH_DEPLOY, which is what the mirror pipeline expects.
     await this.gitlab.triggerMirror(
-      projectSlug,
-      internalRepoName,
-      syncAllBranches,
+      repository.projectSlug,
+      repository.internalRepoName,
+      payload.syncAllBranches,
       payload.syncAllBranches ? undefined : payload.branchName,
     )
-    this.logger.log(`GitLab mirror pipeline triggered for ${projectSlug}/${internalRepoName}`)
+    this.logger.log(`GitLab mirror pipeline triggered for ${repository.projectSlug}/${repository.internalRepoName}`)
   }
 
   @StartActiveSpan()

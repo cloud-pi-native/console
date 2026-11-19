@@ -86,7 +86,7 @@ export class RepositoryController {
     @AuthUser() user: UserContext,
     @Req() request: FastifyRequest,
   ): Promise<void> {
-    return this.repositoryService.syncRepository(project.id, project.slug, repositoryId, syncRequest, user.userId, request.id)
+    return this.repositoryService.syncRepository(project.id, repositoryId, syncRequest, user.userId, request.id)
   }
 
   @Delete(':repositoryId')

@@ -134,7 +134,7 @@ describe('repositoryService', () => {
 
       expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
         'repository.sync',
-        expect.objectContaining({ internalRepoName: repository.internalRepoName, syncAllBranches: true }),
+        expect.objectContaining({ repositoryId: repository.id, syncAllBranches: true }),
         expect.objectContaining({ action: 'Sync Repository' }),
       )
     })
@@ -308,15 +308,14 @@ describe('repositoryService', () => {
       datastore.getRepositoryById.mockResolvedValue(repository)
       appEvents.emitRepositoryEvent.mockResolvedValue({ gitlab: { status: 'OK', message: 'Up to date', executionTime: 1 } })
 
-      await service.syncRepository(projectId, projectSlug, repositoryId, syncRequest, userId, requestId)
+      await service.syncRepository(projectId, repositoryId, syncRequest, userId, requestId)
 
       // A full sync carries no branch key at all — not an undefined one.
       expect(appEvents.emitRepositoryEvent).toHaveBeenCalledWith(
         'repository.sync',
         {
           projectId,
-          projectSlug,
-          internalRepoName: repository.internalRepoName,
+          repositoryId,
           syncAllBranches: true,
         },
         { action: 'Sync Repository', userId, requestId },
@@ -338,7 +337,7 @@ describe('repositoryService', () => {
         return {}
       })
 
-      await service.syncRepository(projectId, projectSlug, repositoryId, { syncAllBranches: false, branchName }, userId, requestId)
+      await service.syncRepository(projectId, repositoryId, { syncAllBranches: false, branchName }, userId, requestId)
 
       expect(datastore.updateBranchName).toHaveBeenCalledWith(repositoryId, branchName)
       expect(calls).toEqual(['persist', 'mirror'])
@@ -358,7 +357,7 @@ describe('repositoryService', () => {
         gitlab: { status: 'KO', message: 'Unable to find mirror repository', executionTime: 1, error: new Error('boom') },
       })
 
-      await expect(service.syncRepository(projectId, projectSlug, repositoryId, { syncAllBranches: false, branchName }, userId, requestId))
+      await expect(service.syncRepository(projectId, repositoryId, { syncAllBranches: false, branchName }, userId, requestId))
         .rejects.toThrow(UnprocessableEntityException)
       expect(datastore.updateBranchName).toHaveBeenCalledWith(repositoryId, branchName)
     })
@@ -366,7 +365,7 @@ describe('repositoryService', () => {
     it('rejects when the repository belongs to another project', async () => {
       datastore.getRepositoryById.mockResolvedValue(makeRepository({ id: repositoryId, projectId: faker.string.uuid() }))
 
-      await expect(service.syncRepository(projectId, projectSlug, repositoryId, syncRequest, userId, requestId))
+      await expect(service.syncRepository(projectId, repositoryId, syncRequest, userId, requestId))
         .rejects.toThrow(NotFoundException)
       expect(datastore.updateBranchName).not.toHaveBeenCalled()
       expect(appEvents.emitRepositoryEvent).not.toHaveBeenCalled()
