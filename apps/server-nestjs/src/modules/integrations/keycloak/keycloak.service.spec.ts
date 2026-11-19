@@ -512,6 +512,26 @@ describe('keycloakService', () => {
     })
   })
 
+  describe('handleUpsert (projectRole.delete regression #3049)', () => {
+    it('reconciles OIDC groups when a project role event fires', async () => {
+      const project = makeProjectWithDetails({ id: 'project-id', slug: 'test-project', ownerId: 'owner-id', everyonePerms: 0n, members: [], roles: [] })
+      datastore.getProject.mockResolvedValue(project)
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project', subGroups: [] })
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      const result = await service.handleUpsert({ projectId: 'project-id' })
+
+      // #3049: revoking a project role must reach the Keycloak group
+      // reconciliation — the granular projectRole.delete routes here.
+      expect(datastore.getProject).toHaveBeenCalledWith('project-id')
+      expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/test-project')
+      expect(result.keycloak.status).toBe('OK')
+    })
+  })
+
   describe('handleAdminRoleUpsert', () => {
     it('should sync the impacted role group on adminRole.upsert', async () => {
       datastore.getAllAdminRoles.mockResolvedValue([{ id: 'role-1', oidcGroup: '/console/admin', type: 'global' }])

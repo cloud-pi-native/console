@@ -87,7 +87,7 @@ export class DeploymentService {
 
   async deleteAllDeploymentsByProjectId(projectId: string): Promise<void> {
     await this.deploymentDatastoreService.deleteAllDeploymentsByProjectId(projectId)
-    await this.appEvents.emitProjectEvent('project.upsert', projectId, { action: 'Delete all project deployments' })
+    await this.appEvents.emitProjectResourceEvent('deployment.delete', projectId, { action: 'Delete all project deployments' })
   }
 
   /**
@@ -95,7 +95,7 @@ export class DeploymentService {
    * outcomes (including failures) are persisted in the admin log by AppEventsService.
    */
   private reconcileProject(projectId: string, action: EventLogAction, userId: string, requestId: string): void {
-    this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
+    this.appEvents.emitProjectResourceEvent('deployment.upsert', projectId, { action, userId, requestId })
       .catch((error: unknown) => {
         this.logger.error(`project.upsert reconciliation failed (projectId=${projectId})`, error instanceof Error ? error.stack : String(error))
       })

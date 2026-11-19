@@ -68,6 +68,10 @@ export class GitlabService {
   }
 
   @OnEvent('project.upsert')
+  @OnEvent('projectRole.upsert')
+  @OnEvent('projectRole.delete')
+  @OnEvent('repository.upsert')
+  @OnEvent('repository.delete')
   async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'gitlab'>> {
     return capturePluginResult('gitlab', async () => {
       const project = await this.datastore.getProject(payload.projectId)

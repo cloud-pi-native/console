@@ -52,6 +52,11 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.upsert')
+  @OnEvent('deployment.upsert')
+  @OnEvent('deployment.delete')
+  @OnEvent('environment.upsert')
+  @OnEvent('repository.upsert')
+  @OnEvent('repository.delete')
   async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'argocd'>> {
     return capturePluginResult('argocd', async () => {
       const project = await this.datastore.getProject(payload.projectId)

@@ -91,6 +91,8 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.upsert')
+  @OnEvent('repository.upsert')
+  @OnEvent('repository.delete')
   async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'sonarqube'>> {
     return capturePluginResult('sonarqube', async () => {
       const project = await this.datastore.getProject(payload.projectId)
