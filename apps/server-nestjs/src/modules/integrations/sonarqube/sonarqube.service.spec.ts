@@ -137,7 +137,8 @@ describe('sonarqubeService', () => {
       const project = makeProjectWithDetails()
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/admin` }))
       expect(client.ensureUserGroup).toHaveBeenCalledWith(expect.objectContaining({ name: `/${project.slug}/console/devops` }))
@@ -151,7 +152,8 @@ describe('sonarqubeService', () => {
       const userToken = makeUserToken({ login: project.slug })
       client.generateUserToken.mockResolvedValue(userToken)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
       expect(client.generateUserToken).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
@@ -169,7 +171,8 @@ describe('sonarqubeService', () => {
       })
       const password = 'a'.repeat(30)
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
       getRandomValues.mockRestore()
 
       expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: 'collided', password }))
@@ -185,7 +188,8 @@ describe('sonarqubeService', () => {
       const project = makeProjectWithDetails({ slug: 'fresh', repositories: [] })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).toHaveBeenCalledWith(expect.objectContaining({ login: 'fresh' }))
       expect(client.updateUser).not.toHaveBeenCalled()
@@ -196,7 +200,8 @@ describe('sonarqubeService', () => {
       const project = makeProjectWithDetails({ repositories: [{ internalRepoName: 'repo' }] })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureProject).toHaveBeenCalledWith(expect.objectContaining({ visibility: 'private', name: `${project.slug}-repo` }))
       expect(client.addPermissionUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug }))
@@ -216,7 +221,8 @@ describe('sonarqubeService', () => {
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: project.slug, SONAR_PASSWORD: 'pw', SONAR_TOKEN: 'tok' } }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       const key = generateProjectKey(project.slug, 'repo')
       expect(gitlab.ensureGitlabRepoVariable).toHaveBeenCalledWith(repoId, 'PROJECT_KEY', key, expect.objectContaining({ masked: false, variableType: 'env_var', environmentScope: '*' }))
@@ -231,7 +237,8 @@ describe('sonarqubeService', () => {
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: project.slug }) })
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: project.slug, SONAR_PASSWORD: 'pw', SONAR_TOKEN: 'tok' } }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.generateUserToken).not.toHaveBeenCalled()
@@ -243,7 +250,8 @@ describe('sonarqubeService', () => {
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: project.slug }) })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({ login: project.slug, password: expect.any(String) }))
@@ -259,7 +267,8 @@ describe('sonarqubeService', () => {
         yield makeSonarqubeUser({ login: 'with-owner', email: 'owner@example.com' })
       })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
@@ -277,7 +286,8 @@ describe('sonarqubeService', () => {
         yield makeSonarqubeUser({ login: 'clean', email: 'clean@cloud-pi-native.fr' })
       })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.updateUser).not.toHaveBeenCalled()
     })
@@ -290,7 +300,8 @@ describe('sonarqubeService', () => {
         yield makeSonarqubeUser({ login: 'stale', email: 'owner@example.com' })
       })
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.ensureUser).not.toHaveBeenCalled()
       expect(client.updateUser).toHaveBeenCalledWith(expect.objectContaining({
@@ -313,7 +324,8 @@ describe('sonarqubeService', () => {
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: project.slug }) })
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: project.slug, SONAR_PASSWORD: 'pw', SONAR_TOKEN: 'tok' } }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.deleteProject).toHaveBeenCalledWith({ project: removedKey })
       expect(client.deleteProject).not.toHaveBeenCalledWith({ project: keptKey })
@@ -331,7 +343,8 @@ describe('sonarqubeService', () => {
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: project.slug }) })
       vault.readSonarqubeUser.mockResolvedValue(makeVaultSecret({ data: { SONAR_USERNAME: project.slug, SONAR_PASSWORD: 'pw', SONAR_TOKEN: 'tok' } }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.deleteProject).not.toHaveBeenCalled()
     })
@@ -343,7 +356,8 @@ describe('sonarqubeService', () => {
       })
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/admin` }))
       expect(client.addPermissionGroup).toHaveBeenCalledWith(expect.objectContaining({ groupName: `/${project.slug}/console/owner` }))
@@ -359,7 +373,8 @@ describe('sonarqubeService', () => {
       })
       client.searchUsers.mockImplementation(async function* () { yield makeSonarqubeUser({ login: 'doomed' }) })
 
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
 
       expect(client.deleteProject).toHaveBeenCalledWith({ project: doomedKey })
       expect(client.deactivateUser).toHaveBeenCalledWith({ login: 'doomed', anonymize: true })
@@ -369,7 +384,8 @@ describe('sonarqubeService', () => {
     it('should skip anonymization when the user does not exist', async () => {
       const project = makeProjectWithDetails({ slug: 'no-user' })
 
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
 
       expect(client.deactivateUser).not.toHaveBeenCalled()
       expect(vault.deleteSonarqubeUser).toHaveBeenCalledWith('no-user')
@@ -380,7 +396,8 @@ describe('sonarqubeService', () => {
       client.generateUserToken.mockResolvedValue(makeUserToken({ login: project.slug }))
       client.searchUsers.mockImplementation(async function* () {})
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       // Regression guard for #2510: using the owner's real email on a `local: true` robot account
       // makes the owner's SSO login collide ("already associated with another authentication

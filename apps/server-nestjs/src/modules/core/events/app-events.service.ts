@@ -1,16 +1,18 @@
 import type { ConfigType } from '@nestjs/config'
 import type { PluginResults } from '../plugin/plugin.utils'
-import type { ProjectWithDetails } from '../project/project-queries.utils'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins, mergePluginResults } from '../plugin/plugin.utils'
-import { getProject } from '../project/project-queries.utils'
 import { formatEventLogData, isPluginResults } from './app-events.utils'
 
 export type ProjectEventName = 'project.upsert' | 'project.delete'
+
+export interface ProjectEventPayload {
+  projectId: string
+}
 export type ProjectMemberEventName = 'projectMember.upsert' | 'projectMember.delete'
 export type RepositoryEventName = 'repository.sync'
 export type ZoneEventName = 'zone.upsert' | 'zone.delete'
@@ -90,29 +92,17 @@ export class AppEventsService {
   ) {}
 
   /**
-   * Emits a project event and logs the merged listener results.
-   *
-   * Pass a project id in the general case: the project is loaded here, after the
-   * emitting transaction commits, so every listener sees the same committed state.
-   * Pass an already-loaded snapshot when the row no longer reflects what listeners
-   * must act on (e.g. archiving emits `project.delete` before renaming the slug).
+   * Emits a project event by id and logs the merged listener results. Every
+   * listener refetches the row by id: at `project.delete` emit time the archiving
+   * transaction has not run yet, so a refetch sees the same intact state.
    */
   async emitProjectEvent(
     event: ProjectEventName,
-    projectOrId: string | ProjectWithDetails,
+    projectId: string,
     context: EventContext,
   ): Promise<PluginResults> {
-    const project = typeof projectOrId === 'string'
-      ? await getProject(this.prisma, projectOrId)
-      : projectOrId
-
-    if (!project) {
-      this.logger.warn(`${event} skipped: project not found (projectId=${String(projectOrId)})`)
-      return {}
-    }
-
-    const results = await this.emitAndLog(event, project, project.id, context)
-    await this.updateProjectStatus(event, project.id, results)
+    const results = await this.emitAndLog(event, { projectId }, projectId, context)
+    await this.updateProjectStatus(event, projectId, results)
     return results
   }
 

@@ -1,5 +1,5 @@
 import type { ConfigType } from '@nestjs/config'
-import type { ZoneEventPayload } from '../../core/events/app-events.service'
+import type { ProjectEventPayload, ZoneEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
 import { evictionSet } from '@cpn-console/shared'
@@ -57,8 +57,15 @@ export class VaultService {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -71,8 +78,15 @@ export class VaultService {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'vault'>> {
+    return capturePluginResult('vault', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @StartActiveSpan()
