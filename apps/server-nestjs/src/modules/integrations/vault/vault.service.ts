@@ -88,30 +88,40 @@ export class VaultService {
 
   @OnEvent('zone.upsert')
   async handleUpsertZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.syncZone(payload.slug))
+    return capturePluginResult('vault', () => this.syncZone(payload))
   }
 
   @StartActiveSpan()
-  private async syncZone(zoneSlug: string) {
+  private async syncZone(payload: ZoneEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', zoneSlug)
-    this.logger.log(`Handling a zone upsert event for ${zoneSlug}`)
-    await this.ensureZone(zoneSlug)
-    this.logger.log(`Vault zone sync completed for ${zoneSlug}`)
+    span?.setAttribute('zone.id', payload.id)
+    const zone = await this.datastore.getZoneById(payload.id)
+    if (!zone) {
+      this.logger.warn(`zone.upsert skipped: zone not found (zoneId=${payload.id})`)
+      return
+    }
+    this.logger.log(`Handling a zone upsert event for ${zone.slug}`)
+    await this.ensureZone(zone.slug)
+    this.logger.log(`Vault zone sync completed for ${zone.slug}`)
   }
 
   @OnEvent('zone.delete')
   async handleDeleteZone(payload: ZoneEventPayload): Promise<RequiredPluginResult<'vault'>> {
-    return capturePluginResult('vault', () => this.cleanupZone(payload.slug))
+    return capturePluginResult('vault', () => this.cleanupZone(payload))
   }
 
   @StartActiveSpan()
-  private async cleanupZone(zoneSlug: string) {
+  private async cleanupZone(payload: ZoneEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', zoneSlug)
-    this.logger.log(`Handling a zone delete event for ${zoneSlug}`)
-    await this.deleteZone(zoneSlug)
-    this.logger.log(`Vault zone cleanup completed for ${zoneSlug}`)
+    span?.setAttribute('zone.id', payload.id)
+    const zone = await this.datastore.getZoneById(payload.id)
+    if (!zone) {
+      this.logger.warn(`zone.delete skipped: zone not found (zoneId=${payload.id})`)
+      return
+    }
+    this.logger.log(`Handling a zone delete event for ${zone.slug}`)
+    await this.deleteZone(zone.slug)
+    this.logger.log(`Vault zone cleanup completed for ${zone.slug}`)
   }
 
   // @Cron(CronExpression.EVERY_HOUR)
