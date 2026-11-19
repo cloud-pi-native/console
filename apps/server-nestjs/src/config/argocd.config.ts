@@ -1,6 +1,7 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
 import { csv, truthySchema } from './config.utils'
+import { DEFAULT_DSO_ENV_CHART_VERSION, DEFAULT_DSO_NS_CHART_VERSION } from '../modules/integrations/argocd/argocd.constants'
 
 const argocdFeatureSchema = z.object({
   ARGO_NAMESPACE: z.string().default('argocd'),
@@ -8,8 +9,8 @@ const argocdFeatureSchema = z.object({
   ARGOCD_INTERNAL_URL: z.string().url().optional(),
   ARGOCD_EXTRA_REPOSITORIES: csv(z.string()),
   ARGOCD_SHARED_SOURCE_REPOSITORIES: csv(z.string()),
-  DSO_ENV_CHART_VERSION: z.string().default('dso-env-1.6.0'),
-  DSO_NS_CHART_VERSION: z.string().default('dso-ns-1.1.5'),
+  DSO_ENV_CHART_VERSION: z.string().default(DEFAULT_DSO_ENV_CHART_VERSION),
+  DSO_NS_CHART_VERSION: z.string().default(DEFAULT_DSO_NS_CHART_VERSION),
   VAULT__DEPLOY_VAULT_CONNECTION_IN_NS: truthySchema.default('false').transform(v => v === 'true' || v === '1'),
 }).transform(raw => ({
   namespace: raw.ARGO_NAMESPACE,
