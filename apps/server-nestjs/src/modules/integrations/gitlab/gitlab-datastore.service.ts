@@ -130,4 +130,12 @@ export class GitlabDatastoreService {
       },
     })
   }
+
+  async getZoneSlug(zoneId: string): Promise<string | null> {
+    const zone = await this.prisma.zone.findUnique({
+      where: { id: zoneId },
+      select: { slug: true },
+    })
+    return zone?.slug ?? null
+  }
 }

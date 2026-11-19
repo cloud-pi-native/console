@@ -17,7 +17,6 @@ export type ZoneEventName = 'zone.upsert' | 'zone.delete'
 
 export interface ZoneEventPayload {
   id: string
-  slug: string
 }
 
 export interface ProjectMemberEventPayload {

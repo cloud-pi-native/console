@@ -87,4 +87,11 @@ export class VaultDatastoreService {
       select: zoneSelect,
     })
   }
+
+  async getZoneById(zoneId: string): Promise<ZoneWithDetails | null> {
+    return this.prisma.zone.findUnique({
+      where: { id: zoneId },
+      select: zoneSelect,
+    })
+  }
 }

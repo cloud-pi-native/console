@@ -911,7 +911,8 @@ describe('gitlabService', () => {
 
   describe('handleUpsertZone', () => {
     it('should ensure the zone infra repo and report an OK plugin result', async () => {
-      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      const payload = makeZoneEventPayload()
+      datastore.getZoneSlug.mockResolvedValue('zone-1')
       gitlab.ensureInfraGroupRepo.mockResolvedValue(makeProjectSchema({ id: 100 }))
 
       const result = await service.handleUpsertZone(payload)
@@ -921,7 +922,8 @@ describe('gitlabService', () => {
     })
 
     it('should report a KO plugin result when the infra repo cannot be ensured', async () => {
-      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      const payload = makeZoneEventPayload()
+      datastore.getZoneSlug.mockResolvedValue('zone-1')
       gitlab.ensureInfraGroupRepo.mockRejectedValue(new Error('gitlab down'))
 
       const result = await service.handleUpsertZone(payload)
@@ -933,7 +935,8 @@ describe('gitlabService', () => {
 
   describe('handleDeleteZone', () => {
     it('should delete the zone infra repo and report an OK plugin result', async () => {
-      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      const payload = makeZoneEventPayload()
+      datastore.getZoneSlug.mockResolvedValue('zone-1')
       gitlab.deleteInfraGroupRepo.mockResolvedValue(undefined)
 
       const result = await service.handleDeleteZone(payload)
@@ -943,7 +946,8 @@ describe('gitlabService', () => {
     })
 
     it('should report a KO plugin result when the infra repo cannot be deleted', async () => {
-      const payload = makeZoneEventPayload({ slug: 'zone-1' })
+      const payload = makeZoneEventPayload()
+      datastore.getZoneSlug.mockResolvedValue('zone-1')
       gitlab.deleteInfraGroupRepo.mockRejectedValue(new Error('gitlab down'))
 
       const result = await service.handleDeleteZone(payload)
