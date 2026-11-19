@@ -202,7 +202,7 @@ export class RepositoryService {
     requestId: string,
     failureMessage: string,
   ): Promise<void> {
-    const results = await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
+    const results = await this.appEvents.emitProjectResourceEvent('repository.upsert', projectId, { action, userId, requestId })
 
     if (getFailedPlugins(results).length) {
       throw new UnprocessableEntityException(failureMessage)

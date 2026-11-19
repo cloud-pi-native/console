@@ -70,7 +70,7 @@ describe('projectRolesService', () => {
         projectId,
       }),
     }))
-    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', expect.anything(), { action: 'Upsert Project Role' })
+    expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('projectRole.upsert', expect.anything(), { action: 'Upsert Project Role' })
   })
 
   it('rejects system role creation', async () => {
@@ -162,7 +162,7 @@ describe('projectRolesService', () => {
     await service.delete(roleId)
 
     expect(tx.projectMembers.update).toHaveBeenCalledTimes(2)
-    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', expect.anything(), { action: 'Upsert Project Role' })
+    expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('projectRole.delete', expect.anything(), { action: 'Upsert Project Role' })
   })
 
   it('rejects system role deletion', async () => {
