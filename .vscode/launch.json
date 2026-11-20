@@ -45,18 +45,18 @@
       ]
     },
     {
-      "name": "Launch Server NestJS (Integ)",
+      "name": "Launch Backend (Integ)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
       "runtimeArgs": [
         "pnpm",
         "--filter",
-        "@cpn-console/server-nestjs",
+        "@cpn-console/backend",
         "run",
         "integ"
       ],
-      "envFile": "${workspaceFolder}/apps/server-nestjs/.env.integ",
+      "envFile": "${workspaceFolder}/apps/backend/.env.integ",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -68,18 +68,18 @@
       ]
     },
     {
-      "name": "Launch Server NestJS (Dev)",
+      "name": "Launch Backend (Dev)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "corepack",
       "runtimeArgs": [
         "pnpm",
         "--filter",
-        "@cpn-console/server-nestjs",
+        "@cpn-console/backend",
         "run",
         "start:dev"
       ],
-      "envFile": "${workspaceFolder}/apps/server-nestjs/.env",
+      "envFile": "${workspaceFolder}/apps/backend/.env",
       "console": "integratedTerminal",
       "restart": true,
       "presentation": {
@@ -96,8 +96,8 @@
       "request": "attach",
       "port": 9229,
       "address": "127.0.0.1",
-      "localRoot": "${workspaceFolder}/apps/server-nestjs",
-      "remoteRoot": "/app/apps/server-nestjs",
+      "localRoot": "${workspaceFolder}/apps/backend",
+      "remoteRoot": "/app/apps/backend",
       "skipFiles": [
         "<node_internals>/**",
         "${workspaceFolder}/node_modules/**/*.js"
@@ -244,7 +244,7 @@
       "name": "Launch (Chrome) (Integ)",
       "configurations": [
         "Launch Infra (Integ)",
-        "Launch Server NestJS (Integ)",
+        "Launch Backend (Integ)",
         "Serve Client (Chrome) (Integ)"
       ]
     },
@@ -252,7 +252,7 @@
       "name": "Launch (Chrome) (Dev)",
       "configurations": [
         "Launch Infra (Dev)",
-        "Launch Server NestJS (Dev)",
+        "Launch Backend (Dev)",
         "Serve Client (Chrome) (Dev)"
       ]
     },
@@ -260,7 +260,7 @@
       "name": "Launch (Firefox) (Integ)",
       "configurations": [
         "Launch Infra (Integ)",
-        "Launch Server NestJS (Integ)",
+        "Launch Backend (Integ)",
         "Serve Client (Firefox) (Integ)"
       ]
     },
@@ -268,7 +268,7 @@
       "name": "Launch (Firefox) (Dev)",
       "configurations": [
         "Launch Infra (Dev)",
-        "Launch Server NestJS (Dev)",
+        "Launch Backend (Dev)",
         "Serve Client (Firefox) (Dev)"
       ]
     }

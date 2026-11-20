@@ -13,8 +13,8 @@ WORKDIR /app
 COPY --chown=node:node package.json ./
 COPY --chown=node:node pnpm-workspace.yaml pnpm-lock.yaml ./
 
-# Manifestes des packages workspace dont server-nestjs dépend
-COPY --chown=node:node apps/server-nestjs/package.json    ./apps/server-nestjs/package.json
+# Manifestes des packages workspace dont backend dépend
+COPY --chown=node:node apps/backend/package.json    ./apps/backend/package.json
 
 COPY --chown=node:node packages/eslintconfig/package.json ./packages/eslintconfig/package.json
 COPY --chown=node:node packages/shared/package.json       ./packages/shared/package.json
@@ -33,32 +33,32 @@ RUN pnpm install --frozen-lockfile
 
 # Copier les sources des packages workspace
 COPY --chown=node:node packages/ ./packages/
-COPY --chown=node:node apps/server-nestjs/ ./apps/server-nestjs/
+COPY --chown=node:node apps/backend/ ./apps/backend/
 
 RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 
 # Réinjecter les libs buildées dans node_modules (injectWorkspacePackages copie au moment de l'install)
-RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
+RUN pnpm --filter @cpn-console/backend install --frozen-lockfile
 
 # Générer le client Prisma (schéma multi-fichiers : il faut pointer sur le dossier)
-RUN pnpm --filter @cpn-console/server-nestjs exec prisma generate --schema=src/prisma/schema
+RUN pnpm --filter @cpn-console/backend exec prisma generate --schema=src/prisma/schema
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-ENTRYPOINT ["pnpm", "--filter", "server-nestjs", "run"]
+ENTRYPOINT ["pnpm", "--filter", "backend", "run"]
 CMD ["start:dev"]
 
 # Test-only fixture runner. Never part of the production image or its startup.
 FROM dev AS fixtures
 
 RUN pnpm --filter @cpn-console/test-utils run build
-RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
+RUN pnpm --filter @cpn-console/backend install --frozen-lockfile
 
 ENV NODE_ENV=test
 HEALTHCHECK NONE
-ENTRYPOINT ["sh", "-c", "pnpm --filter @cpn-console/server-nestjs run db:deploy && exec pnpm --filter @cpn-console/server-nestjs run db:fixtures --reset"]
+ENTRYPOINT ["sh", "-c", "pnpm --filter @cpn-console/backend run db:deploy && exec pnpm --filter @cpn-console/backend run db:fixtures --reset"]
 
 # Build stage ----------------------------------------------------------------------
 FROM dev AS build
@@ -70,13 +70,13 @@ RUN pnpm --filter @cpn-console/logger run build
 RUN pnpm --filter @cpn-console/shared run build
 
 # Réinjecter shared buildé dans node_modules (injectWorkspacePackages copie au moment de l'install)
-RUN pnpm --filter @cpn-console/server-nestjs install --frozen-lockfile
+RUN pnpm --filter @cpn-console/backend install --frozen-lockfile
 
-# Build server-nestjs
-RUN pnpm --filter @cpn-console/server-nestjs run build
+# Build backend
+RUN pnpm --filter @cpn-console/backend run build
 
-# Export @cpn-console/server-nestjs to target build directory
-RUN pnpm --filter @cpn-console/server-nestjs --prod deploy build
+# Export @cpn-console/backend to target build directory
+RUN pnpm --filter @cpn-console/backend --prod deploy build
 
 # Prod stage -----------------------------------------------------------------------
 FROM docker.io/node:26.12.1-trixie-slim AS prod
@@ -92,7 +92,7 @@ RUN mkdir -p /home/node/logs && chmod 770 -R /home/node/logs \
 
 # Copier l'artefact de build et les node_modules de production
 COPY --from=build --chown=node:node /app/build .
-COPY --from=build --chown=node:node /app/apps/server-nestjs/dist ./dist
+COPY --from=build --chown=node:node /app/apps/backend/dist ./dist
 
 # Regénérer le client Prisma dans l'image de production
 RUN npm run db:generate
@@ -103,7 +103,7 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/healthz', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
-# Appliquer les migrations de l'arbre Prisma server-nestjs avant de démarrer
+# Appliquer les migrations de l'arbre Prisma backend avant de démarrer
 # l'application : le legacy le fait via `prestart` -> `db:deploy`, sans quoi les
 # migrations propres à cet arbre ne sont jamais déployées.
 ENTRYPOINT ["sh", "-c", "npm run db:deploy && exec node dist/src/main"]

@@ -29,9 +29,9 @@ Depuis la racine, après installation des dépendances, compilation de `@cpn-con
 ```bash
 # Base locale jetable, préalablement démarrée.
 DOCKER=true INTEGRATION=false DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
-  pnpm --dir apps/server-nestjs run db:deploy
+  pnpm --dir apps/backend run db:deploy
 NODE_ENV=test DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
-  pnpm --dir apps/server-nestjs run db:fixtures --reset
+  pnpm --dir apps/backend run db:fixtures --reset
 ```
 
 Les données proviennent de `packages/test-utils/src/imports/data.ts`. Leur remplacement est
@@ -52,5 +52,5 @@ Pour rejouer les tests PostgreSQL sur une base jetable où les migrations ont é
 
 ```bash
 E2E=true FIXTURES_TEST_DB_URL=postgresql://admin:admin@localhost:5432/fixtures \
-  pnpm --dir apps/server-nestjs exec vitest run src/config/fixtures.config.spec.ts src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
+  pnpm --dir apps/backend exec vitest run src/config/fixtures.config.spec.ts src/prisma/fixtures-testing.utils.spec.ts test/fixtures.database.e2e-spec.ts
 ```

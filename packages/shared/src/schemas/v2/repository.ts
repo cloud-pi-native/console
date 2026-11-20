@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { invalidGitUrl, missingCredentials } from '../../utils/const.js'
 import { RepoSchema } from '../repository.js'
 
-// Schémas d'écriture des dépôts pour l'API v2 (server-nestjs). projectId provient
+// Schémas d'écriture des dépôts pour l'API v2 (backend). projectId provient
 // toujours du chemin, jamais du corps.
 
 // « Parse, don't validate » : collapser le tri-état d'entrée (url | '' | undefined) en

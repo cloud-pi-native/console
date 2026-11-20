@@ -1,9 +1,9 @@
 [
   {
-    "name": "server-nestjs",
+    "name": "backend",
     "build": {
       "context": "./",
-      "dockerfile": "./apps/server-nestjs/Dockerfile",
+      "dockerfile": "./apps/backend/Dockerfile",
       "target": "prod"
     }
   },

@@ -36,8 +36,8 @@ Afin de pouvoir démarrer l'application, il vous faudra également récupérer (
 
 - `apps/client/.env.docker`
 - `apps/client/.env.integ`
-- `apps/server-nestjs/.env.docker`
-- `apps/server-nestjs/.env.integ`
+- `apps/backend/.env.docker`
+- `apps/backend/.env.integ`
 
 Si vous ne les avez pas déjà, référez-vous à [`ENVIRONMENTS.md`](./ENVIRONMENTS.md) (singulier) qui est la documentation consacrée au sujet.
 
@@ -52,10 +52,10 @@ $ pnpm install
 # Initialiser la base de données PostgreSQL lancée localement
 $ pnpm db:generate
 
-# Construire les applications client et server-nestjs
+# Construire les applications client et backend
 $ pnpm build
 
-# Construire les images dockers client et server-nestjs, puis lancer la stack docker compose d'intégration
+# Construire les images dockers client et backend, puis lancer la stack docker compose d'intégration
 $ export KUBECONFIG_HOST_PATH="$HOME/.kube/config" && pnpm run docker:integ
 ```
 
@@ -70,7 +70,7 @@ Le serveur et le client sont livrés sous forme d'images [Docker](https://www.do
 
 ### API
 
-Le backend actif est `apps/server-nestjs`. Ses modules métier orchestrent les intégrations via des événements ; le client appelle directement ce backend, sans proxy de migration.
+Le backend actif est `apps/backend`. Ses modules métier orchestrent les intégrations via des événements ; le client appelle directement ce backend, sans proxy de migration.
 
 Les intégrations du backend couvrent notamment :
 
@@ -115,7 +115,7 @@ pnpm install
 ./ci/scripts/init-env.sh
 
 # Générer le client Prisma côté serveur
-pnpm --filter @cpn-console/server-nestjs run db:generate
+pnpm --filter @cpn-console/backend run db:generate
 
 # Construire tous les paquets applicatifs
 pnpm build
@@ -132,7 +132,7 @@ __Déploiement local du client et du serveur de la console, le reste dans des co
 pnpm run dev
 
 # Lancer le serveur dans un shell (la commande va afficher les logs)
-pnpm --filter @cpn-console/server-nestjs run start:dev
+pnpm --filter @cpn-console/backend run start:dev
 
 # Lancer le client dans un shell (la commande va afficher les logs)
 pnpm --filter @cpn-console/client run dev
@@ -173,7 +173,7 @@ __Déploiement local du client et du serveur de la console, le reste dans des co
 pnpm run integ
 
 # Lancer le serveur
-pnpm --filter @cpn-console/server-nestjs run integ
+pnpm --filter @cpn-console/backend run integ
 
 # Lancer le client
 pnpm --filter @cpn-console/client run integ
@@ -257,18 +257,18 @@ Les comptes utilisés pendant le développement sont les suivants :
 
 __Local / Docker:__
 
-Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/server-nestjs` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
+Les variables d'environnements sont gérées localement via des fichiers `.env` (local) / `.env.docker` (docker) dans les dossiers `./apps/backend` et `./apps/client`, aux précédents fichiers s'ajoute un fichier `.env.integ` utilisé pour le mode intégration (local et docker).
 
 ### Base de données
 
-Les migrations [Prisma](https://www.prisma.io/) sont conservées dans `apps/server-nestjs/src/prisma/migrations` et appliquées au démarrage du backend.
+Les migrations [Prisma](https://www.prisma.io/) sont conservées dans `apps/backend/src/prisma/migrations` et appliquées au démarrage du backend.
 
 ```shell
 # Appliquer explicitement les migrations
-pnpm --filter @cpn-console/server-nestjs run db:deploy
+pnpm --filter @cpn-console/backend run db:deploy
 ```
 
-Les données de démonstration ne sont plus chargées au démarrage normal. Pour une base locale jetable, backends arrêtés, utiliser [les fixtures explicites](apps/server-nestjs/README.md#fixtures-de-développement-et-de-test). La stack CI les initialise via son service ponctuel `fixtures`.
+Les données de démonstration ne sont plus chargées au démarrage normal. Pour une base locale jetable, backends arrêtés, utiliser [les fixtures explicites](apps/backend/README.md#fixtures-de-développement-et-de-test). La stack CI les initialise via son service ponctuel `fixtures`.
 
 ### Débogage avec VS Code
 
@@ -291,7 +291,7 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 
 **Exemple avec Chrome DevTools :**
 
-1. Lancez le serveur en mode debug (voir section précédente pour Docker, ou `pnpm --filter @cpn-console/server-nestjs run start:debug` en local).
+1. Lancez le serveur en mode debug (voir section précédente pour Docker, ou `pnpm --filter @cpn-console/backend run start:debug` en local).
 2. Ouvrez Chrome et naviguez vers `chrome://inspect`.
 3. Cliquez sur "Open dedicated DevTools for Node" ou attendez que votre target apparaisse sous "Remote Target".
 4. Vous pouvez maintenant mettre des points d'arrêt, inspecter les variables, etc.
@@ -300,7 +300,7 @@ Le serveur Node.js expose le port de débogage `9229` lorsqu'il est lancé en mo
 
 Ce dépôt utilise des fichiers docker-compose pour construire les images docker:
 
-- [docker-compose.local.yml](./docker/docker-compose.local.yml) pour le développement local (`client` et `server-nestjs` lancés localement ; leurs dépendances dans Docker)
+- [docker-compose.local.yml](./docker/docker-compose.local.yml) pour le développement local (`client` et `backend` lancés localement ; leurs dépendances dans Docker)
 - [docker-compose.dev.yml](./docker/docker-compose.dev.yml) pour la construction des images docker du mode développement.
 - [docker-compose.ci.yml](./docker/docker-compose.ci.yml) pour la construction des images docker utilisées dans nos pipelines d'Intégration Continue.
 
@@ -339,7 +339,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 
 - Les différentes briques applicatives se trouvent dans le dossier `apps/`.
 - Les bibliothèques additionnelles se trouvent dans le dossier `packages/`.
-- Les intégrations aux outils externes se trouvent dans `apps/server-nestjs/src/modules/integrations/`. Les anciens plugins legacy sont conservés dans l’historique Git.
+- Les intégrations aux outils externes se trouvent dans `apps/backend/src/modules/integrations/`. Les anciens plugins legacy sont conservés dans l’historique Git.
 
 *Schema de l'architecture du monorepo :*
 
@@ -347,7 +347,7 @@ La gestion des dépendances est effectuée à l'aide de [pnpm](https://pnpm.io/)
 ./
 ├── apps
 │   ├── client
-│   └── server-nestjs
+│   └── backend
 ├── packages
 │   ├── eslintconfig
 │   ├── shared

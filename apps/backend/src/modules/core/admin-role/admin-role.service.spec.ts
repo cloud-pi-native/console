@@ -1,7 +1,7 @@
-import { NotFoundException } from '@nestjs/common'
 import type { EventEmitter2 } from '@nestjs/event-emitter'
 import type { PrismaService } from '../../infrastructure/database/prisma.service'
 import { adminRoleContract } from '@cpn-console/shared'
+import { NotFoundException } from '@nestjs/common'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
 import { makeUser } from '../project/project-testing.utils'

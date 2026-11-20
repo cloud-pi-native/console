@@ -72,9 +72,17 @@ L’historique généré avant cette bascule est conservé, sans modification, d
 
 La procédure collecte la version stable cible, le tag candidat, le milestone exact et la MR Helm. Elle réconcilie ces preuves, présente une prévisualisation et n’écrit les fichiers qu’après validation humaine. L’absence de tag, de milestone ou de MR Helm bloque la préparation. Cette bascule n’ajoute ni contrôle CI ni automatisation par agent.
 
-Lorsqu'une préversion ou une version stable est créée, les images de conteneur des applications (`client`, `server-nestjs`, etc.) sont publiées dans la [registry GitHub du dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec le tag complet correspondant. Une version stable met aussi à jour les tags partiels `vX` et `vX.Y` ; ⚠️ Les RC ne touchent **jamais** à ces tags "mouvants". Ils sont là explicitement pour traquer la dernière version stable, majeure ou mineure.
+Lorsqu'une préversion ou une version stable est créée, les images de conteneur des applications (`client`, `backend`, etc.) sont publiées dans la [registry GitHub du dépôt](https://github.com/orgs/cloud-pi-native/packages?repo_name=console) avec le tag complet correspondant. Une version stable met aussi à jour les tags partiels `vX` et `vX.Y` ; ⚠️ Les RC ne touchent **jamais** à ces tags "mouvants". Ils sont là explicitement pour traquer la dernière version stable, majeure ou mineure.
 
 > Les tags complets (`vX.Y.Z`, `vX.Y.Z-rc` et `vX.Y.Z-rc.N`) sont immutables. Seuls les tags partiels stables (`vX` et `vX.Y`) sont recréés pour référencer la dernière version stable. Après une version stable, il est recommandé d'exécuter `git pull --tags --force` afin de recréer localement ces tags partiels.
+
+### Transition du nom de l’image backend
+
+Le nom canonique du backend est `backend` : dossier `apps/backend`, paquet `@cpn-console/backend` et image `ghcr.io/cloud-pi-native/console/backend`. Les versions antérieures au renommage restent disponibles sous leurs noms historiques ; ne pas supposer qu’un ancien tag existe sous le nouveau nom.
+
+Pendant la transition, la CI publie aussi les mêmes manifests et tags sous `ghcr.io/cloud-pi-native/console/server-nestjs`, sans seconde construction. Cet alias maintient les charts existants et les configurations de déploiement `latest`/preview. Les règles de tags immuables et de tags partiels restent identiques pour les deux noms.
+
+Le chart `dso-console` doit remplacer `backend.image.repository` par `ghcr.io/cloud-pi-native/console/backend` avec une `appVersion` dont l’image a effectivement été publiée sous ce nom. Les surcharges d’image des instances et les modèles de déploiement externes doivent être vérifiés avant de retirer l’alias dans un changement distinct. Ne pas modifier rétroactivement les anciens tags ni supprimer leurs images.
 
 ## Versionnement du chart Helm `dso-console`
 

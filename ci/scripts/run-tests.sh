@@ -138,7 +138,7 @@ if [ "$RUN_E2E_TESTS" == "true" ]; then
   npm --prefix $PROJECT_DIR/packages/test-utils run build
 
   if [[ -n "$TAG" ]]; then
-    docker pull ghcr.io/cloud-pi-native/console/server-nestjs:$TAG && docker tag ghcr.io/cloud-pi-native/console/server-nestjs:$TAG dso-console/server-nestjs:ci
+    docker pull ghcr.io/cloud-pi-native/console/backend:$TAG && docker tag ghcr.io/cloud-pi-native/console/backend:$TAG dso-console/backend:ci
     docker pull ghcr.io/cloud-pi-native/console/client:$TAG && docker tag ghcr.io/cloud-pi-native/console/client:$TAG dso-console/client:ci
     docker pull ghcr.io/cloud-pi-native/console/opencds-mockoon:$TAG && docker tag ghcr.io/cloud-pi-native/console/opencds-mockoon:$TAG dso-console/opencds-mockoon:ci
   fi
