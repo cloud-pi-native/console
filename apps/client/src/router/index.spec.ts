@@ -1,7 +1,8 @@
 import type { ProjectV2 } from '@cpn-console/shared'
 import { faker } from '@faker-js/faker'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 import { useUserStore } from '@/stores/user.js'
 import { createAppRouter, detectProjectslug, routes } from './index.js'
@@ -103,6 +104,42 @@ describe('router index', () => {
       await router.isReady()
 
       expect(router.currentRoute.value.matched.some(r => r.name === 'Projects')).toBe(true)
+    })
+
+    it('still navigates when settings loading fails', async () => {
+      const router = createAppRouter('')
+      const userStore = useUserStore()
+      const systemStore = useSystemSettingsStore()
+      const snackbarStore = useSnackbarStore()
+      const setMessage = vi.spyOn(snackbarStore, 'setMessage')
+
+      userStore.isLoggedIn = true
+      userStore.setIsLoggedIn = async () => {}
+      systemStore.listSystemSettings = async () => { throw new Error('settings indisponibles') }
+
+      await router.push('/projects')
+      await router.isReady()
+
+      expect(router.currentRoute.value.matched.some(r => r.name === 'Projects')).toBe(true)
+      expect(setMessage).toHaveBeenCalledTimes(1)
+      expect(setMessage).toHaveBeenCalledWith('settings indisponibles', 'error')
+    })
+
+    it('still navigates when the session check fails', async () => {
+      const router = createAppRouter('')
+      const userStore = useUserStore()
+      const snackbarStore = useSnackbarStore()
+      const setMessage = vi.spyOn(snackbarStore, 'setMessage')
+
+      userStore.isLoggedIn = false
+      userStore.setIsLoggedIn = async () => { throw new Error('session indisponible') }
+
+      await router.push('/')
+      await router.isReady()
+
+      expect(router.currentRoute.value.name).toEqual('Home')
+      expect(setMessage).toHaveBeenCalledTimes(1)
+      expect(setMessage).toHaveBeenCalledWith('session indisponible', 'error')
     })
   })
 })
