@@ -1,6 +1,7 @@
 import type { CreateProjectBody, projectContract } from '@cpn-console/shared'
 import type { Prisma } from '@prisma/client'
 import type { ProjectWithDetails } from './project-queries.utils'
+import { randomUUID } from 'node:crypto'
 import { PROJECT_PERMS, ProjectSchemaV2, ProjectStatusSchema } from '@cpn-console/shared'
 import { ProjectStatus } from '@prisma/client'
 import { z } from 'zod'
@@ -20,6 +21,7 @@ export function generateProjectCreateInput(
   ownerId: string,
   slug: string,
 ): Prisma.ProjectCreateInput {
+  const ownerRoleId = randomUUID()
   return {
     name: data.name,
     slug,
@@ -34,9 +36,13 @@ export function generateProjectCreateInput(
     prodGpu: data.prodGpu,
     prodMemory: data.prodMemory,
     owner: { connect: { id: ownerId } },
+    members: {
+      create: [{ userId: ownerId, roleIds: [ownerRoleId] }],
+    },
     roles: {
       create: [
         {
+          id: ownerRoleId,
           name: 'Propriétaire',
           permissions: PROJECT_PERMS.MANAGE,
           position: 0,
