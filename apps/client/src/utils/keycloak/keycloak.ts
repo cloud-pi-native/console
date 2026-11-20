@@ -28,7 +28,9 @@ export function getKeycloak() {
   if (!keycloak) {
     keycloak = new Keycloak(keycloakConfig)
     keycloak.onAuthSuccess = () => {
-      if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp > keycloak.tokenParsed.exp)) {
+      // Issue #2593: realm contract checked at initial login — refreshes fire
+      // onAuthRefreshSuccess, never a second onAuthSuccess.
+      if (!(keycloak.refreshTokenParsed?.exp && keycloak.tokenParsed?.exp && keycloak.refreshTokenParsed.exp <= keycloak.tokenParsed.exp)) {
         return
       }
       logger.warn('Keycloak misconfiguration: refreshToken should not expire before token')
