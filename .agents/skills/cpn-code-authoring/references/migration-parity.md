@@ -1,6 +1,6 @@
 # Migration parity (strangler-fig)
 
-Referenced from `SKILL.md`. Rules apply when comparing `apps/server-nestjs`
+Referenced from `SKILL.md`. Rules apply when comparing `apps/backend`
 with the removed Fastify `apps/server`, available in Git history only.
 - Every `eventEmitter.emitAsync('<entity>.<verb>')` needs a matching
   `@OnEvent` consumer bridging to `capturePluginResult`; the Fastify->Nest

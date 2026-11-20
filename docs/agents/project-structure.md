@@ -3,8 +3,8 @@
 Read when locating code or understanding workspace boundaries.
 
 - `apps/client`: Vue 3 + Vite + vue-dsfr (French government design system), Pinia, UnoCSS.
-- `apps/server-nestjs`: NestJS backend with Prisma (PostgreSQL) and shared @ts-rest API contracts; the only backend target.
-- `apps/server-nestjs/src/modules/integrations/`: internal integrations with external services.
+- `apps/backend`: NestJS backend with Prisma (PostgreSQL) and shared @ts-rest API contracts; the only backend target.
+- `apps/backend/src/modules/integrations/`: internal integrations with external services.
 - The legacy server, nginx strangler and standalone plugins are removed. Use Git history for legacy comparisons.
 - `packages/shared`: API contracts (@ts-rest), types, permissions (BigInt bitmasks).
 - `packages/test-utils`, `packages/eslintconfig`, `packages/tsconfig`: shared test and tooling configuration.

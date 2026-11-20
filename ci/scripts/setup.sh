@@ -23,7 +23,7 @@ pnpm install
 printf "\n${red}${i}.${no_color} Generate Prisma client\n"
 i=$(($i + 1))
 
-pnpm --filter=@cpn-console/server-nestjs run db:generate
+pnpm --filter=@cpn-console/backend run db:generate
 
 
 printf "\n${red}${i}.${no_color} Build packges\n"

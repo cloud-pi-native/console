@@ -36,7 +36,7 @@ An unmet requirement is a reported blocker, never a silent scope change.
    behavior issue and Merge Queue status: regular pushes make drift expected
    and the Merge Queue performs the rebase. Only report a concrete conflict or
    behavior issue demonstrated by integration.
-2. **High-level** — architecture fit: `apps/server-nestjs` is the only
+2. **High-level** — architecture fit: `apps/backend` is the only
    backend target; legacy `apps/server` is available only in Git history. API contracts in
    `packages/shared`; hook lifecycle `pre → main → post` with `revert` on
    failure; permission checks at the router via BigInt bitmasks. Cross-check

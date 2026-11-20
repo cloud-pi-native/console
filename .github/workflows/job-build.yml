@@ -224,7 +224,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
         with:
-          images: ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}
+          # Keep existing charts and image consumers working during the backend rename.
+          # Both names receive the same manifest; no second build is performed.
+          images: |
+            ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}
+            ${{ matrix.images.name == 'backend' && format('{0}/{1}/server-nestjs', inputs.REGISTRY, inputs.NAMESPACE) || '' }}
           tags: |
             type=raw,value=${{ needs.matrix.outputs.lower-branch }},enable=${{ github.head_ref != 'main' }}
             type=raw,value=${{ inputs.TAG }},enable=${{ inputs.TAG != '' && inputs.TAG != '..' }}
@@ -250,6 +254,13 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/${{ matrix.images.name }}:${{ steps.meta.outputs.version }}
+
+      - name: Verify backend compatibility manifest
+        if: ${{ matrix.images.name == 'backend' }}
+        run: |
+          docker buildx imagetools inspect --raw ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/backend:${{ steps.meta.outputs.version }} > backend-manifest.json
+          docker buildx imagetools inspect --raw ${{ inputs.REGISTRY }}/${{ inputs.NAMESPACE }}/server-nestjs:${{ steps.meta.outputs.version }} > compatibility-manifest.json
+          cmp backend-manifest.json compatibility-manifest.json
 
   preview:
     name: Redeploy preview app

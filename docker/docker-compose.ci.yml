@@ -49,29 +49,29 @@ services:
   fixtures:
     build:
       context: ..
-      dockerfile: apps/server-nestjs/Dockerfile
+      dockerfile: apps/backend/Dockerfile
       target: fixtures
-    image: dso-console/server-nestjs:fixtures
+    image: dso-console/backend:fixtures
     container_name: dso-console_fixtures
     depends_on:
       postgres:
         condition: service_healthy
     env_file:
-      - ../apps/server-nestjs/.env.docker
+      - ../apps/backend/.env.docker
     environment:
       NODE_ENV: test
       INTEGRATION: "false"
     networks:
       - dso-network
 
-  server-nestjs:
+  backend:
     restart: unless-stopped
     build:
       context: ..
-      dockerfile: apps/server-nestjs/Dockerfile
+      dockerfile: apps/backend/Dockerfile
       target: prod
-    image: dso-console/server-nestjs:ci
-    container_name: dso-console_server-nestjs
+    image: dso-console/backend:ci
+    container_name: dso-console_backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -82,7 +82,7 @@ services:
       fixtures:
         condition: service_completed_successfully
     env_file:
-      - ../apps/server-nestjs/.env.docker
+      - ../apps/backend/.env.docker
     environment:
       NODE_ENV: 'production'
       CI: 'true'
@@ -100,7 +100,7 @@ services:
     image: dso-console/client:ci
     container_name: dso-console_client
     depends_on:
-      server-nestjs:
+      backend:
         condition: service_healthy
     ports:
       - 8080:8080

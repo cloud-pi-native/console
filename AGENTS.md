@@ -5,7 +5,7 @@ Cloud Pi Native Console is a pnpm monorepo with a Vue client, a NestJS backend, 
 - Toolchain: Node.js 26.x and pnpm 11.8.0 (`package.json`).
 - Build: `pnpm build` (recursive workspace builds).
 - Client typecheck: `pnpm --filter @cpn-console/client type-check`; `pnpm lint:ts` runs ESLint, not the TypeScript compiler.
-- `apps/server-nestjs` is the only modifiable backend target; legacy `apps/server`, `apps/nginx-strangler` and `plugins/` were removed. Use Git history for legacy comparisons.
+- `apps/backend` is the only modifiable backend target; legacy `apps/server`, `apps/nginx-strangler` and `plugins/` were removed. Use Git history for legacy comparisons.
 
 ## Task-specific instructions
 

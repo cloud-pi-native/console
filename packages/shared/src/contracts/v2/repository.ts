@@ -6,7 +6,7 @@ import { RepoSchema } from '../../schemas/repository.js'
 import { CreateRepositorySchema, SyncRepositorySchema, UpdateRepositorySchema } from '../../schemas/v2/repository.js'
 import { baseHeaders, ErrorSchema } from '../_utils.js'
 
-// Contrat des dépôts pour l'API v2 (server-nestjs). projectId est porté par le chemin.
+// Contrat des dépôts pour l'API v2 (backend). projectId est porté par le chemin.
 // NB: les clés de routes servent d'operationId OpenAPI (setOperationId: true) et
 // doivent être uniques sur l'ensemble du contrat, d'où le suffixe V2.
 export const repositoryContractV2 = contractInstance.router({
