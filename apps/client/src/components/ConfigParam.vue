@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { DEFAULT, DISABLED, ENABLED } from '@cpn-console/shared'
+import { withDefaultMarker } from '@/utils/config-default-marker.js'
 
 const props = defineProps<{
   options: {
@@ -9,13 +10,14 @@ const props = defineProps<{
     disabled: boolean
     kind: 'text' | 'switch'
     placeholder: string | undefined
+    initialValue?: string
   }
 }>()
 
 const emit = defineEmits<{
   update: [data: string]
 }>()
-const switchOptions = [
+const switchOptions = withDefaultMarker([
   {
     label: 'Activé',
     value: ENABLED,
@@ -28,7 +30,7 @@ const switchOptions = [
     label: 'Désactivé',
     value: DISABLED,
   },
-]
+], props.options.initialValue)
 
 const value = ref(props.options.value)
 
