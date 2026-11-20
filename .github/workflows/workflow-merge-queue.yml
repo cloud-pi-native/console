@@ -151,6 +151,7 @@ jobs:
       - lint
       - unit-tests
       - build
+      - playwright-tests
       - scan-vuln
     steps:
       - name: Check status of all required jobs
