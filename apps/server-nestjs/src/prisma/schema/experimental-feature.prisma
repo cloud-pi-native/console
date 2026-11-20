@@ -1,0 +1,23 @@
+model ExperimentalFeatureTarget {
+  id         String                     @id @default(uuid()) @db.Uuid
+  featureKey String                     @default("opencds")
+  scopeKind  String
+  scopeId    String
+  requested  Boolean                    @default(false)
+  revision   Int                        @default(0)
+  events     ExperimentalFeatureEvent[]
+
+  @@unique([featureKey, scopeKind, scopeId])
+}
+
+model ExperimentalFeatureEvent {
+  id        String                    @id @default(uuid()) @db.Uuid
+  targetId  String                    @db.Uuid
+  revision  Int
+  action    String
+  actorId   String                    @db.Uuid
+  createdAt DateTime                  @default(now())
+  target    ExperimentalFeatureTarget @relation(fields: [targetId], references: [id])
+
+  @@unique([targetId, revision])
+}
