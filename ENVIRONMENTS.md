@@ -245,6 +245,9 @@ pnpm docker:dev
 | `HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS` | `-1` | Durée du robot `project-robot` (`-1` : jamais) |
 | `HARBOR_PROJECT_SLUG_CACHE_TTL_MS` | `300000` (5 min) | Cache TTL des slugs projet (ms) |
 
+> [!WARNING]
+> Migration depuis une version antérieure à `9.29.0` : la variable globale `HARBOR_ROBOT_EXPIRATION_DAYS` (défaut `90`) est remplacée par les trois durées par robot ci-dessus (`RO`/`RW` : `60`, `project` : `-1` jamais) et le seuil de rotation `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS` passe de `90` à `30`. La variable globale est ignorée : transposer explicitement son réglage vers `HARBOR_ROBOT_EXPIRATION_RO_DAYS` et `HARBOR_ROBOT_EXPIRATION_RW_DAYS` (`-1` pour conserver l'ancien comportement permanent). Un seuil personnalisé resté supérieur aux nouveaux défauts `60` fait échouer la validation au démarrage : abaisser `HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS` sous la plus petite durée configurée.
+
 ### Variables Nexus
 
 | Variable | Défaut | Description |

@@ -1,8 +1,19 @@
+import type { RuleTemplate } from '../../../config/harbor.config'
+import type {
+  HarborAccess,
+  HarborRetentionPolicy,
+  HarborRobotCreateRequest,
+} from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { RegistryResponse } from './registry-http-client.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
 import { HttpStatus } from '@nestjs/common'
 import z from 'zod'
+import {
+  HARBOR_ROLE_DEVELOPER,
+  HARBOR_ROLE_GUEST,
+  HARBOR_ROLE_PROJECT_ADMIN,
+} from './registry.constants'
 
 // Harbor signals an "already exists" race either as a plain HTTP 409
 // (project create) or as a 400 whose body carries code CONFLICT.
