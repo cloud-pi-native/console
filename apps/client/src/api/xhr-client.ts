@@ -19,14 +19,33 @@ export const apiClient = await getApiClient(
       return tsRestFetchApi(args)
     }
 
-    // Generate token
     const keycloak = getKeycloak()
-    const token = keycloak.token
-    if (token) {
-      args.headers.Authorization = `Bearer ${token}`
+    const attachTokenAndSend = async (): Promise<{ status: number, body: { status: number, error: string } | unknown, headers: Headers }> => {
+      const token = keycloak.token
+      if (token) {
+        args.headers.Authorization = `Bearer ${token}`
+      }
+      return tsRestFetchApi(args)
     }
 
-    return tsRestFetchApi(args)
+    try {
+      // no-op si le token reste valide plus de 30 s ; rattrape le timer passif
+      // `onTokenExpired`, throttlé quand l'onglet est en arrière-plan
+      await keycloak.updateToken(30)
+    } catch {
+      // le 401 ci-dessous déclenche le retry, inutile d'échouer ici
+    }
+
+    let response = await attachTokenAndSend()
+    if (response.status === 401 && keycloak.authenticated) {
+      try {
+        await keycloak.updateToken(-1)
+      } catch {
+        // on renvoie quand même, le 401 remontera à l'appelant
+      }
+      response = await attachTokenAndSend()
+    }
+    return response
   },
 )
 
