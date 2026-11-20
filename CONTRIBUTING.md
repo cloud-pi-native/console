@@ -86,9 +86,9 @@ explicite de l'équipe CPIN.
 
 ## Cibler le backend approuvé
 
-Les évolutions backend ciblent exclusivement `apps/server-nestjs`. Elles
+Les évolutions backend ciblent exclusivement `apps/backend`. Elles
 suivent les conventions NestJS et la stratégie de tests décrites dans
-[AGENTS.md](AGENTS.md) et la [documentation du backend](apps/server-nestjs/README.md).
+[AGENTS.md](AGENTS.md) et la [documentation du backend](apps/backend/README.md).
 Toute dérogation est une décision explicite de l'équipe CPIN, hors du flux normal de contribution.
 
 ## Respecter l'architecture et la qualité
@@ -96,7 +96,7 @@ Toute dérogation est une décision explicite de l'équipe CPIN, hors du flux no
 Respectez les frontières et conventions de la zone modifiée :
 
 - le frontend Vue 3 et le système de design existant ;
-- les modules NestJS et Prisma dans `apps/server-nestjs` pour le backend ;
+- les modules NestJS et Prisma dans `apps/backend` pour le backend ;
 - les contrats partagés, permissions et schémas de données ;
 - les plugins et leurs mécanismes de cycle de vie lorsqu'ils sont concernés.
 
@@ -132,7 +132,7 @@ Consultez et citez les références appropriées dans le ticket :
 
 - La [documentation publique Cloud Pi Native](https://github.com/cloud-pi-native/documentation), notamment l'[introduction de la plateforme](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/introduction.md) et la [feuille de route](https://github.com/cloud-pi-native/documentation/blob/main/docs/platform/roadmap.md) ;
 - L'[architecture et les conventions du dépôt](README.md) ;
-- La [documentation du backend NestJS](apps/server-nestjs/README.md) ;
+- La [documentation du backend NestJS](apps/backend/README.md) ;
 
 La feuille de route publique est actuellement en cours de rédaction. Son
 indisponibilité ne bloque pas la qualification : le ticket doit alors exposer

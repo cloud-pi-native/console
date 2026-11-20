@@ -16,13 +16,13 @@ Before reporting completion, run these in order:
 2. `pnpm lint`
 3. Targeted Vitest specs for the affected behavior; `pnpm test` runs all unit tests.
 
-Vitest tests are colocated `*.spec.ts` files across `apps/server-nestjs`,
-`apps/client` and shared packages; backend E2E specs also live in `apps/server-nestjs/test/`.
+Vitest tests are colocated `*.spec.ts` files across `apps/backend`,
+`apps/client` and shared packages; backend E2E specs also live in `apps/backend/test/`.
 
 Tooling conventions:
 
 - ESLint flat configuration based on `@antfu/eslint-config`; the version is defined in `pnpm-workspace.yaml`.
-- No Prettier except in `server-nestjs`.
+- No Prettier except in `backend`.
 - Stylelint for client CSS/Vue.
 
 ## Playwright E2E

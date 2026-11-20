@@ -39,14 +39,14 @@ services:
       - dso-network
     attach: false
 
-  server-nestjs:
+  backend:
     restart: unless-stopped
     build:
       context: ..
-      dockerfile: apps/server-nestjs/Dockerfile
+      dockerfile: apps/backend/Dockerfile
       target: dev
-    image: dso-console/server-nestjs:integ
-    container_name: dso-console_server-nestjs
+    image: dso-console/backend:integ
+    container_name: dso-console_backend
     command: [start:dev]
     depends_on:
       postgres:
@@ -58,13 +58,13 @@ services:
     volumes:
       - ${KUBECONFIG_HOST_PATH}:${KUBECONFIG_PATH:-/home/node/.kube/config}
     env_file:
-      - ../apps/server-nestjs/.env.docker
-      - ../apps/server-nestjs/.env.integ
+      - ../apps/backend/.env.docker
+      - ../apps/backend/.env.integ
     develop:
       watch:
         - action: sync
-          path: ../apps/server-nestjs
-          target: /app/apps/server-nestjs
+          path: ../apps/backend
+          target: /app/apps/backend
           ignore:
             - node_modules/
             - .env
@@ -77,7 +77,7 @@ services:
           ignore:
             - node_modules/
         - action: rebuild
-          path: ../apps/server-nestjs/package.json
+          path: ../apps/backend/package.json
     networks:
       - dso-network
     attach: true
@@ -91,7 +91,7 @@ services:
     image: dso-console/client:integ
     container_name: dso-console_client
     depends_on:
-      server-nestjs:
+      backend:
         condition: service_healthy
     ports:
       - 8080:8080

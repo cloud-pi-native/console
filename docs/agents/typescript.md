@@ -6,7 +6,7 @@ Read when writing TypeScript or changing compiler configuration.
 
 - Shared base: `packages/tsconfig/tsconfig.base.json` — ESNext, NodeNext, strict, `@/*` → `src/*` alias.
 - Client: does not extend the shared base; uses `Bundler` module resolution.
-- `server-nestjs`: standalone configuration with `emitDecoratorMetadata` and `experimentalDecorators`.
+- `backend`: standalone configuration with `emitDecoratorMetadata` and `experimentalDecorators`.
 
 ## Type safety
 

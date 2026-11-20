@@ -157,7 +157,7 @@ jobs:
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.sources=apps,packages
             -Dsonar.javascript.node.maxspace=4096
-            -Dsonar.javascript.lcov.reportPaths=coverage/apps/server-nestjs/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/apps/backend/coverage/lcov.info,coverage/apps/client/coverage/lcov.info,coverage/packages/shared/coverage/lcov.info
             -Dsonar.coverage.exclusions=**/*.spec.js,**/*.spec.ts,**/*.vue,**/assets/**,**/packages/test-utils/**
             -Dsonar.cpd.exclusions=**/*.spec.js,**/*.spec.ts
             -Dsonar.scm.provider=git
