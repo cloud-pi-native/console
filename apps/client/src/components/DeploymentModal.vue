@@ -4,11 +4,10 @@ import type {
   Deployment,
   Environment,
   Stage,
-  UpdateDeployment,
-  UpdateDeploymentSource,
   Zone,
 } from '@cpn-console/shared'
 import type { DsfrRadioButtonProps } from '@gouvminint/vue-dsfr'
+import type { DeploymentDraft, DeploymentSourceDraft } from '@/utils/deployment-draft'
 import type { Project } from '@/utils/project-utils.js'
 import { CreateDeploymentSchema, DeploymentSchema, longestDeploymentName, UpdateDeploymentSchema } from '@cpn-console/shared'
 import { useSnackbarStore } from '@/stores/snackbar'
@@ -39,11 +38,11 @@ const options: ComputedRef<Omit<DsfrRadioButtonProps, 'modelValue'>[]> = compute
   })),
 )
 
-function toDraft(source?: Deployment) {
+function toDraft(source?: Deployment): DeploymentDraft {
   return source ? toDeploymentDraft(source) : { projectId: props.project.id, autosync: true }
 }
 
-const deployment = ref<Partial<UpdateDeployment & { id: string }>>(toDraft(props.deployment))
+const deployment = ref<DeploymentDraft>(toDraft(props.deployment))
 
 // Also watch `opened`: reopening the same card leaves props.deployment identical,
 // so the form must be rebuilt on open, not only when the selection changes.
@@ -54,7 +53,7 @@ watch([() => props.deployment, () => props.opened], ([newValue, isOpened]) => {
 
 const deploymentSourcesModel = computed({
   get: () => deployment.value?.deploymentSources ?? [],
-  set: (value: UpdateDeploymentSource[]) =>
+  set: (value: DeploymentSourceDraft[]) =>
     deployment.value = { ...deployment.value, deploymentSources: value },
 })
 

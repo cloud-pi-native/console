@@ -22,7 +22,7 @@ export function makeProjectDeploymentSource(
     helmValuesFiles: '',
     repository: makeProjectRepository(),
     internalValueSources: [],
-    externalValueSource: null,
+    externalValuesRef: null,
     ...overrides,
   } satisfies ProjectWithDetails['deployments'][number]['deploymentSources'][number]
 }
@@ -37,17 +37,26 @@ export function makeProjectInternalValueSource(
   } satisfies ProjectWithDetails['deployments'][number]['deploymentSources'][number]['internalValueSources'][number]
 }
 
-export function makeProjectExternalValueSource(
-  overrides: Partial<NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']>> = {},
-): NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']> {
+export function makeProjectExternalValuesRef(
+  overrides: Partial<NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']>> = {},
+): NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']> {
   return {
-    order: 0,
-    path: 'values.yaml',
     ref: '',
     targetRevision: '',
     repository: { internalRepoName: faker.word.noun() },
+    valueSources: [],
     ...overrides,
-  } satisfies NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValueSource']>
+  } satisfies NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']>
+}
+
+export function makeProjectExternalValueSource(
+  overrides: Partial<NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']>['valueSources'][number]> = {},
+): NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']>['valueSources'][number] {
+  return {
+    order: 0,
+    path: 'values.yaml',
+    ...overrides,
+  } satisfies NonNullable<ProjectWithDetails['deployments'][number]['deploymentSources'][number]['externalValuesRef']>['valueSources'][number]
 }
 
 export function makeProjectDeployment(
@@ -66,7 +75,7 @@ export function makeProjectDeployment(
         helmValuesFiles: '',
         repository: makeProjectRepository(),
         internalValueSources: [],
-        externalValueSource: null,
+        externalValuesRef: null,
       },
     ],
     ...overrides,

@@ -19,6 +19,7 @@ import {
   makeProjectDeploymentSource,
   makeProjectEnvironment,
   makeProjectExternalValueSource,
+  makeProjectExternalValuesRef,
   makeProjectInternalValueSource,
   makeProjectRepository,
   makeProjectWithDetails,
@@ -755,12 +756,14 @@ describe('argoCDService', () => {
               internalValueSources: [
                 makeProjectInternalValueSource({ order: 0, path: 'values.yaml' }),
               ],
-              externalValueSource: makeProjectExternalValueSource({
-                order: 1,
+              externalValuesRef: makeProjectExternalValuesRef({
                 ref: 'infra-values',
-                path: 'envs/dev/values.yaml',
                 targetRevision: 'main',
                 repository: { internalRepoName: 'infra-values' },
+                valueSources: [
+                  makeProjectExternalValueSource({ order: 1, path: 'envs/dev/values.yaml' }),
+                  makeProjectExternalValueSource({ order: 2, path: 'envs/dev/secrets.yaml' }),
+                ],
               }),
             }),
           ],
@@ -797,6 +800,13 @@ describe('argoCDService', () => {
         repoURL: 'https://gitlab.internal/group/project-1/infra-values.git',
         targetRevision: 'main',
         path: 'envs/dev/values.yaml',
+      },
+      {
+        type: 'external',
+        ref: 'infra-values',
+        repoURL: 'https://gitlab.internal/group/project-1/infra-values.git',
+        targetRevision: 'main',
+        path: 'envs/dev/secrets.yaml',
       },
     ])
   })
