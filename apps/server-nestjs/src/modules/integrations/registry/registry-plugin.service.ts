@@ -12,7 +12,7 @@ import { VaultClientService } from '../vault/vault-client.service'
 import { RegistryClientService } from './registry-client.service'
 import { RegistryDatastoreService } from './registry-datastore.service'
 import { PLUGIN_NAME, REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT } from './registry.constants'
-import { createProjectSlugCacheKey } from './registry.utils'
+import { createProjectSlugCacheKey, formatRobotDuration } from './registry.utils'
 
 @Injectable()
 export class RegistryPluginService {
@@ -179,8 +179,4 @@ export class RegistryPluginService {
       ...robot,
     }
   }
-}
-
-function formatRobotDuration(days: number): string {
-  return days < 0 ? 'jamais' : `${days} jours`
 }
