@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config'
 import z from 'zod'
-import { csv, truthySchema } from './config.utils'
 import { DEFAULT_DSO_ENV_CHART_VERSION, DEFAULT_DSO_NS_CHART_VERSION } from '../modules/integrations/argocd/argocd.constants'
+import { csv, truthySchema } from './config.utils'
 
 const argocdFeatureSchema = z.object({
   ARGO_NAMESPACE: z.string().default('argocd'),

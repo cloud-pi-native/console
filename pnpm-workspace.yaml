@@ -31,7 +31,7 @@ trustPolicyExclude:
 packages:
   - packages/**
   - apps/client
-  - apps/server-nestjs
+  - apps/backend
   - playwright/**
 overrides:
   "@fastify/static@9.1.3": ">=10.1.2 <11"

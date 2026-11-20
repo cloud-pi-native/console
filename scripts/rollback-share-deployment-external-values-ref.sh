@@ -83,4 +83,4 @@ DELETE FROM "_prisma_migrations" WHERE "migration_name" = '20261116120000_share_
 COMMIT;
 SQL
 
-echo "Done. Deploy the previous server image, or regenerate the Prisma client locally (pnpm --dir apps/server-nestjs db:generate)."
+echo "Done. Deploy the previous server image, or regenerate the Prisma client locally (pnpm --dir apps/backend db:generate)."

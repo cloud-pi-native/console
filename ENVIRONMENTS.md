@@ -6,15 +6,16 @@ Comme vous aurez pu le constater, il y a beaucoup de choses à configurer pour u
 
 ## Backend unique dans les stacks de développement et de CI
 
-Le client joint directement `apps/server-nestjs` sur le port `3001` : via Vite en développement, ou via le Nginx client dans la stack CI.
+Le client joint directement `apps/backend` sur le port `3001` : via Vite en développement, ou via le Nginx client dans la stack CI.
 
 ```text
-Navigateur → client:8080 → server-nestjs:3001
+Navigateur → client:8080 → backend:3001
 ```
 
-- API : `/api/*`. Swagger maintenu : `/swagger-ui-server-nestjs` et son document `-json`.
+- API : `/api/*`. Swagger maintenu : `/swagger-ui-server-nestjs` et son document `-json`. Cette URL publique conserve son nom historique pour éviter une rupture de liens ; elle est servie par `backend`.
 - Les réglages de proxy nécessaires restent dans le client : en-têtes de transfert, WebSocket et gros en-têtes Keycloak. Swagger legacy reste indisponible.
-- Après mise à jour, adapter les fichiers actifs `apps/client/.env` et `.env.docker` : `SERVER_HOST=localhost` en natif, `SERVER_HOST=server-nestjs` dans Docker, `SERVER_PORT=3001` dans les deux cas. `init-env.sh` ne remplace pas les fichiers existants.
+- Après le renommage, déplacer les fichiers locaux ignorés `.env`, `.env.docker` et `.env.integ` de `apps/server-nestjs/` vers `apps/backend/` s’ils existent ; les templates sont déplacés, pas les configurations locales. Arrêter l’ancienne stack Compose avant de relancer les services `backend` pour éviter les conflits de ports et les conteneurs orphelins.
+- Après mise à jour, adapter les fichiers actifs `apps/client/.env` et `.env.docker` : `SERVER_HOST=localhost` en natif, `SERVER_HOST=backend` dans Docker, `SERVER_PORT=3001` dans les deux cas. `init-env.sh` ne remplace pas les fichiers existants.
 - Les sources legacy, du proxy et des anciens plugins sont retirées de l’arbre courant ; elles restent consultables dans l’historique Git. Un retour arrière exige les versions et configurations compatibles, sans garantie d’annulation des données ou des effets externes.
 - Le chargement de plugins externes est retiré : il n’est plus utilisé depuis l’internalisation du module Observability. Aucun répertoire externe n’est nécessaire ; une éventuelle réintroduction sera une décision distincte, voir [#3005](https://github.com/cloud-pi-native/console/issues/3005).
 - Le retrait en production, le chart et le guide opérationnel restent suivis par [#2895](https://github.com/cloud-pi-native/console/issues/2895). Cette configuration ne constitue pas une preuve de qualification en production.
@@ -25,16 +26,16 @@ Navigateur → client:8080 → server-nestjs:3001
 
 Avant de décrire dans le détail comment configurer les différents environments, il est important de rappeler les Cas d'Usage qui sont supportés par les scripts de CPiN:
 
-- **Développement totalement en local** : `client` et `server-nestjs` tournent nativement ; Docker fournit les dépendances.
-- **Développement conteneurisé en local** : `client`, `server-nestjs` et les dépendances tournent dans Docker.
-- **Développement conteneurisé hybride** : vous déployez localement seulement une partie de l'écosystème de `console` (`client` et/ou `server-nestjs`, de manière à utiliser votre code local) et pour le reste (Base de données de `console`, `keycloak`, `gitlab`, les clusters applicatifs, etc.), vous vous branchez à un environnement existant (appelé `integ` pour `INTEGRATION`). Ce cas d'usage est très pratique pour tester votre code avec de "vraies données" d'un environnement fonctionnel (comme notre environnement interne `cpin-hp`)
+- **Développement totalement en local** : `client` et `backend` tournent nativement ; Docker fournit les dépendances.
+- **Développement conteneurisé en local** : `client`, `backend` et les dépendances tournent dans Docker.
+- **Développement conteneurisé hybride** : vous déployez localement seulement une partie de l'écosystème de `console` (`client` et/ou `backend`, de manière à utiliser votre code local) et pour le reste (Base de données de `console`, `keycloak`, `gitlab`, les clusters applicatifs, etc.), vous vous branchez à un environnement existant (appelé `integ` pour `INTEGRATION`). Ce cas d'usage est très pratique pour tester votre code avec de "vraies données" d'un environnement fonctionnel (comme notre environnement interne `cpin-hp`)
 - Les cas de déploiements finaux du système complet, qui sont eux adressé par un chart Helm stocké dans [le dépôt `helm-charts`](https://github.com/cloud-pi-native/helm-charts)
 
 Maintenant que ces définitions sont établies, passons à la configuration pour chacun des cas d'usage
 
 ## Considérations communes à tous les cas
 
-Le mode de fonctionnement de la configuration des environnements est assez classique : les applications `client` et `server-nestjs` ont besoin d'avoir certaines variables d'environnements définies.
+Le mode de fonctionnement de la configuration des environnements est assez classique : les applications `client` et `backend` ont besoin d'avoir certaines variables d'environnements définies.
 
 Le mécanisme de surcharge des différentes configurations fonctionne de cette manière :
 
@@ -64,7 +65,7 @@ graph LR
     direction LR
     NAV_L["Navigateur"]
     NGINX_L(("Vite (client)\n:8080\nLOCAL"))
-    NESTJS_L(("server-nestjs\n:3001\nLOCAL"))
+    NESTJS_L(("backend\n:3001\nLOCAL"))
 
     NAV_L --> NGINX_L
     NGINX_L -- "API et Swagger" --> NESTJS_L
@@ -79,7 +80,7 @@ Docker Compose utilisé : [`docker/docker-compose.local.yml`](docker/docker-comp
 Fichiers utilisés :
 
 - `apps/client/.env`
-- `apps/server-nestjs/.env`
+- `apps/backend/.env`
 
 Les valeurs par défaut, disponibles dans les fichiers `.env-example`, sont suffisantes dans 99% des cas. Cela dit, c'est un cas d'usage assez restreint car la console se reposant sur quelques composants externes comme une base de données PostgreSQL ou un serveur IAM comme `keycloak`, il faut configurer manuellement les `.env` pour pointer sur les bonnes URLs, etc. Pas infaisable, mais pas très pratique au quotidien, hors des cas simple de build des applications.
 
@@ -90,13 +91,13 @@ Les valeurs par défaut, disponibles dans les fichiers `.env-example`, sont suff
 pnpm dev
 
 # Puis dans d'autres terminaux, lancer le backend et le client :
-pnpm --filter server-nestjs run start:dev
+pnpm --filter backend run start:dev
 pnpm --filter client run dev
 ```
 
 ### Initialiser les données locales
 
-Les migrations sont appliquées au démarrage de NestJS. L’import des données de démonstration n’est pas automatique : utiliser la commande explicite `db:fixtures --reset` uniquement sur une base jetable, backends arrêtés. Voir les [précautions et commandes](apps/server-nestjs/README.md#fixtures-de-développement-et-de-test).
+Les migrations sont appliquées au démarrage de NestJS. L’import des données de démonstration n’est pas automatique : utiliser la commande explicite `db:fixtures --reset` uniquement sur une base jetable, backends arrêtés. Voir les [précautions et commandes](apps/backend/README.md#fixtures-de-développement-et-de-test).
 
 La CI utilise le service ponctuel `fixtures` avant le démarrage de NestJS ; ne pas utiliser ses données pour un environnement d’intégration existant.
 
@@ -109,12 +110,12 @@ Le fichier [`docker/docker-compose.local.yml`](docker/docker-compose.local.yml) 
   - OTLP gRPC : `localhost:4317`
   - OTLP HTTP (protobuf) : `http://localhost:4318`
 
-Dans `apps/server-nestjs`, l'instrumentation OpenTelemetry est initialisée au démarrage dans [`src/main.ts`](apps/server-nestjs/src/main.ts) et exporte via OTLP.
+Dans `apps/backend`, l'instrumentation OpenTelemetry est initialisée au démarrage dans [`src/main.ts`](apps/backend/src/main.ts) et exporte via OTLP.
 
 Pour vérifier rapidement :
 
 1. Démarrer l'infra : `pnpm dev` (Jaeger inclus).
-2. Démarrer `server-nestjs` : `pnpm --filter server-nestjs run start:dev`.
+2. Démarrer `backend` : `pnpm --filter backend run start:dev`.
 3. Exécuter une requête sur une route backend (depuis le client ou un `curl`).
 4. Ouvrir http://localhost:16686 et chercher le service `cloud-pi-native-console`.
 
@@ -126,17 +127,17 @@ Fichiers utilisés :
 
 - `apps/client/.env`
 - `apps/client/.env.docker`
-- `apps/server-nestjs/.env`
-- `apps/server-nestjs/.env.docker`
+- `apps/backend/.env`
+- `apps/backend/.env.docker`
 
 Cette configuration est déjà plus intéressante, car elle s'appuie sur les conteneurs définis dans [ce docker-compose](docker/docker-compose.dev.yml), qui lance notamment une base de données PostreSQL (ainsi qu'un `pgadmin`), et un serveur Keycloak préchargé avec un royaume qui contient un jeu de données. Le docker-compose contient des instructions `develop` qui permettent soit de synchroniser certains fichiers, soit de carrément reconstruire l'image et de relancer le service concerné. De cette manière vous pouvez développer en laissant les conteneurs tourner. C'est un peu moins performant qu'un travail totalement en local, mais ça a le mérite d'être plus proche du déploiement cible.
 
-Le `client` attend que `server-nestjs` soit sain puis lui transmet directement les requêtes API. Les données locales restent persistantes ; aucun reset n’est déclenché au démarrage.
+Le `client` attend que `backend` soit sain puis lui transmet directement les requêtes API. Les données locales restent persistantes ; aucun reset n’est déclenché au démarrage.
 
 **Commande de lancement :**
 
 ```bash
-# Lance l'ensemble des conteneurs (client, server-nestjs,
+# Lance l'ensemble des conteneurs (client, backend,
 # keycloak, postgres, pgadmin, opencds mock) avec Docker Compose Watch
 pnpm docker:dev
 ```
@@ -193,7 +194,7 @@ pnpm docker:dev
 
 | Variable | Défaut | Description |
 |----------|--------|-------------|
-| `SERVER_HOST` | `localhost` | Hôte cible du proxy Vite (`server-nestjs` dans Docker) |
+| `SERVER_HOST` | `localhost` | Hôte cible du proxy Vite (`backend` dans Docker) |
 | `SERVER_PORT` | `3001` | Port cible du proxy Vite |
 | `VITE_KEYCLOAK_DOMAIN` | — | Domaine Keycloak (client) |
 | `VITE_KEYCLOAK_REALM` | — | Royaume Keycloak (client) |
@@ -336,7 +337,7 @@ graph LR
     subgraph DOCKER_NET["🐳 Réseau Docker"]
       direction LR
       NGINX_I(("nginx (client)\n:8080\nexposé :8080"))
-      NESTJS_I(("server-nestjs\n:3001\nexposé :3001"))
+      NESTJS_I(("backend\n:3001\nexposé :3001"))
 
       NGINX_I -- "API et Swagger" --> NESTJS_I
     end
@@ -362,11 +363,11 @@ Fichiers utilisés :
 - `apps/client/.env`
 - `apps/client/.env.docker`
 - `apps/client/.env.integ`
-- `apps/server-nestjs/.env`
-- `apps/server-nestjs/.env.docker`
-- `apps/server-nestjs/.env.integ`
+- `apps/backend/.env`
+- `apps/backend/.env.docker`
+- `apps/backend/.env.integ`
 
-Cette configuration est une itération de la précédente. Dans ce cas d'usage le Keycloak n'est pas créé en tant que conteneur, car on est supposé se brancher sur l'environnement d'intégration défini dans les fichiers `.env.integ`. Le contenu de `apps/server-nestjs/.env.integ` configure aussi les volumes de Compose : renseigner notamment `KUBECONFIG_HOST_PATH` avant le lancement.
+Cette configuration est une itération de la précédente. Dans ce cas d'usage le Keycloak n'est pas créé en tant que conteneur, car on est supposé se brancher sur l'environnement d'intégration défini dans les fichiers `.env.integ`. Le contenu de `apps/backend/.env.integ` configure aussi les volumes de Compose : renseigner notamment `KUBECONFIG_HOST_PATH` avant le lancement.
 
 **Commandes de lancement :**
 
@@ -377,6 +378,6 @@ pnpm docker:integ
 # Option 2 : Seulement l'infra en Docker (postgres, pgadmin), NestJS et client en local
 pnpm integ
 # Puis dans d'autres terminaux :
-pnpm --filter server-nestjs run integ
+pnpm --filter backend run integ
 pnpm --filter client run integ
 ```

@@ -493,7 +493,7 @@ importers:
         specifier: catalog:build
         version: 7.4.0
 
-  apps/server-nestjs:
+  apps/backend:
     dependencies:
       '@cpn-console/logger':
         specifier: workspace:^

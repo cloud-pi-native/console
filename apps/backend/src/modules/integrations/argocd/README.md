@@ -49,7 +49,7 @@ Le module NestJS `argocd` réconcilie et supprime les fichiers de valeurs de dé
 
 - `argocd.module.ts` importe `GitlabModule` et `VaultModule`.
 - `argocd.service.ts` : constructeur, `handleUpsert`, `handleDelete`, `purgeZone`, `generateDeleteProjectActions`, génération de manifests et configuration d’AppRole.
-- `apps/server-nestjs/src/modules/events/app-events.service.ts` : émission, agrégation, journal et mise à jour du statut.
+- `apps/backend/src/modules/core/events/app-events.service.ts` : émission, agrégation, journal et mise à jour du statut.
 - `plugins/argocd/src/functions.ts` consomme `GitlabProjectApi` et `VaultProjectApi` pour gérer manifests/URLs et valeurs Vault, et appelle `(keycloakApi as any).getEnvGroup(environment.name)` pour les chemins RO/RW. `plugins/argocd/src/utils.ts` caste aussi l’API injectée GitLab et `apis.vault` vers `any`.
 - `plugins/argocd/src/env.d.ts` référence les trois plugins ; l’appel `getEnvGroup` est runtime mais sa définition dans `plugins/keycloak/src/class.ts` ne fait que construire des chemins. `argocd.service.ts` (`generateEnvironmentConsoleGroupPath`) construit les mêmes chemins sans importer Keycloak.
 - `plugins/argocd/src/index.ts`, `zone.ts`, `cluster.ts`, `utils.ts` (`updateZoneValues`) prouvent les hooks et appels GitLab/Vault de zone/cluster. `plugins/vault/src/vault-zone-api.ts` porte `getValues`, le KV et les secrets ; `plugins/gitlab/src/class.ts` / `index.ts` distinguent préparation des actions et commit `post`.

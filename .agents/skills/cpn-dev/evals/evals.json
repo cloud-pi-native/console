@@ -54,8 +54,8 @@
     },
     {
       "id": "routing-code-surface",
-      "prompt": "Je dois corriger un bug dans un service de `apps/server-nestjs`. Par quoi je commence avant d'éditer ?",
-      "expected_output": "L'agent charge `cpn-code-authoring` avant d'éditer : la surface éditée (`apps/server-nestjs`) est routée vers ce skill d'authoring.",
+      "prompt": "Je dois corriger un bug dans un service de `apps/backend`. Par quoi je commence avant d'éditer ?",
+      "expected_output": "L'agent charge `cpn-code-authoring` avant d'éditer : la surface éditée (`apps/backend`) est routée vers ce skill d'authoring.",
       "assertions": {
         "mustContain": [
           "cpn-code-authoring"
@@ -82,7 +82,7 @@
     },
     {
       "id": "routing-mixed-unit",
-      "prompt": "Mon unité touche à la fois un service dans `apps/server-nestjs` et le frontmatter d'une skill dans `.agents/skills/`. Comment j'applique les règles ?",
+      "prompt": "Mon unité touche à la fois un service dans `apps/backend` et le frontmatter d'une skill dans `.agents/skills/`. Comment j'applique les règles ?",
       "expected_output": "L'agent applique `cpn-code-authoring` aux fichiers de code et `cpn-create-skill` aux fichiers de skills, chacun sur sa propre surface — aucun skill n'impose ses règles à l'autre.",
       "assertions": {
         "mustContain": [

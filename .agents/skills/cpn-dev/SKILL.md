@@ -13,7 +13,7 @@ metadata:
 ## Stack
 
 - pnpm monorepo, Node >= 26, pnpm >= 11.8
-- Backend target: `apps/server-nestjs`. Legacy `apps/server` and
+- Backend target: `apps/backend`. Legacy `apps/server` and
   `apps/nginx-strangler` were removed; consult Git history when needed.
 - Git-backed repository: work on feature branches off `origin/main`;
   `main` is protected.
@@ -68,7 +68,7 @@ being edited and load it before editing:
 
 | Edited surface                                              | Skill              |
 | ----------------------------------------------------------- | ------------------ |
-| `apps/server-nestjs`, `packages/shared`, nginx routing      | `cpn-code-authoring` |
+| `apps/backend`, `packages/shared`, nginx routing      | `cpn-code-authoring` |
 | Any file under `.agents/skills/`                            | `cpn-create-skill` |
 
 A unit that mixes both surfaces (code and skills) applies the two rule sets

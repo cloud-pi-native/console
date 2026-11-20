@@ -25,7 +25,7 @@ python3 - "$root/apps/client/nginx/default.docker.conf" "$tmp/conf.d/client.conf
 import pathlib
 import sys
 source = pathlib.Path(sys.argv[1]).read_text()
-source = source.replace('server-nestjs:3001', '127.0.0.1:8082')
+source = source.replace('backend:3001', '127.0.0.1:8082')
 source = source.replace('/etc/nginx/html', '/tmp/client-routing-html')
 pathlib.Path(sys.argv[2]).write_text(source)
 PY

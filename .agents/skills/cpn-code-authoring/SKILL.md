@@ -3,7 +3,7 @@ name: cpn-code-authoring
 description:
   "Use when writing or reviewing domain code in cloud-pi-native/console:
   naming consensus, client-service verb vocabulary, layer discipline,
-  fixture shape, and migration parity rules for apps/server-nestjs and
+  fixture shape, and migration parity rules for apps/backend and
   nginx routing (references/migration-parity.md)."
 license: Apache-2.0
 metadata:
@@ -24,7 +24,7 @@ Repo structure and environment chains stay in `AGENTS.md`.
 
 ## Code structure
 
-`apps/server-nestjs/src/` layout:
+`apps/backend/src/` layout:
 
 - `main.ts`, `main.module.ts` — bootstrap and root module.
 - `config/` — one `*.config.ts` per external system (argocd, gitlab, harbor,
@@ -138,7 +138,7 @@ would rotate it every sync (`ensureAuthApproleRoleSecretId`).
 
 ## Migration parity
 
-Rules for comparing `apps/server-nestjs` with the removed `apps/server`
+Rules for comparing `apps/backend` with the removed `apps/server`
 in Git history live in [references/migration-parity.md](references/migration-parity.md).
 
 ## Realigning an open branch
@@ -147,7 +147,7 @@ Survey before renaming: grep the exported names across all open branches,
 aggregate, adopt the majority pattern, rename outliers. Scope is what the
 PR introduced (diff vs main), not what it inherited from main. Verify with
 the module's targeted specs
-(`cd apps/server-nestjs && pnpm vitest run src/modules/<module>`);
+(`cd apps/backend && pnpm vitest run src/modules/<module>`);
 Playwright E2E needs Docker and is judged in CI, not locally.
 
 ## Known exceptions
