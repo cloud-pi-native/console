@@ -71,12 +71,6 @@ describe('adminRoleService', () => {
     })
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith('adminRole.upsert', {
       id: existingRole.id,
-      name: 'New role',
-      oidcGroup: '',
-      permissions: 0n,
-      position: 6,
-      type: 'managed',
-      members: [],
     })
   })
 

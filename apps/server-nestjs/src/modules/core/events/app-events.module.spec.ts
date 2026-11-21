@@ -13,7 +13,7 @@ import { KeycloakDatastoreService } from '../../integrations/keycloak/keycloak-d
 import { makeGroupRepresentation } from '../../integrations/keycloak/keycloak-testing.utils'
 import { KeycloakService } from '../../integrations/keycloak/keycloak.service'
 import { VaultClientService } from '../../integrations/vault/vault-client.service'
-import { makeAdminRoleEventMember, makeAdminRoleEventPayload } from './app-events-testing.utils'
+import { makeAdminRoleEventPayload } from './app-events-testing.utils'
 
 describe('appEventsModule', () => {
   let eventEmitter: EventEmitter2
@@ -42,6 +42,7 @@ describe('appEventsModule', () => {
         { provide: GitlabClientService, useValue: gitlab },
         { provide: GitlabDatastoreService, useValue: mockDeep<GitlabDatastoreService>({
           getAdminPluginConfig: vi.fn().mockResolvedValue(null),
+          getAdminRoleWithMembers: vi.fn().mockResolvedValue({ id: 'role-1', oidcGroup: '/console/admin', members: [{ id: 'u1', email: 'a@b.c', firstName: 'A', lastName: 'B' }] }),
         }) },
         { provide: VaultClientService, useValue: mockDeep<VaultClientService>() },
         { provide: gitlabConfigFactory.KEY, useValue: mockDeep<ConfigType<typeof gitlabConfigFactory>>({}) },
@@ -55,20 +56,7 @@ describe('appEventsModule', () => {
   })
 
   it('delivers the canonical AdminRoleEventPayload to both consumers on adminRole.upsert', async () => {
-    const payload = makeAdminRoleEventPayload({
-      id: 'role-1',
-      oidcGroup: '/console/admin',
-      members: [
-        makeAdminRoleEventMember({
-          id: 'u1',
-          email: 'a@b.c',
-          firstName: 'A',
-          lastName: 'B',
-        }),
-      ],
-    })
-
-    const results = await eventEmitter.emitAsync('adminRole.upsert', payload)
+    const results = await eventEmitter.emitAsync('adminRole.upsert', makeAdminRoleEventPayload({ id: 'role-1' }))
 
     expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/console/admin')
     expect(keycloak.addUserToGroup).toHaveBeenCalledWith('user-1', 'kc-group-id')
