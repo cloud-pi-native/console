@@ -58,6 +58,41 @@ describe('vaultService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('handleUpsertZone', () => {
+    it('refetches the zone by id and syncs its slug', async () => {
+      const zone = makeZoneWithDetails({ slug: 'zone-1' })
+      datastore.getZoneById.mockResolvedValue(zone)
+
+      const result = await service.handleUpsertZone({ id: zone.id })
+
+      expect(datastore.getZoneById).toHaveBeenCalledWith(zone.id)
+      expect(client.createSysMount).toHaveBeenCalledWith(`zone-${zone.slug}`, expect.any(Object))
+      expect(result.vault.status).toBe('OK')
+    })
+
+    it('skips idempotently when the zone row is gone', async () => {
+      datastore.getZoneById.mockResolvedValue(null)
+
+      const result = await service.handleUpsertZone({ id: 'gone' })
+
+      expect(client.createSysMount).not.toHaveBeenCalled()
+      expect(result.vault.status).toBe('OK')
+    })
+  })
+
+  describe('handleDeleteZone', () => {
+    it('refetches the zone by id and deletes its mount', async () => {
+      const zone = makeZoneWithDetails({ slug: 'zone-1' })
+      datastore.getZoneById.mockResolvedValue(zone)
+
+      const result = await service.handleDeleteZone({ id: zone.id })
+
+      expect(datastore.getZoneById).toHaveBeenCalledWith(zone.id)
+      expect(client.deleteSysMounts).toHaveBeenCalledWith(`zone-${zone.slug}`)
+      expect(result.vault.status).toBe('OK')
+    })
+  })
+
   it('should reconcile on cron', async () => {
     const projects = faker.helpers.multiple(() => makeProjectWithDetails())
     const zones = faker.helpers.multiple(() => makeZoneWithDetails())

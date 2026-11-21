@@ -142,10 +142,15 @@ export class GitlabService {
   @StartActiveSpan()
   private async syncZone(payload: ZoneEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', payload.slug)
-    this.logger.log(`Handling a zone upsert event for ${payload.slug}`)
-    await this.gitlab.ensureInfraGroupRepo(payload.slug)
-    this.logger.log(`GitLab zone sync completed for ${payload.slug}`)
+    span?.setAttribute('zone.id', payload.id)
+    const slug = await this.datastore.getZoneSlug(payload.id)
+    if (!slug) {
+      this.logger.warn(`zone.upsert skipped: zone not found (zoneId=${payload.id})`)
+      return
+    }
+    this.logger.log(`Handling a zone upsert event for ${slug}`)
+    await this.gitlab.ensureInfraGroupRepo(slug)
+    this.logger.log(`GitLab zone sync completed for ${slug}`)
   }
 
   @OnEvent('zone.delete')
@@ -156,10 +161,15 @@ export class GitlabService {
   @StartActiveSpan()
   private async cleanupZone(payload: ZoneEventPayload) {
     const span = trace.getActiveSpan()
-    span?.setAttribute('zone.slug', payload.slug)
-    this.logger.log(`Handling a zone delete event for ${payload.slug}`)
-    await this.gitlab.deleteInfraGroupRepo(payload.slug)
-    this.logger.log(`GitLab zone cleanup completed for ${payload.slug}`)
+    span?.setAttribute('zone.id', payload.id)
+    const slug = await this.datastore.getZoneSlug(payload.id)
+    if (!slug) {
+      this.logger.warn(`zone.delete skipped: zone not found (zoneId=${payload.id})`)
+      return
+    }
+    this.logger.log(`Handling a zone delete event for ${slug}`)
+    await this.gitlab.deleteInfraGroupRepo(slug)
+    this.logger.log(`GitLab zone cleanup completed for ${slug}`)
   }
 
   @OnEvent('projectMember.upsert')
