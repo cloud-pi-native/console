@@ -63,7 +63,7 @@ export class RepositoryService {
     // committed — the sync is replayable via the dedicated endpoint.
     if (repositoryToCreate.externalRepoUrl) {
       const results = await this.syncRepositoryMirror(
-        { projectId, projectSlug, internalRepoName: repository.internalRepoName, syncAllBranches: true },
+        { projectId, repositoryId: repository.id, syncAllBranches: true },
         userId,
         requestId,
       )
@@ -82,8 +82,8 @@ export class RepositoryService {
    * project reconciliation, this is the user's whole intent for the request, so a
    * failing plugin must surface as a 422 rather than a silent log entry.
    */
-  async syncRepository(projectId: string, projectSlug: string, repositoryId: string, syncRequest: SyncRepository, userId: string, requestId: string): Promise<void> {
-    const repository = await this.getProjectRepositoryOrThrow(projectId, repositoryId)
+  async syncRepository(projectId: string, repositoryId: string, syncRequest: SyncRepository, userId: string, requestId: string): Promise<void> {
+    await this.getProjectRepositoryOrThrow(projectId, repositoryId)
 
     if (!syncRequest.syncAllBranches) {
       await this.repositoryDatastoreService.updateBranchName(repositoryId, syncRequest.branchName)
@@ -92,8 +92,7 @@ export class RepositoryService {
     const results = await this.syncRepositoryMirror(
       {
         projectId,
-        projectSlug,
-        internalRepoName: repository.internalRepoName,
+        repositoryId,
         ...(syncRequest.syncAllBranches
           ? { syncAllBranches: true }
           : { syncAllBranches: false, branchName: syncRequest.branchName }),

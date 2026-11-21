@@ -114,7 +114,7 @@ describe('repositoryController', () => {
 
       const result = await controller.sync(repositoryId, syncRequest, project, user, request)
 
-      expect(service.syncRepository).toHaveBeenCalledWith(projectId, projectSlug, repositoryId, syncRequest, userId, requestId)
+      expect(service.syncRepository).toHaveBeenCalledWith(projectId, repositoryId, syncRequest, userId, requestId)
       expect(result).toBeUndefined()
     })
   })

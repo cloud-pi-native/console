@@ -94,6 +94,18 @@ export class GitlabDatastoreService {
     })
   }
 
+  async getRepositoryWithProjectSlug(repositoryId: string): Promise<{ internalRepoName: string, projectSlug: string } | null> {
+    const repository = await this.prisma.repository.findUnique({
+      where: { id: repositoryId },
+      select: {
+        internalRepoName: true,
+        project: { select: { slug: true } },
+      },
+    })
+    if (!repository) return null
+    return { internalRepoName: repository.internalRepoName, projectSlug: repository.project.slug }
+  }
+
   async getAdminPluginConfig(pluginName: string, key: string): Promise<string | null> {
     const result = await this.prisma.adminPlugin.findUnique({
       where: {
