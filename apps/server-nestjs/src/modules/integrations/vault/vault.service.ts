@@ -2,6 +2,7 @@ import type { ConfigType } from '@nestjs/config'
 import type { ZoneEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { ProjectWithDetails, ZoneWithDetails } from './vault-datastore.service'
+import { evictionSet } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -374,12 +375,12 @@ export class VaultService {
     span?.setAttribute('project.slug', project.slug)
     const declaredRepoNames = project.repositories.map(repo => repo.internalRepoName)
     const declaredRepos = new Set(declaredRepoNames)
-    const orphanRepoNames = (await this.client.listKvMetadata(this.vaultConfig.kvName, generateProjectPath(this.baseConfig.projectsRootDir, project.slug)))
+    const currentRepoNames = (await this.client.listKvMetadata(this.vaultConfig.kvName, generateProjectPath(this.baseConfig.projectsRootDir, project.slug)))
       .filter(secretPath => secretPath.endsWith('-mirror'))
       .map(secretPath => secretPath.slice(0, -'-mirror'.length))
-      .filter(repoName => !declaredRepos.has(repoName))
-    span?.setAttribute('vault.orphan.mirror.count', orphanRepoNames.length)
-    await Promise.all(orphanRepoNames.map(async (repoName) => {
+    const orphanRepoNames = evictionSet(new Set(currentRepoNames), declaredRepos)
+    span?.setAttribute('vault.orphan.mirror.count', orphanRepoNames.size)
+    await Promise.all([...orphanRepoNames].map(async (repoName) => {
       await this.client.deleteGitlabMirrorCreds(project.slug, repoName)
       this.logger.log(`Deleted orphan Vault GitLab mirror credentials (projectSlug=${project.slug}, repoName=${repoName})`)
     }))
