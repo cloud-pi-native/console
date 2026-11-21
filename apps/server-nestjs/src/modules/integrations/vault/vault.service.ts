@@ -56,6 +56,8 @@ export class VaultService {
   }
 
   @OnEvent('project.upsert')
+  @OnEvent('repository.upsert')
+  @OnEvent('repository.delete')
   async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'vault'>> {
     return capturePluginResult('vault', async () => {
       const project = await this.datastore.getProject(payload.projectId)

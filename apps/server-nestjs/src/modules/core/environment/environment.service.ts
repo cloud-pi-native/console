@@ -108,7 +108,7 @@ export class EnvironmentService {
     requestId: string,
     failureMessage: string,
   ): Promise<void> {
-    const results = await this.appEvents.emitProjectEvent('project.upsert', projectId, { action, userId, requestId })
+    const results = await this.appEvents.emitProjectResourceEvent('environment.upsert', projectId, { action, userId, requestId })
 
     if (getFailedPlugins(results).length) {
       throw new InternalServerErrorException(failureMessage)

@@ -10,6 +10,16 @@ import { formatEventLogData, isPluginResults } from './app-events.utils'
 
 export type ProjectEventName = 'project.upsert' | 'project.delete'
 
+/**
+ * Per-resource project events: same {projectId} payload; the granularity is in
+ * which listeners subscribe, not in what they refetch.
+ */
+export type ProjectResourceEventName
+  = | 'projectRole.upsert' | 'projectRole.delete'
+    | 'deployment.upsert' | 'deployment.delete'
+    | 'environment.upsert' | 'environment.delete'
+    | 'repository.upsert' | 'repository.delete'
+
 export interface ProjectEventPayload {
   projectId: string
 }
@@ -94,6 +104,20 @@ export class AppEventsService {
     const results = await this.emitAndLog(event, { projectId }, projectId, context)
     await this.updateProjectStatus(event, projectId, results)
     return results
+  }
+
+  /**
+   * Emits a per-resource project event. Resource events never write the project
+   * status: `failed`/`created` reflect project provisioning. Plugin failures are
+   * logged and returned to callers that await this; fire-and-forget callers (e.g.
+   * DeploymentService.reconcileProject) only get the log entry, never a 422.
+   */
+  async emitProjectResourceEvent(
+    event: ProjectResourceEventName,
+    projectId: string,
+    context: EventContext,
+  ): Promise<PluginResults> {
+    return this.emitAndLog(event, { projectId }, projectId, context)
   }
 
   async emitProjectMemberEvent(
