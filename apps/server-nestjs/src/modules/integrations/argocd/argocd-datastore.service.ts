@@ -143,6 +143,13 @@ export class ArgoCDDatastoreService {
     })
   }
 
+  async getProject(id: string): Promise<ProjectWithDetails | null> {
+    return this.prisma.project.findUnique({
+      where: { id },
+      select: projectSelect,
+    })
+  }
+
   async getAllZoneSlugs(): Promise<string[]> {
     const zones = await this.prisma.zone.findMany({
       select: { slug: true },

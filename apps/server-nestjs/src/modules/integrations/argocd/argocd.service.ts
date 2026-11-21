@@ -1,6 +1,6 @@
 import type { CommitAction, CondensedProjectSchema, ProjectSchema, SimpleProjectSchema } from '@gitbeaker/core'
 import type { ConfigType } from '@nestjs/config'
-import type { ClusterEventPayload } from '../../core/events/app-events.service'
+import type { ClusterEventPayload, ProjectEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { ProjectWithDetails } from './argocd-datastore.service'
 import { createHmac } from 'node:crypto'
@@ -53,8 +53,15 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
-    return capturePluginResult('argocd', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -67,8 +74,15 @@ export class ArgoCDService {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'argocd'>> {
-    return capturePluginResult('argocd', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'argocd'>> {
+    return capturePluginResult('argocd', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @OnEvent('cluster.upsert')

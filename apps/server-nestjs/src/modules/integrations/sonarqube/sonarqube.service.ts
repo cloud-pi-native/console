@@ -1,5 +1,6 @@
 import type { OnModuleInit } from '@nestjs/common'
 import type { ConfigType } from '@nestjs/config'
+import type { ProjectEventPayload } from '../../core/events/app-events.service'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { SonarqubeUserSecret } from '../vault/vault-client.service'
 import type { SonarqubeProjectResult, SonarqubeUser, UpdateUserParams } from './sonarqube-client.service'
@@ -90,8 +91,15 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.upsert')
-  async handleUpsert(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
-    return capturePluginResult('sonarqube', () => this.syncProject(project))
+  async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'sonarqube'>> {
+    return capturePluginResult('sonarqube', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.syncProject(project)
+    })
   }
 
   @StartActiveSpan()
@@ -104,8 +112,15 @@ export class SonarqubeService implements OnModuleInit {
   }
 
   @OnEvent('project.delete')
-  async handleDelete(project: ProjectWithDetails): Promise<RequiredPluginResult<'sonarqube'>> {
-    return capturePluginResult('sonarqube', () => this.cleanupProject(project))
+  async handleDelete(payload: ProjectEventPayload): Promise<RequiredPluginResult<'sonarqube'>> {
+    return capturePluginResult('sonarqube', async () => {
+      const project = await this.datastore.getProject(payload.projectId)
+      if (!project) {
+        this.logger.warn(`project event skipped: project not found (projectId=${payload.projectId})`)
+        return
+      }
+      return this.cleanupProject(project)
+    })
   }
 
   @StartActiveSpan()

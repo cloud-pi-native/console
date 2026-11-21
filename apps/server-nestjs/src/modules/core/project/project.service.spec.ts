@@ -21,7 +21,6 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import {
-  makeAdminRole,
   makeCreateProjectBody,
   makeListProjectsQuery,
   makeOwnerRole,
@@ -562,7 +561,7 @@ describe('projectService', () => {
 
       await service.archive(projectId, requestorId, requestId)
 
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.delete', pwd, {
+      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.delete', projectId, {
         action: 'Delete all project resources',
         userId: requestorId,
         requestId,

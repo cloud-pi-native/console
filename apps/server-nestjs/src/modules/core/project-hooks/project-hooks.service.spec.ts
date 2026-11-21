@@ -46,7 +46,7 @@ describe('projectHooksService', () => {
       data: { locked: true },
       select: projectSelect,
     })
-    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', project, { action: 'Update Project' })
+    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', project.id, { action: 'Update Project' })
   })
 
   it('replayHooks loads the project and emits project.upsert', async () => {
@@ -62,7 +62,7 @@ describe('projectHooksService', () => {
       where: { id: 'project-id', status: { not: 'archived' } },
       select: projectSelect,
     })
-    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', project, {
+    expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', project.id, {
       action: 'Replay hooks for Project',
       userId,
       requestId,

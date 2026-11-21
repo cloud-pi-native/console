@@ -82,7 +82,8 @@ describe('nexusService', () => {
       ],
     })
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.ensureRepositoriesMavenHosted).toHaveBeenCalled()
     expect(client.deleteRepositoriesByName).toHaveBeenCalled()
@@ -97,7 +98,8 @@ describe('nexusService', () => {
 
   it('handleDelete should delete project', async () => {
     const project = makeProjectWithDetails()
-    await service.handleDelete(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleDelete({ projectId: project.id })
     expect(client.deleteSecurityRoles).toHaveBeenCalledWith(`${project.slug}-ID`)
     expect(client.deleteSecurityUsers).toHaveBeenCalledWith(project.slug)
     expect(vault.delete).toHaveBeenCalledWith(`forge/${project.slug}/NEXUS`)
@@ -131,7 +133,8 @@ describe('nexusService', () => {
     vault.read.mockResolvedValue(makeVaultSecret({ data: { NEXUS_PASSWORD: 'existing' } }))
     client.getSecurityUsers.mockResolvedValue([{ userId: project.slug }])
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.updateSecurityUsersChangePassword).not.toHaveBeenCalled()
     expect(client.ensureSecurityUsers).not.toHaveBeenCalled()
@@ -159,7 +162,8 @@ describe('nexusService', () => {
     })
     client.getSecurityUsers.mockResolvedValue([{ userId: project.slug }])
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.updateSecurityUsersChangePassword).toHaveBeenCalledWith(project.slug, expect.any(String))
     expect(client.ensureSecurityUsers).not.toHaveBeenCalled()
@@ -175,7 +179,8 @@ describe('nexusService', () => {
   it('deletes group repos before their hosted members', async () => {
     const project = makeProjectWithDetails()
 
-    await service.handleDelete(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleDelete({ projectId: project.id })
 
     const deletedRepos = client.deleteRepositoriesByName.mock.calls.map(([name]) => name)
     expect(deletedRepos.indexOf(`${project.slug}-repository-group`))
@@ -200,7 +205,8 @@ describe('nexusService', () => {
       if (body.id.startsWith('console-')) throw new Error('Request failed: POST security/roles responded 400 Bad Request')
     })
 
-    await expect(service.handleUpsert(project)).resolves.not.toThrow()
+    datastore.getProject.mockResolvedValue(project)
+    await expect(service.handleUpsert({ projectId: project.id })).resolves.not.toThrow()
 
     expect(client.ensureSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({ id: 'console-admin' }))
   })
@@ -221,7 +227,8 @@ describe('nexusService', () => {
       return null
     })
 
-    await service.handleUpsert(project)
+    datastore.getProject.mockResolvedValue(project)
+    await service.handleUpsert({ projectId: project.id })
 
     expect(client.ensureSecurityRoles).toHaveBeenCalledWith(expect.objectContaining({
       id: `${project.slug}-console-devops`,

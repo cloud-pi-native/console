@@ -208,7 +208,7 @@ export class ProjectService {
       // renamed. The lock is deliberately never released here: it must also hold on
       // failure (KO -> 422, conflict -> 409) so no mutation can reconcile resources
       // between a failed cleanup and its replay.
-      const results = await this.appEvents.emitProjectEvent('project.delete', project, {
+      const results = await this.appEvents.emitProjectEvent('project.delete', project.id, {
         action: 'Delete all project resources',
         userId: requestorUserId,
         requestId,

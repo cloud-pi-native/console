@@ -74,6 +74,13 @@ export class KeycloakDatastoreService {
     })
   }
 
+  async getProject(id: string): Promise<ProjectWithDetails | null> {
+    return this.prisma.project.findUnique({
+      where: { id },
+      select: projectSelect,
+    })
+  }
+
   async getAllAdminRoles(): Promise<AdminRoleWithDetails[]> {
     return this.prisma.adminRole.findMany({
       select: adminRoleSelect,

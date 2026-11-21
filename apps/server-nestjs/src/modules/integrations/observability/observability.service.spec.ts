@@ -75,7 +75,8 @@ describe('observabilityService', () => {
       const project = makeProject({
         plugins: [{ pluginName: 'observability', key: ENABLED_PLUGIN_KEY, value: DISABLED }],
       })
-      const result = await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      const result = await service.handleUpsert({ projectId: project.id })
       expect(result.observability.status).toBe('OK')
       expect(gitlab.ensureProjectGroupRepoSettings).not.toHaveBeenCalled()
     })
@@ -84,7 +85,8 @@ describe('observabilityService', () => {
   describe('syncValuesFile', () => {
     it('scopes the repository url by project slug with a .git suffix', async () => {
       const project = makeProject({ slug: 'infra-observability' })
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
       expect(client.ensureProjectConfig).toHaveBeenCalledWith(
         { id: 1 },
         project,
@@ -97,7 +99,9 @@ describe('observabilityService', () => {
 
   describe('handleDelete', () => {
     it('cleans up keycloak groups and values', async () => {
-      await service.handleDelete(makeProject())
+      const project = makeProject()
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
       expect(client.deleteProjectConfig).toHaveBeenCalled()
     })
 
@@ -105,7 +109,8 @@ describe('observabilityService', () => {
       const project = makeProject({
         plugins: [{ pluginName: 'observability', key: ENABLED_PLUGIN_KEY, value: DISABLED }],
       })
-      await service.handleDelete(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleDelete({ projectId: project.id })
       expect(client.deleteProjectConfig).not.toHaveBeenCalled()
     })
   })
@@ -143,7 +148,8 @@ describe('observabilityService', () => {
         Promise.resolve(Object.values(pairs).find(g => g.id === groupId)?.members ?? []),
       )
 
-      await service.handleUpsert(project)
+      datastore.getProject.mockResolvedValue(project)
+      await service.handleUpsert({ projectId: project.id })
 
       expect(keycloak.removeUserFromGroup).not.toHaveBeenCalled()
       expect(keycloak.addUserToGroup).not.toHaveBeenCalled()
