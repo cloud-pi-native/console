@@ -2,10 +2,11 @@
 name: cpn-pr
 description:
   "Use when drafting or revising pull request titles and descriptions,
-  opening or triaging a PR in this repo."
+  opening, updating or triaging a PR, rebasing its branch, or resolving
+  pull request conflicts in this repo."
 license: Apache-2.0
 metadata:
-  version: 1.4.0
+  version: 1.5.0
 ---
 
 # Console pull requests
@@ -50,6 +51,42 @@ gh pr list --state open --json number,title,headRefName \
 - Rebase onto `main` first: `git fetch origin && git rebase origin/main`.
   Never push a conflicted branch.
 - Duplicate work is ruled out and the branch is conflict-free.
+
+## Resolve conflicts on an existing PR
+
+Follow the [shared Git policy](../../../docs/agents/git-and-release.md#resolving-pull-request-conflicts).
+Keep this operation separate from landing (`cpn-merge`).
+
+1. Inspect the PR target, remote head, requested reviewers and worktree status.
+   Use the existing isolated worktree when clean; do not absorb unrelated work.
+   Fetch the target and PR branch, record their SHAs and the previous local head.
+   Diagnose the conflicting changes and obtain approval for rewriting and pushing
+   shared history before proceeding. Do not rebase merely because a conflict-free
+   PR is behind its target.
+2. Run `git rebase origin/<target>` (normally `origin/main`). For each conflict,
+   inspect the commit being replayed and the target's intent. Resolve in that
+   commit, stage explicit paths, then `git rebase --continue`. Stop on ambiguity;
+   do not blindly select a side. Do not merge the target or create a separate
+   conflict-resolution commit. Preserve independent logical commits; do not
+   squash the entire PR by default.
+3. Check `git diff --check`, the final diff against the target and the differences
+   from the previous head (including target changes). Run the quality gates for
+   the changed surface. Confirm the intended commits remain and no merge commit
+   was introduced.
+4. Report the branch, remote, rewritten commits and validation. With publication
+   approval, push only the PR ref, using the remote SHA recorded before rewriting:
+
+   ```bash
+   git push --force-with-lease=refs/heads/<branch>:<observed-remote-sha> origin HEAD:refs/heads/<branch>
+   ```
+
+   Never force-push `main`, and never use plain `--force`. If the lease fails,
+   stop and inspect the new remote commits; do not refresh the lease and retry
+   blindly.
+5. Reread the PR head, conflict status, CI and `reviewRequests`. Request only
+   `cloud-pi-native/socle` and verify it is the sole requested reviewer, without
+   individual users. Wait for renewed human approval on the rewritten head
+   before landing; do not merge as part of conflict resolution.
 
 ## Opening
 
@@ -106,6 +143,12 @@ gh workflow run 243523481 --repo cloud-pi-native/console -f PR_NUMBER=<N>
 Landing once gates pass (ledger, threads, CI, human approval): `cpn-merge`.
 
 ## Pitfalls
+
+- Adding a merge commit to resolve PR conflicts — rebase and absorb the resolution into the affected commits instead.
+- Treating all force-pushes as forbidden — `main` is forbidden; an authorized PR-branch rewrite uses a pinned `--force-with-lease`.
+- Squashing independent commits just because conflicts were resolved — preserve their logical boundaries.
+
+Conflict-resolution scenarios: [evals/evals.json](evals/evals.json).
 
 - French prose is not necessarily accessible: « spike » and « évaluateur intégré » still hide the objective from a reader unfamiliar with the code.
 - A list of successful test commands can bury the change itself. Keep their exact results separately and retain the meaningful validation limits in the description.
