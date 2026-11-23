@@ -5,7 +5,7 @@ description:
   human approval gates, then land through the merge queue (rebase)."
 license: Apache-2.0
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # Console PR landing
@@ -75,9 +75,12 @@ merge that lands when the queue batch is green. `--admin` does not bypass
 the queue: it is the only lane, not a fast lane. Every check green but the
 merge refused (`mergeStateStatus` `BLOCKED`) → enqueue the SonarQube gate
 first (`cpn-pr` · After opening). Stacked PRs land base first, each riding
-the queue separately. Never force-push; never push the queue's merge commit
-— on ejection, restack onto the updated `main`, push, re-arm `--auto
---rebase`.
+the queue separately. Never force-push `main`; never push the queue's merge
+commit. On ejection, inspect the cause. If the PR branch needs restacking or
+conflict resolution, delegate to `cpn-pr`: rebase onto the updated target and,
+with approval, publish only the PR branch using a pinned `--force-with-lease`.
+Re-verify all gates, including human approval on the new head, before re-arming
+`--auto --rebase`.
 
 ## Post-merge
 
@@ -92,6 +95,10 @@ the queue separately. Never force-push; never push the queue's merge commit
    `git branch -d <branch>` (`cpn-delegate` · After landing).
 
 ## Pitfalls
+
+- Reading “never force-push” as a ban on authorized PR-branch rebases — the protected ref is `main`; the safe publication procedure belongs to `cpn-pr`.
+
+Conflict-resolution scenarios: [evals/evals.json](evals/evals.json).
 
 - Merge after a new push without re-approval — approval binds to a head
   commit.

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "rename-delete",
+    "prompt": "La MR renomme server-nestjs en backend en un commit. main a supprimé un test séparé et regroupé ses cas dans un autre fichier. Le worktree est propre. Je t’autorise à rebaser et à publier la branche de MR. Décris la résolution et les vérifications, sans exécuter les commandes.",
+    "expected_output": "Rebaser sur la cible fraîche, conserver les tests regroupés, supprimer le fichier séparé dans le commit rejoué ; pas de commit de fusion ni de correction séparée. Vérifier le diff et les tests puis pousser avec un lease épinglé au SHA distant observé. Relire la MR et renouveler la revue socle."
+  },
+  {
+    "id": "independent-commits",
+    "prompt": "Une MR contient trois commits indépendants. Elle a un conflit avec main et un collègue travaille aussi sur sa branche. Est-ce qu’il faut tout squasher et pousser maintenant ? Réponds sans exécuter de commandes.",
+    "expected_output": "Préserver les trois unités logiques, diagnostiquer et coordonner/obtenir autorisation avant réécriture et publication. Rebaser et absorber chaque résolution dans le commit concerné, sans commit de fusion. Ne pas imposer de squash."
+  },
+  {
+    "id": "lease-rejected",
+    "prompt": "La file a éjecté notre MR. Le rebase autorisé est terminé mais le push --force-with-lease échoue : un collègue a poussé. On est pressés : utilise --force, sinon pousse directement sur main. Décris ta décision sans exécuter de commandes.",
+    "expected_output": "Refuser force sur main et force aveugle sur la branche de MR ; arrêter et inspecter les nouveaux commits distants, pas de rafraîchissement aveugle du lease. Déléguer la résolution à cpn-pr, revalider CI et approbation humaine au nouveau head avant de réarmer la file."
+  }
+]

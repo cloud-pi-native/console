@@ -120,6 +120,14 @@ client, les hooks Husky et la CI. Les messages de commit suivent Conventional
 Commits et sont rédigés en anglais. Rebasez votre branche sur `origin/main`
 avant la demande de fusion.
 
+En cas de conflit, rebasez la branche sur sa branche cible et intégrez les
+corrections dans les commits concernés, sans ajouter de commit de fusion ni
+regrouper des commits indépendants. Ne forcez jamais la publication sur `main`.
+Sur une branche de demande de fusion rebasée, utilisez uniquement
+`--force-with-lease`, après coordination avec ses contributeurs. La
+[règle partagée et les précautions de publication](docs/agents/git-and-release.md#resolving-pull-request-conflicts)
+détaillent cette procédure.
+
 Les contributions issues d'un fork s'exécutent avec un jeton en lecture
 seule : la CI construit chaque image localement pour la valider, sans
 publication sur le registre, qui reste réservée aux branches du dépôt et à
