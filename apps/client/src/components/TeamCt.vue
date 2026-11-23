@@ -124,7 +124,7 @@ async function transferOwnerShip() {
       :headers="headers"
     >
       <tr
-        v-for="member in [{ ...props.project.owner, roleIds: [], userId: props.project.owner.id }, ...project.members]"
+        v-for="member in [{ ...props.project.owner, roleIds: props.project.roles.filter(r => r.oidcGroup === `/${props.project.slug}/console/owner`).map(r => r.id), userId: props.project.owner.id }, ...project.members]"
         :key="member.userId"
       >
         <td>
@@ -137,7 +137,7 @@ async function transferOwnerShip() {
           >{{ member.userId }}</code>
         </td>
         <td>{{ member.email }}</td>
-        <td>{{ project.ownerId === member.userId ? 'Propriétaire' : getRolesNames(member.roleIds) }}</td>
+        <td>{{ getRolesNames(member.roleIds) }}</td>
         <td>
           <div
             v-if="props.project.ownerId === member.userId"
