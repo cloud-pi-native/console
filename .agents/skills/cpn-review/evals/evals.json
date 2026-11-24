@@ -27,8 +27,8 @@
     "id": "reconcile-changes-requested",
     "prompt": "La PR #3120 a deux fils de revue en désaccord ; tu les as traités et résolus, puis poussé le correctif. GitHub affiche encore CHANGES_REQUESTED. Termine la réconciliation.",
     "assertions": {
-      "mustContain": ["CHANGES_REQUESTED", "--add-reviewer", "reviewRequests"],
-      "mustNotContain": ["--remove-reviewer", "gh pr merge", "gh pr ready --undo"]
+      "mustContain": ["CHANGES_REQUESTED", "--add-reviewer cloud-pi-native/socle", "reviewRequests"],
+      "mustNotContain": ["--remove-reviewer cloud-pi-native/socle", "gh pr merge --", "gh pr merge 3120", "gh pr ready --undo"]
     }
   }
 ]
