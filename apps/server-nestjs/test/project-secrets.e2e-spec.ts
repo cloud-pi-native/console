@@ -15,6 +15,7 @@ import { PrismaService } from '../src/modules/infrastructure/database/prisma.ser
 import { EventsModule } from '../src/modules/infrastructure/events/events.module'
 import { LoggerModule } from '../src/modules/infrastructure/logger/logger.module'
 import { PermissionModule } from '../src/modules/infrastructure/permission/permission.module'
+import { formatRobotDuration } from '../src/modules/integrations/registry/registry.utils'
 import { VaultClientService } from '../src/modules/integrations/vault/vault-client.service'
 import { generateProjectPath } from '../src/modules/integrations/vault/vault.utils'
 import { getDotenvPaths } from '../src/utils/dotenv.utils'
@@ -31,6 +32,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
   let vaultClient: VaultClientService
   let projectsRootDir: string
   let harborUrl: string
+  let robotDurations: { 'Durée du robot RO': string, 'Durée du robot RW': string, 'Durée du robot projet': string }
   let nexusUrl: string
 
   let ownerId: string
@@ -56,7 +58,13 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
     service = moduleRef.get(ProjectSecretsService)
     vaultClient = moduleRef.get(VaultClientService)
     projectsRootDir = moduleRef.get(baseConfigFactory.KEY).projectsRootDir
-    harborUrl = moduleRef.get(harborConfigFactory.KEY).url
+    const harborConfig = moduleRef.get(harborConfigFactory.KEY)
+    harborUrl = harborConfig.url
+    robotDurations = {
+      'Durée du robot RO': formatRobotDuration(harborConfig.robotExpirationRoDays),
+      'Durée du robot RW': formatRobotDuration(harborConfig.robotExpirationRwDays),
+      'Durée du robot projet': formatRobotDuration(harborConfig.robotExpirationProjectDays),
+    }
     nexusUrl = moduleRef.get(nexusConfigFactory.KEY).url
 
     ownerId = faker.string.uuid()
@@ -129,6 +137,7 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
       },
       REGISTRY: {
         'Registry base path': `${harborUrlObj.host}${harborUrlObj.pathname}`,
+        ...robotDurations,
         '/!\\': 'Vous n\'avez pas de robot de lecture veuillez reprovisionner',
       },
       VAULT: {
@@ -174,8 +183,9 @@ describeWithProjectSecrets('ProjectSecretsService (e2e)', () => {
       })
       const harborUrlObj = new URL(`${projectSlug}/`, harborUrl)
       expect(secrets.REGISTRY).toEqual({
-        REGISTRY_ROBOT_SECRET: 'robot',
         'Registry base path': `${harborUrlObj.host}${harborUrlObj.pathname}`,
+        ...robotDurations,
+        REGISTRY_ROBOT_SECRET: 'robot',
       })
       expect(secrets.VAULT).toEqual({
         '.spec.mount': projectSlug,
