@@ -5,7 +5,7 @@ description:
   severity-tagged French inline findings, DoD ledger, never merge."
 license: Apache-2.0
 metadata:
-  version: 1.2.0
+  version: 1.2.1
 ---
 
 # Console PR review & reconciliation
@@ -87,14 +87,19 @@ author amends.
 
    **Resolving threads does not clear `CHANGES_REQUESTED`** — that state
    comes from submitted reviews, not thread state. After resolving threads
-   or pushing a fix, re-request the reviewer: remove then re-add, then
-   re-verify approval on the new head.
+   or pushing a fix, re-request the reviewer with `--add-reviewer` alone
+   (it adds **or re-requests**), then re-verify approval on the new head.
 
    ```bash
-   gh pr edit <N> --repo cloud-pi-native/console --remove-reviewer cloud-pi-native/socle
    gh pr edit <N> --repo cloud-pi-native/console --add-reviewer cloud-pi-native/socle
    gh pr view <N> --repo cloud-pi-native/console --json reviewRequests,reviews
    ```
+
+   Never `--remove-reviewer` to re-request. `gh pr edit` sends one
+   `requestReviewsByLogin(union: false)` whose reviewer set is
+   `(add ∪ current) − remove`: two separate calls leave the PR with no
+   reviewer between them, and `--remove-reviewer X --add-reviewer X` in one
+   call yields the empty set — the PR silently loses its only reviewer.
 
 3. **Approval + CI** — a human approving review from another collaborator on
    the current head, re-reviewed after new commits; `gh pr checks <N>`. The
