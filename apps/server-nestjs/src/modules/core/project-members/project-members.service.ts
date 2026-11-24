@@ -5,7 +5,7 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from '../../integrations/keycloak/keycloak-client.service'
 import { AppEventsService } from '../events/app-events.service'
-import { deleteProjectMember, getHumanUser, getProjectOwnerId, listProjectMembersWithUser, upsertProjectMember, upsertProjectMemberIfMissing } from './project-members-queries.utils'
+import { assertUserIsNotOwner, deleteProjectMember, getHumanUser, getProjectOwnerId, listProjectMembersWithUser, upsertProjectMember, upsertProjectMemberIfMissing } from './project-members-queries.utils'
 
 @Injectable()
 export class ProjectMembersService {
@@ -119,6 +119,7 @@ export class ProjectMembersService {
     try {
       const members = await this.prisma.$transaction(async (tx) => {
         for (const member of body) {
+          await assertUserIsNotOwner(tx, projectId, member.userId)
           await upsertProjectMember(tx, projectId, member)
         }
         return listProjectMembersWithUser(tx, projectId)
@@ -146,6 +147,7 @@ export class ProjectMembersService {
     this.logger.log(`projectMembers.removeMember started (projectId=${projectId}, userId=${userId})`)
     try {
       const members = await this.prisma.$transaction(async (tx) => {
+        await assertUserIsNotOwner(tx, projectId, userId)
         await deleteProjectMember(tx, projectId, userId)
         return listProjectMembersWithUser(tx, projectId)
       })

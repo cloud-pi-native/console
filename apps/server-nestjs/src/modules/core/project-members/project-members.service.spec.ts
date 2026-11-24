@@ -216,6 +216,19 @@ describe('projectMembersService', () => {
   })
 
   describe('patch', () => {
+    it('refuses to change the roles of the owner', async () => {
+      const projectId = faker.string.uuid()
+      const ownerId = faker.string.uuid()
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ id: projectId, ownerId }))
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.patch(projectId, [{ userId: ownerId, roles: [] }]))
+        .rejects.toThrow('Le propriétaire du projet ne peut pas être retiré des membres')
+      expect(tx.projectMembers.upsert).not.toHaveBeenCalled()
+    })
+
     it('upserts multiple members and emits events', async () => {
       const projectId = faker.string.uuid()
       const members = [
@@ -243,6 +256,19 @@ describe('projectMembersService', () => {
   })
 
   describe('remove', () => {
+    it('refuses to remove the owner', async () => {
+      const projectId = faker.string.uuid()
+      const ownerId = faker.string.uuid()
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ id: projectId, ownerId }))
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.remove(projectId, ownerId))
+        .rejects.toThrow('Le propriétaire du projet ne peut pas être retiré des membres')
+      expect(tx.projectMembers.delete).not.toHaveBeenCalled()
+    })
+
     it('deletes member, emits event, returns updated list', async () => {
       const projectId = faker.string.uuid()
       const userId = faker.string.uuid()
