@@ -56,6 +56,10 @@ gh issue create --repo cloud-pi-native/console \
   --title "💡 [REQUEST] - <summary>" --label enhancement --body-file <file>
 ```
 
+After opening, run the creation procedure in `cpn-project`: add the issue to
+Socle and verify its `PI` and `Epic`. A successful `gh issue create` alone does
+not complete the workflow. Report any missing value with the issue URL.
+
 ## Triage
 
 Fill each empty, determinable field, additively (`--add-label` /
@@ -74,8 +78,8 @@ gh issue edit <N> --repo cloud-pi-native/console \
   with a recorded reason.
 - **milestone** — by **title**, never by number; bug → highest open patch of
   the current minor line, enhancement → next minor/major.
-- **project** — `--add-project <n>` only when one board is the obvious home;
-  skip when ambiguous; boarding and Status on the Socle are `cpn-project`.
+- **Socle, PI and Epic** — mandatory; delegate discovery and verification to
+  `cpn-project`.
 
 The issue clearly belongs to another `cloud-pi-native/*` repo? Transfer
 instead of re-triaging: `gh issue transfer <N> <OWNER/REPO>` — do not edit or
@@ -115,6 +119,8 @@ silent metadata edit is the defect this rule prevents.
 - A documentation link is not proof that its terms were checked; read the relevant content and report unavailable or missing definitions honestly.
 
 ## Verify
+
+Verify Socle membership, `PI` and `Epic` via `cpn-project`, in addition to:
 
 ```bash
 gh issue view <N> --repo cloud-pi-native/console \

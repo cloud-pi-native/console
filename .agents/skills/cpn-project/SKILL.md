@@ -34,6 +34,18 @@ gh auth refresh -s project
 Un prérequis manquant est un blocage signalé, jamais un contournement
 silencieux.
 
+## À la création d'une issue ou d'une PR
+
+Pour tout dépôt `cloud-pi-native`, l'ajout au Projet `Socle` est obligatoire. Depuis `cpn-issue` ou `cpn-pr`, exécuter ce parcours sans attendre un triage ultérieur :
+
+1. Résoudre le Projet dans `gh project list --owner cloud-pi-native` (titre exact, résultat unique) et les champs/options réels avec `gh project field-list`. Pour les dates et ids d'itérations, lire en GraphQL `ProjectV2IterationField.configuration.iterations` (champ `PI`, jamais `PI-Backlog`).
+2. Retenir l'itération explicitement demandée, sinon l'unique itération dont l'intervalle `[startDate, startDate + duration)` contient la date courante. Si aucune ne correspond ou si le choix n'est pas unique, signaler le blocage ; ne pas choisir l'itération la plus proche.
+3. Déduire l'`Epic` du contenu du ticket, parmi les options du Projet ; pour une PR, utiliser l'Epic vérifié du ticket associé ou appliquer la même règle à son contenu. Si plusieurs options restent plausibles, demander confirmation ; ne pas deviner.
+4. Résoudre puis ajouter la carte si absente, en utilisant l'URL complète de l'objet créé. Poser `PI` avec `gh project item-edit --iteration-id` et `Epic` avec `--single-select-option-id` (ids de projet, carte et champ résolus à l'exécution). Pour une issue non triée, poser la colonne de backlog, sans la déclarer `Ready`.
+5. Relire `projectItems` et les valeurs `PI`, `Epic` et `Status` sur la carte Socle. Si une étape est bloquée, fournir l'URL déjà créée, les champs vérifiés et l'action restante. Ne pas présenter la création comme conforme et ne pas recréer l'objet.
+
+Ce parcours concerne l'initialisation d'un objet créé, pas les migrations de PI ni les corrections en lot. En triage, signaler les écarts et ne corriger que les valeurs vides et déterminables ; préserver les valeurs explicitement choisies et les gates d'approbation des lots.
+
 ## Carte des phases
 
 Les noms de colonnes diffèrent par board ; les phases sont les mêmes.
@@ -41,16 +53,16 @@ Avancer sur le signal, remonter sur marche arrière :
 
 | Carte  | Phase  | Signal qui déclenche le mouvement                          |
 | ------ | ------ | ----------------------------------------------------------- |
+| Issue  | Backlog | issue créée, triage non terminé |
 | Issue  | Ready  | triage complet (`cpn-triage`)                               |
 | Issue  | Active | worktree d'isolation créé pour sa correction (`cpn-delegate`) |
 | Issue  | Done   | issue fermée délibérément, ledger N sur N                   |
 | PR     | Active | PR ouverte depuis la worktree d'isolation                   |
-| PR     | Review | revue demandée (approbateur assigné)                        |
+| PR     | Review | PR sortie du brouillon et revue demandée                    |
 | PR     | Done   | PR fusionnée (rebase via la merge queue sur `main`)         |
 | Toute  | Parked | rationale explicite requise                                 |
 
-Le signal `Review` part une fois, à la demande de revue — pas à chaque push
-de branche. La carte d'une PR fusionnée ne retourne pas en backlog quand
+Le signal `Review` part une fois, quand la PR n'est plus en brouillon et que la revue est demandée — pas à chaque push de branche. La carte d'une PR fusionnée ne retourne pas en backlog quand
 l'issue qui l'a enfantée reste ouverte pour du follow-up : cette issue a sa
 propre carte.
 
@@ -102,10 +114,7 @@ gh project item-add <NUMÉRO> --owner cloud-pi-native \
 # PR : même commande avec l'URL de la PR ; content.type les distingue
 ```
 
-Gate d'entrée : l'issue est triée (`cpn-triage`) avant de boarder — Status
-reflète la phase triée, une carte non triée n'a pas de phase à refléter.
-Une carte ajoutée atterrit sans Status : le poser immédiatement (étape 3) —
-un statut non posé est invisible sur toutes les vues.
+Le triage (`cpn-triage`) est le gate pour passer l'issue à `Ready`, pas pour l'ajouter au projet. Une carte ajoutée atterrit sans Status : le poser immédiatement (étape 3).
 
 ### 3. Poser Status sur la phase réelle
 

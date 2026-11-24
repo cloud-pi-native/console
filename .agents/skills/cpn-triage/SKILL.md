@@ -88,19 +88,20 @@ d'autre :
 - **milestone** — défaut → plus haut patch ouvert de la ligne mineure
   courante ; capacité → prochaine mineure ou majeure. Aucune milestone
   ouverte ne colle → laisser vide.
-- **project** — ignorer sauf board évident ; le boarding et le Status au
-  Socle sont `cpn-project`.
+- **Socle, PI et Epic** — obligatoires pour les issues et PR `cloud-pi-native` ;
+  déléguer la vérification et le traitement des manques à `cpn-project`.
 - **relations** (parent, sous-issues, bloqueurs) — seulement quand le corps
   ou les liens les énoncent, jamais déduits.
 - **champs d'org** (issues seulement) — `Priority` : bloquant → `High`,
   routine → `Medium`, cosmétique repoussé → `Low` ; `Effort` : multi-fichiers
   ou risqué → `High`, borné → `Low` ; `Start date` seulement à la reprise
   effective, `Target date` seulement pour une échéance énoncée.
-- **reviewers** (PR seulement) — aucun demandé → le reviewer par défaut du
-  dépôt, sauf s'il en est l'auteur (422) ; ignorer si aucun ne convient.
+- **reviewers** (PR seulement) — appliquer la règle de l'équipe unique et
+  les relectures de `cpn-pr` ; aucun reviewer de remplacement. Lire les
+  demandes en cours avant toute modification de la PR.
 
-Sur une PR : pas de type, pas de champs d'org. Labels, assignee, reviewers
-seulement.
+Sur une PR : pas de type ni de champs d'org réservés aux issues. Les champs
+socle du Projet s'appliquent aux deux types d'objets.
 
 ## Écriture additive et vérification
 
@@ -108,7 +109,7 @@ seulement.
 gh issue edit N --repo cloud-pi-native/console --type Bug --add-label bug \
   --add-assignee "$ASSIGNEE" --milestone "9.29.0"
 gh pr edit N --repo cloud-pi-native/console --add-label bug \
-  --add-assignee "$ASSIGNEE" --add-reviewer "$REVIEWER"
+  --add-assignee "$ASSIGNEE"
 ```
 
 Champs d'org : résoudre les ids de champs en direct, lire les valeurs
@@ -144,9 +145,10 @@ dont la dérivation a changé.
   `completed` ; sinon `not planned` — même commentaire de piste, puis
   clôture. Sur demande explicite seulement : pendant un sweep, rapporter
   comme candidat à la clôture (`cpn-issue`), jamais auto-clôturé.
-- **Les liens bougent aussi.** Le lien Development issue↔PR est une
-  métadonnée : obsolète → retiré (`removeCloseIssueReferences`), manquant →
-  ajouté (`addCloseIssueReferences`), commentaire de piste ancien → nouveau.
+- **Les liens bougent aussi.** Le lien natif Déploiement issue↔PR est vérifié
+  dès la création selon `cpn-pr`. En requalification, ne retirer un lien que
+  si une preuve établit qu'il vise le mauvais ticket, pas parce que la PR a
+  été fusionnée. Relire et commenter l'ancienne et la nouvelle relation.
 
 ## Rapport
 
