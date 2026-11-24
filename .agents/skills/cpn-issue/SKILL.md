@@ -57,8 +57,8 @@ gh issue create --repo cloud-pi-native/console \
 ```
 
 After opening, run the creation procedure in `cpn-project`: add the issue to
-Socle and verify its `PI` and `Epic`. A successful `gh issue create` alone does
-not complete the workflow. Report any missing value with the issue URL.
+Socle and verify its `PI` and `Epic`. Apply `cpn-triage` immediately to set
+and reread `Assignee` and `Milestone`. Report missing values with the issue URL.
 
 ## Triage
 
@@ -68,16 +68,12 @@ have — filter labels against `gh label list`:
 
 ```bash
 gh issue edit <N> --repo cloud-pi-native/console \
-  --add-label <label> --add-assignee "$(gh api user --jq .login)" \
+  --add-label <label> --add-assignee "$ASSIGNEE" \
   --milestone "<milestone>"
 ```
 
 - **labels** — from `gh label list`, seeded by the title marker.
-- **assignee** — if empty and the work is machine-routable (no human
-  credentials, hardware, or spending): the author; otherwise leave empty
-  with a recorded reason.
-- **milestone** — by **title**, never by number; bug → highest open patch of
-  the current minor line, enhancement → next minor/major.
+- **assignee and milestone** — resolve and verify via `cpn-triage`.
 - **Socle, PI and Epic** — mandatory; delegate discovery and verification to
   `cpn-project`.
 
