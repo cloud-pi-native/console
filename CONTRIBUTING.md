@@ -26,6 +26,8 @@ Toute contribution de code doit être adossée à un ticket. Ce ticket décrit :
 
 Les [modèles de ticket GitHub](https://github.com/cloud-pi-native/console/tree/main/.github/ISSUE_TEMPLATE) sont à utiliser afin de nous aider à correctement catégoriser les demandes.
 
+Un sujet à plusieurs tickets se crée avec le modèle « 🌈 Épic » : les sous-tickets y sont rattachés via les sub-issues natives, et la section « Références » de l'épic ne cite que les éléments qui ne sont pas ses sous-tickets, l'arbre des sub-issues faisant foi sur le périmètre du chantier.
+
 Pour une contribution de code qui corrige un bug, une procédure de
 reproduction, un test automatisé de non-régression et, pour une interface, des
 captures d'écran sont fortement recommandés lorsqu'ils sont pertinents. Leur

@@ -1,0 +1,52 @@
+name: 🌈 Épic
+description: Créer un chantier regroupant plusieurs tickets ; les sous-tickets y sont rattachés après création via « Sub-issues ».
+labels: [internal, enhancement]
+body:
+  - type: textarea
+    id: request_source
+    attributes:
+      label: Contexte et source
+      description: Décrivez le contexte et l'origine du chantier.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_result
+    attributes:
+      label: Besoin ou résultat attendu
+      description: Décrivez le résultat attendu à l'issue du chantier.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Périmètre
+      description: Indiquez ce qui est concerné, sans présumer d'une solution technique.
+    validations:
+      required: true
+
+  - type: textarea
+    id: open_questions
+    attributes:
+      label: Questions à trancher
+      description: Listez les décisions à prendre avant de découper les sous-tickets du chantier.
+    validations:
+      required: false
+
+  - type: textarea
+    id: definition_of_done
+    attributes:
+      label: Définition du fini
+      description: Critères d'acceptation du chantier, en terminant par la clôture de ses sous-tickets.
+      placeholder: "- [ ] Les sous-tickets du chantier sont clos."
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Références
+      description: Éléments qui ne sont pas des sous-tickets du chantier ; l'arbre des sub-issues fait foi sur son périmètre.
+    validations:
+      required: false
