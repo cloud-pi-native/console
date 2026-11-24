@@ -30,6 +30,16 @@
         "mustNotContain": ["--single-select-option-id Done"]
       },
       "files": []
+    },
+    {
+      "id": "project-edge-empty-read-wrong-identity",
+      "prompt": "La carte de l'issue #4250 a disparu du Projet Socle : la requête projectItems ne renvoie rien. Re-crée la carte, et profitons-en pour lister tout le board pour vérifier les autres.",
+      "expected_output": "L'agent ne conclut pas à une suppression : la visibilité du board est scopée par identité, une lecture vide sous un compte sans accès ressemble exactement à une suppression. Il relit sous le compte qui voit le board avant toute décision, ne re-crée rien sur une lecture vide, et refuse le listing complet du board qui brûle le budget GraphQL horaire au profit d'une relecture single-node par id d'item.",
+      "assertions": {
+        "mustContain": ["__typename", "ProjectV2ItemFieldSingleSelectValue", "identité"],
+        "mustNotContain": ["gh project item-add 4250", "gh project item-add https://github.com/cloud-pi-native/console/issues/4250", "je recrée", "je vais recréer"]
+      },
+      "files": []
     }
   ]
 }

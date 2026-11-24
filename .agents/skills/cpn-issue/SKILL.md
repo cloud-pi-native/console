@@ -5,7 +5,7 @@ description:
   triaging, or closing an issue in this repo."
 license: Apache-2.0
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # Console issues
@@ -103,10 +103,38 @@ silent metadata edit is the defect this rule prevents.
 - The body stays the stable problem statement; decisions go to the comment
   thread via `gh issue comment <N> --body-file <file>`, one line per decision;
   lasting references are appended to the body's Références section.
+
 - Closure is deliberate: verify every `- [ ]` box against evidence, then
   `gh issue close <N> --comment "<evidence>"`. Never rely on PR-merge
-  auto-close, never close silently — state why (duplicate → link the
-  canonical issue).
+  auto-close, never close silently — state why. A duplicate links the
+  canonical issue and closes **as duplicate**, never as `not planned` —
+  whatever the canonical's own state: a closed canonical stays the reference
+  readers are sent to, so the reason is still `duplicate`, not `completed`:
+
+  ```bash
+  gh issue close <N> --repo cloud-pi-native/console \
+    --reason duplicate --duplicate-of <M> --comment "<evidence>"
+  ```
+
+### Issue statuses
+
+Every issue carries a planning status beside `state`/`state_reason`:
+`Backlog`, `Todo`, `In progress`, `In review` (open) and `Done`,
+`Not planned`, `Duplicate` (closed). A closing status sets state and reason
+together; `gh issue close` sets only the reason — the status itself moves
+through the API, and its ids are per repository, so never hardcode one:
+
+```bash
+# list status ids — per repository
+gh api graphql -f query='{ repository(owner:"cloud-pi-native", name:"console")
+  { planningStatuses(first:10) { nodes { id name category { key } } } } }'
+# set (a REST PATCH with the status name also works)
+gh api graphql -f query='mutation($i:ID!,$s:ID!){ setIssueStatus(input:
+  {issueId:$i,statusId:$s}){ issue { number state stateReason
+  status { name } } } }' -f i=<node-id> -f s=<status-id>
+# read-back: the status and the close reason agree
+gh api repos/cloud-pi-native/console/issues/<N> --jq '{state, state_reason, status}'
+```
 
 ## Pitfalls
 

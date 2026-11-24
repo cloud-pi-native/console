@@ -5,7 +5,7 @@ description:
   severity-tagged French inline findings, DoD ledger, never merge."
 license: Apache-2.0
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Console PR review & reconciliation
@@ -83,6 +83,17 @@ author amends.
    gh api graphql -f query='mutation($id: ID!) {
      resolveReviewThread(input: {threadId: $id}) { thread { isResolved } }
    }' -f id=<threadId>
+   ```
+
+   **Resolving threads does not clear `CHANGES_REQUESTED`** — that state
+   comes from submitted reviews, not thread state. After resolving threads
+   or pushing a fix, re-request the reviewer: remove then re-add, then
+   re-verify approval on the new head.
+
+   ```bash
+   gh pr edit <N> --repo cloud-pi-native/console --remove-reviewer cloud-pi-native/socle
+   gh pr edit <N> --repo cloud-pi-native/console --add-reviewer cloud-pi-native/socle
+   gh pr view <N> --repo cloud-pi-native/console --json reviewRequests,reviews
    ```
 
 3. **Approval + CI** — a human approving review from another collaborator on

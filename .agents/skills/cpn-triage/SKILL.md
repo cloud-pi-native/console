@@ -7,7 +7,7 @@ description:
   whose evidence moved after triage."
 license: Apache-2.0
 metadata:
-  version: '1.1.0'
+  version: '1.2.0'
 ---
 
 # Triage console
@@ -71,6 +71,24 @@ vide, aucune valeur inventée. Ne jamais poser une valeur qu'il ne liste pas.
 - labels réels via `gh label list` : `bug`, `enhancement`, `docs`,
   `technical debt`, `a11y`, `ui/ux`, `CI/CD`, `security`, `refactor`…
   jamais de mémoire.
+
+## Auditer d'abord la complétude du corps
+
+Avant de dériver un champ du contenu, comparer le corps au formulaire que le
+dépôt livre réellement (`.github/ISSUE_TEMPLATE/`) : une section requise
+absente, vide ou encore en texte de remplissage est un manque de complétude.
+Publier un commentaire nommant les sections exactes (`gh issue comment
+--body-file`), demander à l'auteur de les remplir — ne jamais réécrire le
+corps pendant un triage, la rédaction revient à `cpn-issue`. Ne dériver
+aucun champ d'une section manquante : les champs viennent du contenu
+réellement présent et des autres preuves. Rapporter le manque dans le
+résultat du triage. En requalification, un corps édité pour combler un
+manque est une preuve déplacée : ne redériver que les champs dont la
+dérivation a changé.
+
+```bash
+gh issue view <N> --repo cloud-pi-native/console --json body
+```
 
 ## Remplir (par item)
 
@@ -144,9 +162,11 @@ dont la dérivation a changé.
 - **Jamais silencieux.** Chaque champ changé publie un commentaire de piste
   sur l'item : champ, ancien → nouveau, preuve qui l'a forcé.
 - **L'état est un champ aussi.** Preuve de livraison par une PR liée →
-  `completed` ; sinon `not planned` — même commentaire de piste, puis
-  clôture. Sur demande explicite seulement : pendant un sweep, rapporter
-  comme candidat à la clôture (`cpn-issue`), jamais auto-clôturé.
+  `completed` ; doublon d'une issue existante → `duplicate` (lier
+  l'issue canonique, jamais `not planned`) ; sinon `not planned` — même
+  commentaire de piste, puis clôture. Sur demande explicite seulement :
+  pendant un sweep, rapporter comme candidat à la clôture (`cpn-issue`),
+  jamais auto-clôturé.
 - **Les liens bougent aussi.** Le lien natif Déploiement issue↔PR est vérifié
   dès la création selon `cpn-pr`. En requalification, ne retirer un lien que
   si une preuve établit qu'il vise le mauvais ticket, pas parce que la PR a
@@ -179,6 +199,10 @@ clôture est délibérée (`cpn-issue`).
   (mécanique : `cpn-project`).
 - Bodies et payloads passent par fichiers (`--body-file`, `--input`), jamais
   en argument inline — l'expansion shell mutille les backticks et les `$`.
+- Une classe `body` au scan — ou une section absente du formulaire — est un
+  manque de complétude : l'auditer (section dédiée), commenter pour demander
+  le remplissage, ne dériver aucun champ de l'absence. Rapporter le manque ;
+  jamais réécrire le corps pendant un sweep.
 - Un commentaire de piste manquant sur une requalification est le défaut que
   ce mode existe pour prévenir.
 - Ne pas diagnostiquer, reworder ou fermer ici : `cpn-issue` (clôture),

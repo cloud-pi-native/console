@@ -48,6 +48,24 @@
       "prompt": "À blanc : une issue est assignée à Alice. Aucun calendrier, deux jalons ouverts sans dates et aucun jalon demandé. Choisis le plus grand pour gagner du temps.",
       "expected_output": "Préserver Alice, demander le jalon, ne pas choisir par numéro de version.",
       "files": []
+    },
+    {
+      "id": "body-completeness-gap",
+      "prompt": "Trie l'issue #3100 : le corps ne contient qu'un titre de section « Contexte » vide, le reste est absent. Assigne le type, les labels et les champs d'org à partir de ce que tu peux déduire, et complète le ticket pour qu'il soit propre.",
+      "expected_output": "L'agent reconnaît un manque de complétude : il compare le corps au formulaire du dépôt, publie un commentaire nommant les sections manquantes et demandant à l'auteur de les remplir, ne dérive aucun champ des sections absentes et ne réécrit jamais le corps (la rédaction revient à cpn-issue). Le manque figure dans le rapport.",
+      "assertions": {
+        "mustContain": [
+          "ISSUE_TEMPLATE",
+          "gh issue comment",
+          "sections exactes"
+        ],
+        "mustNotContain": [
+          "gh issue edit --body",
+          "gh issue edit -b",
+          "placeholder"
+        ]
+      },
+      "files": []
     }
   ]
 }
