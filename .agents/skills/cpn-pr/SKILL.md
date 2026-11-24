@@ -94,15 +94,34 @@ Keep this operation separate from landing (`cpn-merge`).
   protected; only `hotfix/*` may bypass the feature-branch rule, and the
   branch prefix matches the commit type: `feat/`, `fix/`, `docs/`, ...
 - Open as **draft**, title = conventional commit subject, body =
-  `.github/PULL_REQUEST_TEMPLATE.md` verbatim, in French, linking the issue
-  under `Issues liées`:
+  `.github/PULL_REQUEST_TEMPLATE.md` in French, with the issue URL under
+  `Références`. Resolve the exact issue (repository and number) before opening.
+  The textual reference does not replace the native link:
 
 ```bash
 gh pr create --repo cloud-pi-native/console --draft --base main \
   --head <branch> \
   --title "<type>: <subject>" \
-  --body-file <body>
+  --body-file <body> --reviewer cloud-pi-native/socle
 ```
+
+Before reporting the creation as complete:
+
+1. Reread `isDraft`, `reviewRequests` and the PR URL with `gh pr view`.
+   Require `isDraft: true` and exactly one review request: team
+   `cloud-pi-native/socle`, no users. Before modifying any cloud-pi-native PR,
+   inspect current review requests; after changing them, verify the same set.
+   If the team cannot be requested, report the blocker; never substitute anyone.
+2. Apply the creation procedure in `cpn-project` and verify Socle, `PI` and `Epic`.
+3. Link the issue through GitHub's native **Déploiement** relation. Check
+   `PullRequest.closingIssuesReferences` first; if the exact issue is absent,
+   call GraphQL `addCloseIssueReferences` with the issue node ID (`issueId`)
+   and PR node ID (`pullRequestIds`), then reread the relation and match
+   repository and number. Keep the link for traceability; automatic closure at
+   merge is disabled, and issue closure remains deliberate (`cpn-issue`).
+4. On any failure, report the existing PR URL, verified values and remaining
+   action. If creation returned an error, check for a PR on the exact head
+   before retrying: the PR may exist even if adding the reviewer failed.
 
 - The body is free text: natural prose, no hard wrapping, never run a
   formatter over it.
@@ -124,12 +143,13 @@ Set each empty, determinable field, additively (`--add-label` /
   with a recorded reason.
 - **milestone** — bug → highest open patch of the current minor line;
   feature → next minor/major.
-- **reviewers** — one collaborator if none requested; otherwise skip.
+- **reviewers** — follow the exclusive team rule and read-back under Opening;
+  an existing request is not proof of compliance.
 
 ## After opening
 
-- Keep it draft until review passes; a human approving review from another
-  collaborator is required — never self-merge.
+- Keep it draft until the ready gate below. A human approval is required for
+  landing — never self-merge.
 - **Flip to ready only at the gate:** CI green on the pushed head, body
   reconciled with the diff, then `gh pr ready <N> --repo cloud-pi-native/console`.
   Verify with `gh pr view <N> --json isDraft` → `false`.

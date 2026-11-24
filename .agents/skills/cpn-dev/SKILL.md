@@ -38,12 +38,14 @@ behind it; no bare-request implementation.
    `💡 [REQUEST] - <summary>`, via `.github/ISSUE_TEMPLATE/`. Body = problem
    statement plus a `- [ ]` acceptance tasklist, Définition du fini — never
    the solution; analysis goes in comments. Search existing issues before
-   creating.
+   creating. Complete opening via `cpn-issue` and `cpn-project`: reread Socle,
+   `PI` and `Epic`.
 2. **Triage before work**: set each empty, determinable field — labels
    from `gh label list`, never invented; assignee; milestone: bug → highest
    open patch of the current minor line, feature → next minor/major.
 3. **Branch from `origin/main`**, implement, commit.
-4. **Draft PR** linked to the issue.
+4. **Draft PR** via `cpn-pr`: verify Socle, `PI`, `Epic`, draft state, exclusive
+   team review request and the native issue link before handing off.
 5. **Human approving review is the merge gate** — do not self-merge.
 6. **Close deliberately**: verify every acceptance box, then close the issue
    with an evidence comment. Never rely on PR-merge auto-close.
