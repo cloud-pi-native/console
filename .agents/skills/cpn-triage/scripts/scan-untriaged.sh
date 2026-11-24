@@ -28,8 +28,8 @@ echo "# classes: type=$TYPES fields=$FIELDS milestones=$MILESTONES"
 
 FIELD_NAMES=$(gh api "orgs/$OWNER/issue-fields" --jq '[.[].name] | join(",")' 2>/dev/null || echo "")
 
-gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] | [.number, (if .pull_request then "pr" else "issue" end), (.type.name // "none"), (if ([.labels[].name] | length) == 0 then "none" else ([.labels[].name] | join(",")) end), ([.issue_field_values[]?.issue_field_name] | join(",") | if . == "" then "none" else . end), (.milestone.title // "none")] | @tsv' |
-while IFS=$'\t' read -r n kind type labels fields milestone; do
+gh api --paginate "repos/$REPO/issues?state=open&per_page=100" --jq '.[] | [.number, (if .pull_request then "pr" else "issue" end), (.type.name // "none"), (if ([.labels[].name] | length) == 0 then "none" else ([.labels[].name] | join(",")) end), ([.issue_field_values[]?.issue_field_name] | join(",") | if . == "" then "none" else . end), (.milestone.title // "none"), (if (.body // "" | gsub("^\\s+|\\s+$"; "")) == "" then "none" else "body" end)] | @tsv' |
+while IFS=$'\t' read -r n kind type labels fields milestone body; do
     gaps=""
     if [[ $kind == issue && $TYPES -gt 0 && $type == "none" ]]; then
       gaps+="type,"
@@ -39,6 +39,11 @@ while IFS=$'\t' read -r n kind type labels fields milestone; do
     fi
     if [[ $MILESTONES -gt 0 && $milestone == "none" ]]; then
       gaps+="milestone,"
+    fi
+    # An empty or missing body is a gap; section-level completeness against
+    # the issue template is judged per item in SKILL.md, not here.
+    if [[ $body == "none" ]]; then
+      gaps+="body,"
     fi
     if [[ $kind == issue && $FIELDS -gt 0 ]]; then
       # A partially-filled item still owes the missing org fields (thread 3):

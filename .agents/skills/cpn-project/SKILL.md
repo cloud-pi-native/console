@@ -6,7 +6,7 @@ description:
   onboarding, transitions, drift audit."
 license: Apache-2.0
 metadata:
-  version: '1.1.0'
+  version: '1.2.0'
 ---
 
 # Cartes et statut sur le Projet Socle
@@ -30,6 +30,14 @@ gh auth refresh -s project
 
 - Numéro du Projet confirmé pour la session (mécanique de confirmation :
   `cpn-pi-transition`).
+- **Lecture du board sous le compte qui le voit.** La visibilité est scopée
+  par identité sur `cloud-pi-native` : sous un compte sans accès board, les
+  graphes projet, `issue.projectItems` et les nodes d'item renvoient
+  `NOT_FOUND` ou vide — silencieusement, indiscernable d'une suppression
+  réelle. Lire l'existence d'une carte et son Status sous `shikanime` seul
+  (`GH_TOKEN=$(gh auth token --user shikanime)`), et y placer aussi les
+  preuves d'écriture. Ne jamais conclure « supprimé » d'une réponse vide
+  sous un autre compte.
 
 Un prérequis manquant est un blocage signalé, jamais un contournement
 silencieux.
@@ -147,7 +155,10 @@ gh api graphql -f query='
 ```
 
 Le statut imprimé égale la colonne visée, sinon le mouvement n'a pas eu
-lieu.
+lieu. Si la sélection inline échoue sur ce type, sonder d'abord son
+`__typename` (`fieldValueByName(name:"Status"){ __typename }`) — ici
+`ProjectV2ItemFieldSingleSelectValue` — puis sélectionner sur ce type :
+deviner deux fois sans introspection coûte deux allers-retours pour rien.
 
 ## Gate des mutations en lot
 
@@ -177,6 +188,13 @@ l'item avant de la re-proposer.
   `gh pr view <N> --json state,mergedAt`.
 - Une carte sur un autre board que celui de son contexte est mal classée :
   re-résoudre, puis `item-delete` + re-add.
+- **`gh project item-list` brûle le budget GraphQL horaire.** Sur un board de
+  plusieurs milliers d'items, un listing en masse consomme assez du quota
+  horaire pour que la relecture de vérification, la même heure, trébuche sur
+  le limiteur. Relire une seule carte depuis l'id d'item gardé dans la
+  réponse de `item-add` — une requête node, aucun listing. Ce chemin demande
+  encore du budget : pool horaire épuisé, même une requête single-node est
+  limitée — attendre le reset, puis relire.
 
 ## Vérification
 
