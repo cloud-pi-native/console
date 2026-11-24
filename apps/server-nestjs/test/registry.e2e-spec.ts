@@ -146,7 +146,7 @@ describeWithRegistry('RegistryService (e2e)', () => {
     expect(project.data?.metadata?.retention_id).toBeTruthy()
   })
 
-  it('should converge a drifted robot duration in place without a 400', async () => {
+  it('should converge a drifted robot duration in place', async () => {
     const project = await client.getProjectByName(projectSlug)
     const harborProjectId = Number(project.data?.project_id)
     const robots = await getAll(client.getProjectRobots(harborProjectId))
