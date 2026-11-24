@@ -56,6 +56,10 @@ gh issue create --repo cloud-pi-native/console \
   --title "💡 [REQUEST] - <summary>" --label enhancement --body-file <file>
 ```
 
+After opening, run the creation procedure in `cpn-project`: add the issue to
+Socle and verify its `PI` and `Epic`. Apply `cpn-triage` immediately to set
+and reread `Assignee` and `Milestone`. Report missing values with the issue URL.
+
 ## Triage
 
 Fill each empty, determinable field, additively (`--add-label` /
@@ -64,18 +68,14 @@ have — filter labels against `gh label list`:
 
 ```bash
 gh issue edit <N> --repo cloud-pi-native/console \
-  --add-label <label> --add-assignee "$(gh api user --jq .login)" \
+  --add-label <label> --add-assignee "$ASSIGNEE" \
   --milestone "<milestone>"
 ```
 
 - **labels** — from `gh label list`, seeded by the title marker.
-- **assignee** — if empty and the work is machine-routable (no human
-  credentials, hardware, or spending): the author; otherwise leave empty
-  with a recorded reason.
-- **milestone** — by **title**, never by number; bug → highest open patch of
-  the current minor line, enhancement → next minor/major.
-- **project** — `--add-project <n>` only when one board is the obvious home;
-  skip when ambiguous; boarding and Status on the Socle are `cpn-project`.
+- **assignee and milestone** — resolve and verify via `cpn-triage`.
+- **Socle, PI and Epic** — mandatory; delegate discovery and verification to
+  `cpn-project`.
 
 The issue clearly belongs to another `cloud-pi-native/*` repo? Transfer
 instead of re-triaging: `gh issue transfer <N> <OWNER/REPO>` — do not edit or
@@ -115,6 +115,8 @@ silent metadata edit is the defect this rule prevents.
 - A documentation link is not proof that its terms were checked; read the relevant content and report unavailable or missing definitions honestly.
 
 ## Verify
+
+Verify Socle membership, `PI` and `Epic` via `cpn-project`, in addition to:
 
 ```bash
 gh issue view <N> --repo cloud-pi-native/console \

@@ -1,5 +1,6 @@
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -20,6 +21,7 @@ describe('keycloakService', () => {
   let service: KeycloakService
   let keycloak: DeepMockProxy<KeycloakClientService>
   let datastore: DeepMockProxy<KeycloakDatastoreService>
+  let events: EventEmitter2
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
@@ -33,6 +35,7 @@ describe('keycloakService', () => {
     })
 
     const moduleRef = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot()],
       providers: [
         KeycloakService,
         { provide: KeycloakClientService, useValue: keycloak },
@@ -40,7 +43,9 @@ describe('keycloakService', () => {
       ],
     }).compile()
 
+    await moduleRef.init()
     service = moduleRef.get(KeycloakService)
+    events = moduleRef.get(EventEmitter2)
   })
 
   it('should be defined', () => {
@@ -589,6 +594,25 @@ describe('keycloakService', () => {
       await service.handleCron()
 
       expect(keycloak.removeUserFromGroup).not.toHaveBeenCalledWith('user-1', 'role-group-id')
+    })
+  })
+
+  describe('handleUpsert (projectRole.delete regression #3049)', () => {
+    it('reconciles OIDC groups when a project role event fires', async () => {
+      const project = makeProjectWithDetails({ id: 'project-id', slug: 'test-project', ownerId: 'owner-id', everyonePerms: 0n, members: [], roles: [] })
+      datastore.getProject.mockResolvedValue(project)
+      const projectGroup = makeGroupRepresentation({ id: 'group-id', name: 'test-project', subGroups: [] })
+      keycloak.ensureGroupByPath.mockResolvedValue(projectGroup)
+      keycloak.ensureSubGroupByName.mockResolvedValue(makeGroupRepresentation({ id: 'console-id', name: 'console' }))
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+      keycloak.getGroupMembers.mockResolvedValue([])
+
+      await events.emitAsync('projectRole.delete', { projectId: 'project-id' })
+
+      // #3049: revoking a project role must reach the Keycloak group
+      // reconciliation — the granular projectRole.delete routes here.
+      expect(datastore.getProject).toHaveBeenCalledWith('project-id')
+      expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/test-project')
     })
   })
 

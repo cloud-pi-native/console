@@ -81,34 +81,37 @@ d'autre :
   défaut → `Bug`, capacité nouvelle → `Feature`, corvée ou suivi → `Task`.
 - **labels** — correspondance de sens : défaut → `bug`, capacité →
   `enhancement`, doc → `docs`. Toujours `--add-label`, jamais `--label`.
-- **assignee** — si vide et si le travail est pilotable par un agent
-  (aucun identifiant humain, matériel, ni dépense requis) : l'auteur de
-  l'issue ; sinon `$(gh api user --jq .login)`. Sinon, laisser vide en
-  consignant la raison dans le rapport — jamais d'assignation de forme.
-- **milestone** — défaut → plus haut patch ouvert de la ligne mineure
-  courante ; capacité → prochaine mineure ou majeure. Aucune milestone
-  ouverte ne colle → laisser vide.
-- **project** — ignorer sauf board évident ; le boarding et le Status au
-  Socle sont `cpn-project`.
+- **assignee et milestone** — appliquer la procédure commune ci-dessous, sur les issues et PR.
+- **Socle, PI et Epic** — obligatoires pour les issues et PR `cloud-pi-native` ;
+  déléguer la vérification et le traitement des manques à `cpn-project`.
 - **relations** (parent, sous-issues, bloqueurs) — seulement quand le corps
   ou les liens les énoncent, jamais déduits.
 - **champs d'org** (issues seulement) — `Priority` : bloquant → `High`,
   routine → `Medium`, cosmétique repoussé → `Low` ; `Effort` : multi-fichiers
   ou risqué → `High`, borné → `Low` ; `Start date` seulement à la reprise
   effective, `Target date` seulement pour une échéance énoncée.
-- **reviewers** (PR seulement) — aucun demandé → le reviewer par défaut du
-  dépôt, sauf s'il en est l'auteur (422) ; ignorer si aucun ne convient.
+- **reviewers** (PR seulement) — appliquer la règle de l'équipe unique et
+  les relectures de `cpn-pr` ; aucun reviewer de remplacement. Lire les
+  demandes en cours avant toute modification de la PR.
 
-Sur une PR : pas de type, pas de champs d'org. Labels, assignee, reviewers
-seulement.
+Sur une PR : pas de type ni de champs d'org réservés aux issues. Les champs
+socle du Projet s'appliquent aux deux types d'objets.
+
+## Assignee et Milestone — création et triage
+
+Appliquer systématiquement aux issues et PR `cloud-pi-native`, dès la création, sans attendre un triage ultérieur. Pour un objet existant, préserver les valeurs déjà posées sauf demande explicite de correction.
+
+- **Assignee** : utiliser le compte demandé ; sinon, sur une PR, reprendre l'unique assignee du ticket lié s'il est assignable dans le dépôt cible. À défaut, assigner la personne qui demande le travail si son compte GitHub est identifié. Pour « moi », vérifier que le compte de `gh api user --jq .login` est bien celui de cette personne, pas un bot ni un compte partagé. En cas de doute ou de refus, demander le compte à utiliser. L'assignation ne change pas les demandes de revue.
+- **Milestone** : lister les jalons ouverts du dépôt cible (`gh api --paginate 'repos/<OWNER>/<REPO>/milestones?state=open'`). Utiliser le titre explicitement demandé s'il est ouvert ; sinon choisir le jalon de livraison courant. Plusieurs jalons peuvent être ouverts : s'appuyer sur le calendrier de livraison confirmé, pas sur l'ordre de l'API ni sur la plus grande version. Sans calendrier explicite, retenir l'unique jalon de livraison ouvert, ou, s'ils sont tous datés, celui dont l'échéance à venir est la plus proche et unique. Si la cible reste ambiguë, demander confirmation. Ne pas déduire le jalon du PI, du type d'issue ou d'un numéro de version codé en dur.
+- **Relecture** : `gh issue view` ou `gh pr view --json assignees,milestone` dans le dépôt cible. Vérifier le login attendu et `milestone.title`. Si une valeur manque ou si une écriture est refusée, donner l'URL de l'objet, le champ en cause et l'action restante ; ne pas annoncer une création complète. Avant toute modification d'une PR, relire ses demandes de revue conformément à `cpn-pr`.
 
 ## Écriture additive et vérification
 
 ```bash
 gh issue edit N --repo cloud-pi-native/console --type Bug --add-label bug \
-  --add-assignee "$ASSIGNEE" --milestone "9.29.0"
+  --add-assignee "$ASSIGNEE" --milestone "$MILESTONE"
 gh pr edit N --repo cloud-pi-native/console --add-label bug \
-  --add-assignee "$ASSIGNEE" --add-reviewer "$REVIEWER"
+  --add-assignee "$ASSIGNEE" --milestone "$MILESTONE"
 ```
 
 Champs d'org : résoudre les ids de champs en direct, lire les valeurs
@@ -144,9 +147,10 @@ dont la dérivation a changé.
   `completed` ; sinon `not planned` — même commentaire de piste, puis
   clôture. Sur demande explicite seulement : pendant un sweep, rapporter
   comme candidat à la clôture (`cpn-issue`), jamais auto-clôturé.
-- **Les liens bougent aussi.** Le lien Development issue↔PR est une
-  métadonnée : obsolète → retiré (`removeCloseIssueReferences`), manquant →
-  ajouté (`addCloseIssueReferences`), commentaire de piste ancien → nouveau.
+- **Les liens bougent aussi.** Le lien natif Déploiement issue↔PR est vérifié
+  dès la création selon `cpn-pr`. En requalification, ne retirer un lien que
+  si une preuve établit qu'il vise le mauvais ticket, pas parce que la PR a
+  été fusionnée. Relire et commenter l'ancienne et la nouvelle relation.
 
 ## Rapport
 

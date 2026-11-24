@@ -93,7 +93,7 @@ describe('environmentService', () => {
       const environment = makeEnvironment({ id: environmentId, projectId, clusterId, stageId })
       validation.validateCreate.mockResolvedValue(undefined)
       datastore.createEnvironment.mockResolvedValue(environment)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await service.createEnvironment(projectId, validCreateEnvironment, userId, requestId)
 
@@ -108,7 +108,7 @@ describe('environmentService', () => {
         memory: validCreateEnvironment.memory,
         autosync: validCreateEnvironment.autosync,
       })
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('environment.upsert', projectId, {
         action: 'Create Environment',
         userId,
         requestId,
@@ -120,7 +120,7 @@ describe('environmentService', () => {
       const environment = makeEnvironment({ id: environmentId, projectId, clusterId, stageId })
       validation.validateCreate.mockResolvedValue(undefined)
       datastore.createEnvironment.mockResolvedValue(environment)
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.createEnvironment(projectId, validCreateEnvironment, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)
@@ -133,7 +133,7 @@ describe('environmentService', () => {
       await expect(service.createEnvironment(projectId, validCreateEnvironment, userId, requestId))
         .rejects.toThrow(BadRequestException)
       expect(datastore.createEnvironment).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectResourceEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -144,13 +144,13 @@ describe('environmentService', () => {
       datastore.getProjectEnvironment.mockResolvedValue(existing)
       validation.validateUpdate.mockResolvedValue(undefined)
       datastore.updateEnvironment.mockResolvedValue(updated)
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       const result = await service.updateEnvironment(projectId, environmentId, validUpdateEnvironment, userId, requestId)
 
       expect(validation.validateUpdate).toHaveBeenCalledWith(existing, validUpdateEnvironment)
       expect(datastore.updateEnvironment).toHaveBeenCalledWith(environmentId, validUpdateEnvironment)
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('environment.upsert', projectId, {
         action: 'Update Environment',
         userId,
         requestId,
@@ -163,7 +163,7 @@ describe('environmentService', () => {
       datastore.getProjectEnvironment.mockResolvedValue(existing)
       validation.validateUpdate.mockResolvedValue(undefined)
       datastore.updateEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId, ...validUpdateEnvironment }))
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.updateEnvironment(projectId, environmentId, validUpdateEnvironment, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)
@@ -187,7 +187,7 @@ describe('environmentService', () => {
       await expect(service.updateEnvironment(projectId, environmentId, validUpdateEnvironment, userId, requestId))
         .rejects.toThrow(BadRequestException)
       expect(datastore.updateEnvironment).not.toHaveBeenCalled()
-      expect(appEvents.emitProjectEvent).not.toHaveBeenCalled()
+      expect(appEvents.emitProjectResourceEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -195,12 +195,12 @@ describe('environmentService', () => {
     it('should delete the environment and trigger the project reconciliation', async () => {
       datastore.getProjectEnvironment.mockResolvedValue(makeEnvironmentWithCluster({ id: environmentId, projectId }))
       datastore.deleteEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId }))
-      appEvents.emitProjectEvent.mockResolvedValue({})
+      appEvents.emitProjectResourceEvent.mockResolvedValue({})
 
       await service.deleteEnvironment(projectId, environmentId, userId, requestId)
 
       expect(datastore.deleteEnvironment).toHaveBeenCalledWith(environmentId)
-      expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', projectId, {
+      expect(appEvents.emitProjectResourceEvent).toHaveBeenCalledWith('environment.upsert', projectId, {
         action: 'Delete Environment',
         userId,
         requestId,
@@ -210,7 +210,7 @@ describe('environmentService', () => {
     it('should wait for the reconciliation and reject when a service fails', async () => {
       datastore.getProjectEnvironment.mockResolvedValue(makeEnvironmentWithCluster({ id: environmentId, projectId }))
       datastore.deleteEnvironment.mockResolvedValue(makeEnvironment({ id: environmentId, projectId }))
-      appEvents.emitProjectEvent.mockResolvedValue(failedReconciliation)
+      appEvents.emitProjectResourceEvent.mockResolvedValue(failedReconciliation)
 
       await expect(service.deleteEnvironment(projectId, environmentId, userId, requestId))
         .rejects.toThrow(InternalServerErrorException)

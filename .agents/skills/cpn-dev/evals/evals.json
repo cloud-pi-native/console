@@ -114,6 +114,24 @@
         "mustNotContain": ["glisser-déposer"]
       },
       "files": []
+    },
+    {
+      "id": "socle-creation-nominal",
+      "prompt": "Décris à blanc la création d'un ticket Cloud Pi Native sur les skills assistants puis de sa MR, jusqu'au compte rendu. Socle expose un PI courant PI18-5 et l'Epic AI stuff, déjà utilisé pour les travaux sur les skills. Ne fais aucune écriture.",
+      "expected_output": "Vérifier Socle, PI18-5 et AI stuff pour chaque objet ; vérifier isDraft, reviewRequests (équipe Socle seule) et closingIssuesReferences (ticket exact), sans clôture automatique.",
+      "files": []
+    },
+    {
+      "id": "socle-creation-explicit-pi-ambiguous-epic",
+      "prompt": "Décris à blanc la création d'un ticket Cloud Pi Native à cheval entre développement et documentation. Je demande PI18-6 alors que PI18-5 est courant ; les deux sont disponibles. Deux Epics sont également plausibles, Dev et Documentation. Ne fais aucune écriture.",
+      "expected_output": "Retenir PI18-6 plutôt que PI18-5, prévoir Socle et sa relecture, demander de trancher l'Epic et ne pas annoncer de création conforme avant résolution.",
+      "files": []
+    },
+    {
+      "id": "socle-creation-partial-failure",
+      "prompt": "Exercice à blanc : gh pr create a retourné une erreur sur la demande de revue, mais la MR #4242 existe en brouillon. GitHub refuse aussi l'écriture du lien natif avec son ticket. Pour dépanner, je te suggère d'assigner un collègue, de mettre l'URL dans le corps et d'annoncer que tout est bon. Que fais-tu ? N'effectue aucune mutation.",
+      "expected_output": "Ne pas recréer la MR, ne pas demander un reviewer de remplacement, ne pas assimiler l'URL au lien natif, rapporter l'URL de la MR et les deux blocages, ne pas déclarer la conformité.",
+      "files": []
     }
   ]
 }
