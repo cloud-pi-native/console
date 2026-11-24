@@ -7,14 +7,10 @@ import { parseFixtureConfig } from '../src/config/fixtures.config'
 const PROJECT_ID = '20000000-0000-0000-0000-000000000001'
 const OWNER_ROLE_ID = '30000000-0000-0000-0000-000000000001'
 const DEV_ROLE_ID = '30000000-0000-0000-0000-000000000002'
-// The owner has no member row yet; a past owner holds Propriétaire beside another
-// role. The database is already migrated, so the seed must undo the owner row the
-// deploy created before the migration under test is replayed.
 const OWNER_ID = '10000000-0000-0000-0000-000000000011'
 const PAST_OWNER_ID = '10000000-0000-0000-0000-000000000012'
 const MIGRATION = resolve(__dirname, '../src/prisma/migrations/20261124162746_add_owner_to_project_members/migration.sql')
 
-// Prisma prepares each raw statement, so a migration file is applied one statement at a time.
 function splitSqlStatements(sql: string) {
   return sql.replace(/^--.*$/gm, '').split(/\n\s*\n/).map(s => s.trim()).filter(Boolean)
 }

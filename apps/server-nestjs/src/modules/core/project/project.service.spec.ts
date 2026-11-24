@@ -81,15 +81,17 @@ describe('projectService', () => {
 
       const pwd = makeProjectWithDetails({ id: faker.string.uuid(), slug: expectedSlug })
       const ownerRole = makeOwnerRole(pwd)
-      pwd.roles = [ownerRole, ...Array.from({ length: 4 }, (_, index) => ({
-        id: faker.string.uuid(),
-        name: `role-${index}`,
-        permissions: 0n,
-        position: index,
-        oidcGroup: '',
-        type: 'managed',
-        projectId: pwd.id,
-      }))] as never
+      pwd.roles = [
+        ownerRole,
+        ...Array.from({ length: 4 }, (_, index) =>
+          makeOwnerRole(pwd, {
+            name: `role-${index}`,
+            permissions: 0n,
+            position: index,
+            oidcGroup: '',
+            type: 'managed',
+          })),
+      ]
       tx.project.create.mockResolvedValue(makeProject({ id: pwd.id }))
       tx.project.findUnique.mockResolvedValue(pwd)
 

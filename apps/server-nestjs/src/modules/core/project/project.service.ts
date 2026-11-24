@@ -107,7 +107,6 @@ export class ProjectService {
         const created = await createProject(tx, generateProjectCreateInput(body, requestorUserId, slug))
         const loaded = await getProject(tx, created.id)
         if (!loaded) throw new InternalServerErrorException('Project created but cannot be loaded')
-        // The owner is a member like any other, holding the Propriétaire role.
         const ownerRoleId = loaded.roles.find(role => isOwnerRole(loaded, role))?.id
         await upsertProjectMember(tx, loaded.id, { userId: requestorUserId, roles: ownerRoleId ? [ownerRoleId] : [] })
         return loaded
@@ -359,7 +358,6 @@ export class ProjectService {
 
     const ownerRole = project.roles.find(role => isOwnerRole(project, role))
     const oldOwner = project.members.find(member => member.userId === project.ownerId)
-    // The Propriétaire role follows the project ownership: the new owner takes it, the previous owner keeps their other roles.
     await upsertProjectMember(tx, project.id, {
       userId: ownerIdCandidate,
       roles: [...new Set([...memberCandidate.roleIds, ownerRole?.id].filter(roleId => roleId !== undefined))],

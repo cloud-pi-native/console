@@ -74,8 +74,6 @@ export function getProjectOwnerId(tx: Prisma.TransactionClient, projectId: strin
   return tx.project.findUnique({ where: { id: projectId }, select: projectOwnerIdSelect })
 }
 
-// The owner is a member row holding the Propriétaire role: it cannot be removed,
-// and a role patch cannot take that role away.
 export async function assertUserIsNotOwner(tx: Prisma.TransactionClient, projectId: string, userId: string) {
   const project = await getProjectOwnerId(tx, projectId)
   if (project?.ownerId === userId) {
