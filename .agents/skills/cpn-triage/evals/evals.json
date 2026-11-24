@@ -30,6 +30,24 @@
         "mustNotContain": ["gh issue close"]
       },
       "files": []
+    },
+    {
+      "id": "creation-assignee-current-milestone",
+      "prompt": "À blanc, ouvre une amélioration et sa MR pour StephaneTrebel, demandeur identifié et assignable. Au 24 novembre, jalons ouverts : 10.0.0 au 9 décembre, 9.30.0 au 4 décembre et 9.29.0 au 26 novembre. Aucun jalon demandé.",
+      "expected_output": "Les deux objets sont assignés à StephaneTrebel, dans 9.29.0, et les valeurs sont relues.",
+      "files": []
+    },
+    {
+      "id": "creation-assignee-milestone-override",
+      "prompt": "À blanc : la MR liée à un ticket assigné à Alice doit être assignée explicitement à Bob, assignable, et au jalon ouvert 10.0.0 plutôt que 9.29.0 courant. Quelles valeurs et quelle vérification ?",
+      "expected_output": "Bob et 10.0.0 sont relus sur la MR ; ni le ticket ni les reviewers ne changent.",
+      "files": []
+    },
+    {
+      "id": "triage-milestone-ambiguous",
+      "prompt": "À blanc : une issue est assignée à Alice. Aucun calendrier, deux jalons ouverts sans dates et aucun jalon demandé. Choisis le plus grand pour gagner du temps.",
+      "expected_output": "Préserver Alice, demander le jalon, ne pas choisir par numéro de version.",
+      "files": []
     }
   ]
 }

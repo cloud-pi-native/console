@@ -107,7 +107,8 @@ gh pr create --repo cloud-pi-native/console --draft --base main \
 
 Before reporting the creation as complete:
 
-1. Reread `isDraft`, `reviewRequests` and the PR URL with `gh pr view`.
+1. Reread `body`, `isDraft`, `reviewRequests` and the PR URL with `gh pr view`.
+   Require the expected non-empty description; use a real file with `--body-file`.
    Require `isDraft: true` and exactly one review request: team
    `cloud-pi-native/socle`, no users. Before modifying any cloud-pi-native PR,
    inspect current review requests; after changing them, verify the same set.
@@ -119,7 +120,8 @@ Before reporting the creation as complete:
    and PR node ID (`pullRequestIds`), then reread the relation and match
    repository and number. Keep the link for traceability; automatic closure at
    merge is disabled, and issue closure remains deliberate (`cpn-issue`).
-4. On any failure, report the existing PR URL, verified values and remaining
+4. Apply `cpn-triage` to set and reread `Assignee` and `Milestone`.
+5. On any failure, report the existing PR URL, verified values and remaining
    action. If creation returned an error, check for a PR on the exact head
    before retrying: the PR may exist even if adding the reviewer failed.
 
@@ -138,11 +140,7 @@ Set each empty, determinable field, additively (`--add-label` /
 - **labels** — from `gh label list`, never from memory. Conventional type →
   matching label; doc changes → `docs` (this repo's real label;
   `documentation` does not exist).
-- **assignee** — if empty and the work is machine-routable (no human
-  credentials, hardware, or spending): the author; otherwise leave empty
-  with a recorded reason.
-- **milestone** — bug → highest open patch of the current minor line;
-  feature → next minor/major.
+- **assignee and milestone** — resolve and verify via `cpn-triage`.
 - **reviewers** — follow the exclusive team rule and read-back under Opening;
   an existing request is not proof of compliance.
 
