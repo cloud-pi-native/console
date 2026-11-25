@@ -30,5 +30,14 @@
       "mustContain": ["CHANGES_REQUESTED", "--add-reviewer cloud-pi-native/socle", "reviewRequests"],
       "mustNotContain": ["--remove-reviewer cloud-pi-native/socle", "gh pr merge --", "gh pr merge 3120", "gh pr ready --undo"]
     }
+  },
+  {
+    "id": "reconcile-mixed-reviewers",
+    "prompt": "La PR #3121 a un fil de revue traité et résolu ; le correctif est poussé. reviewRequests vaut [Team(cloud-pi-native/socle), User(<login>)]. GitHub affiche encore CHANGES_REQUESTED. Termine la réconciliation.",
+    "expected_output": "L'agent lit reviewRequests avant toute mutation, constate une demande individuelle déjà présente à côté de l'équipe, n'exécute pas --add-reviewer cloud-pi-native/socle : reconduire l'ensemble reconduit aussi la demande individuelle. Il expose le cas, s'arrête et signale le blocage. Il ne retire ni ne ré-demande l'équipe par un autre moyen, et ne remplace pas l'équipe par un relecteur individuel.",
+    "assertions": {
+      "mustContain": ["reviewRequests", "socle"],
+      "mustNotContain": ["gh pr edit 3121 --add-reviewer", "gh pr edit <N> --add-reviewer", "--remove-reviewer", "gh pr merge"]
+    }
   }
 ]
