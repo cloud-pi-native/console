@@ -2,7 +2,7 @@ import type { TestingModule } from '@nestjs/testing'
 import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import { faker } from '@faker-js/faker'
-import { NotFoundException } from '@nestjs/common'
+import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
@@ -248,6 +248,7 @@ describe('projectMembersService', () => {
       const userId = faker.string.uuid()
 
       const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ id: projectId, ownerId: faker.string.uuid() }))
       tx.projectMembers.delete.mockResolvedValue(makeProjectMembers({ projectId, userId }))
       const memberUser = makeUser()
       tx.projectMembers.findMany.mockResolvedValue([makeProjectMemberWithUser(memberUser)])
@@ -263,6 +264,19 @@ describe('projectMembersService', () => {
         userId,
       }, { action: 'Remove Project Member' })
       expect(result).toBeDefined()
+    })
+
+    it('refuses to remove the owner from the members', async () => {
+      const projectId = faker.string.uuid()
+      const userId = faker.string.uuid()
+
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.project.findUnique.mockResolvedValue(makeProject({ id: projectId, ownerId: userId }))
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(service.remove(projectId, userId))
+        .rejects.toThrow(BadRequestException)
+      expect(tx.projectMembers.delete).not.toHaveBeenCalled()
     })
   })
 })
