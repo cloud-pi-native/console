@@ -5,7 +5,7 @@ description:
   severity-tagged French inline findings, DoD ledger, never merge."
 license: Apache-2.0
 metadata:
-  version: 1.2.2
+  version: 1.2.3
 ---
 
 # Console PR review & reconciliation
@@ -90,13 +90,10 @@ author amends.
    or pushing a fix, re-request the reviewer, then re-verify approval on
    the new head.
 
-   Read `reviewRequests` **before** any mutation, then verify **after**
-   that it holds exactly the Socle team:
+   Read `reviewRequests` **before** any mutation:
 
    ```bash
    gh pr view <N> --repo cloud-pi-native/console --json reviewRequests
-   gh pr edit <N> --repo cloud-pi-native/console --add-reviewer cloud-pi-native/socle
-   gh pr view <N> --repo cloud-pi-native/console --json reviewRequests,reviews
    ```
 
    `--add-reviewer` re-requests the team **and keeps every request already
@@ -105,7 +102,14 @@ author amends.
    stays requested after it: their `CHANGES_REQUESTED` is reconducted and
    can outlive the fix.
 
-   - **Only the Socle team is requested** — run the command above.
+   - **Only the Socle team is requested** — run the call, then verify the set
+     holds exactly the team at read-back:
+
+     ```bash
+     gh pr edit <N> --repo cloud-pi-native/console --add-reviewer cloud-pi-native/socle
+     gh pr view <N> --repo cloud-pi-native/console --json reviewRequests,reviews
+     ```
+
    - **Other reviewers are present** — never remove them nor re-add Socle
      through a call that would reconduct them: expose the case, stop and
      signal it. An individual request is withdrawn by the person who
