@@ -116,6 +116,19 @@ describeWithProject('ProjectService (e2e)', () => {
       expect(fetched.ownerId).toBe(ownerId)
     })
 
+    it('seeds the owner as a member with the owner role', async () => {
+      const member = await prisma.projectMembers.findUnique({
+        where: { projectId_userId: { projectId, userId: ownerId } },
+      })
+      const ownerRole = await prisma.projectRole.findFirst({
+        where: { projectId, name: 'Propriétaire' },
+      })
+
+      expect(member).not.toBeNull()
+      expect(ownerRole).not.toBeNull()
+      expect(member?.roleIds).toContain(ownerRole?.id)
+    })
+
     it('ProjectService.list', async () => {
       const listResult = await service.listProjects({ filter: 'member' }, { userId: ownerId, adminPermissions: 0n })
       expect(listResult.some(p => p.id === projectId)).toBe(true)

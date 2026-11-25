@@ -111,6 +111,18 @@ test.describe.serial('Project roles', { tag: '@e2e' }, () => {
     }
   })
 
+  test('Owner holds the seeded Propriétaire role', async ({ page }) => {
+    await page.goto(clientURL)
+    await signInCloudPiNative({ page, credentials: testUser })
+    await openProjectByName({ page, projectName })
+    await openProjectRoleByName({ page, roleName: 'Propriétaire' })
+
+    const membersTab = page.getByRole('tab', { name: 'Membres' })
+    await expect(membersTab).toBeVisible()
+    await membersTab.click()
+    await expect(page.getByTestId(`input-checkbox-${testUser.id}-cbx`)).toBeChecked()
+  })
+
   test('should not grant perms', async ({ page }) => {
     await page.goto(clientURL)
     await signInCloudPiNative({ page, credentials: cnolletUser })

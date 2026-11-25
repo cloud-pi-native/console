@@ -122,6 +122,9 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
           prodMemory: 0,
           everyonePerms: 0n,
           lastSuccessProvisionningVersion: null,
+          members: {
+            create: [{ userId: ownerId, roleIds: [] }],
+          },
         },
       })
 
@@ -135,7 +138,7 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
 
     it('list', async () => {
       const members = await service.list(projectId)
-      expect(members).toHaveLength(0)
+      expect(members.some(m => m.userId === ownerId)).toBe(true)
     })
 
     it('add', async () => {
@@ -160,6 +163,10 @@ describeWithProjectMembers('ProjectMembersService (e2e)', () => {
 
     it('rejects addMember when adding owner', async () => {
       await expect(service.add(projectId, { userId: ownerId })).rejects.toThrow(BadRequestException)
+    })
+
+    it('rejects removeMember when removing owner', async () => {
+      await expect(service.remove(projectId, ownerId)).rejects.toThrow(BadRequestException)
     })
 
     it('rejects addMember when user does not exist', async () => {

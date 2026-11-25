@@ -88,6 +88,69 @@ describe('gitlabService', () => {
     })
   })
 
+  describe('owner member reconciliation (PR #2991 review)', () => {
+    it('preserves an existing OWNER access and never demotes through the ordinary-member pass', async () => {
+      const ownerEmail = 'owner@example.com'
+      const project = makeProjectWithDetails({
+        owner: { id: 'owner-1', email: ownerEmail, firstName: 'Own', lastName: 'Er', adminRoleIds: [] },
+        members: [{ user: { id: 'owner-1', email: ownerEmail, firstName: 'Own', lastName: 'Er', adminRoleIds: [] }, roleIds: [] }],
+      })
+      const group = makeGroupSchema({ id: 777, name: 'project-1', path: 'project-1', full_path: 'forge/console/project-1', full_name: 'forge/console/project-1', parent_id: 1 })
+      datastore.getProject.mockResolvedValue(project)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
+      // GitLab snapshot still shows the owner at OWNER (50) — the stale snapshot the review probes.
+      gitlab.getGroupMembers.mockResolvedValue([makeMemberSchema({ id: 777, access_level: AccessLevel.OWNER })])
+      gitlab.ensureUser.mockImplementation(async user => makeExpandedUserSchema({ id: 777, email: user.email, username: user.email.split('@')[0] ?? user.email, name: user.name }))
+
+      const result = await service.handleProjectMemberUpsert({ projectId: project.id, userId: 'owner-1' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.editGroupMember).not.toHaveBeenCalled()
+      expect(gitlab.addGroupMember).not.toHaveBeenCalled()
+    })
+
+    it('adds a new owner exactly once at OWNER level, not GUEST then OWNER', async () => {
+      const ownerEmail = 'new-owner@example.com'
+      const project = makeProjectWithDetails({
+        owner: { id: 'owner-2', email: ownerEmail, firstName: 'New', lastName: 'Owner', adminRoleIds: [] },
+        members: [{ user: { id: 'owner-2', email: ownerEmail, firstName: 'New', lastName: 'Owner', adminRoleIds: [] }, roleIds: [] }],
+      })
+      const group = makeGroupSchema({ id: 778, name: 'project-2', path: 'project-2', full_path: 'forge/console/project-2', full_name: 'forge/console/project-2', parent_id: 1 })
+      datastore.getProject.mockResolvedValue(project)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.ensureUser.mockImplementation(async user => makeExpandedUserSchema({ id: 555, email: user.email, username: user.email.split('@')[0] ?? user.email, name: user.name }))
+
+      const result = await service.handleProjectMemberUpsert({ projectId: project.id, userId: 'owner-2' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.addGroupMember).toHaveBeenCalledTimes(1)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 555, AccessLevel.OWNER)
+    })
+
+    it('keeps the owner at OWNER level when they hold project roles after a transfer', async () => {
+      const ownerEmail = 'transferred@example.com'
+      const project = makeProjectWithDetails({
+        owner: { id: 'owner-3', email: ownerEmail, firstName: 'Trans', lastName: 'Ferred', adminRoleIds: [] },
+        members: [{ user: { id: 'owner-3', email: ownerEmail, firstName: 'Trans', lastName: 'Ferred', adminRoleIds: [] }, roleIds: [] }],
+      })
+      const group = makeGroupSchema({ id: 779, name: 'project-3', path: 'project-3', full_path: 'forge/console/project-3', full_name: 'forge/console/project-3', parent_id: 1 })
+      datastore.getProject.mockResolvedValue(project)
+      gitlab.ensureProjectSubGroup.mockResolvedValue(group)
+      gitlab.getGroupMembers.mockResolvedValue([])
+      gitlab.ensureUser.mockImplementation(async user => makeExpandedUserSchema({ id: 666, email: user.email, username: user.email.split('@')[0] ?? user.email, name: user.name }))
+      // A role-derived access level (developer) exists for the owner: the dedicated
+      // owner pass must still reconcile them at OWNER.
+      vi.spyOn(service as any, 'getProjectRoleGroupPaths').mockResolvedValue({ reporter: [], developer: [], maintainer: [] })
+
+      const result = await service.handleProjectMemberUpsert({ projectId: project.id, userId: 'owner-3' })
+
+      expect(result.gitlab.status).toBe('OK')
+      expect(gitlab.addGroupMember).toHaveBeenCalledTimes(1)
+      expect(gitlab.addGroupMember).toHaveBeenCalledWith(group, 666, AccessLevel.OWNER)
+    })
+  })
+
   describe('handleProjectMemberDelete', () => {
     it('should remove the group member on projectMember.delete', async () => {
       const project = makeProjectWithDetails()
