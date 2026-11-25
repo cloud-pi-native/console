@@ -28,12 +28,12 @@ export const DEFAULT_READONLY_GROUP_PATH = '/console/readonly'
 export const DEFAULT_SECURITY_GROUP_PATH = '/console/security'
 
 // Default project role group path suffixes (appended to /{projectSlug})
-export const DEFAULT_PROJECT_ADMIN_SUFFIX = '/console/admin,/console/owner'
+export const DEFAULT_PROJECT_ADMIN_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVOPS_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_DEVELOPER_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_SECURITY_SUFFIX = '/console/security'
 export const DEFAULT_PROJECT_READONLY_SUFFIX = '/console/readonly'
-export const BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
+export const BASE_ADMIN_PROJECT_GROUP_PATH_SUFFIX = '/console/admin'
 
 // Admin plugin config keys for overriding defaults
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'

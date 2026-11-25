@@ -13,7 +13,7 @@ import { capturePluginResult } from '../../core/plugin/plugin.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isNonEmptyGroupPath, isOwnedProjectGroup, isOwnerRole, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
+import { isAdminRole, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -187,6 +187,7 @@ export class KeycloakService {
     const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await this.ensureRoleGroups(project, consoleGroup)
+    await this.ensureOwnerGroup(project, consoleGroup)
     // A deleted role emits only project.upsert and the ensure pass is purely
     // additive: without this purge the role's Keycloak group survives forever.
     await this.purgeOrphanRoleGroups(project, consoleGroup)
@@ -368,6 +369,38 @@ export class KeycloakService {
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
   }
 
+  @StartActiveSpan()
+  private async ensureOwnerGroup(
+    project: ProjectWithDetails,
+    consoleGroup: GroupRepresentationWithIdNamePath,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const ownerGroup = await this.keycloak.ensureRoleGroup(consoleGroup, '/owner')
+    span?.setAttribute('keycloak.group.id', ownerGroup.id)
+    const groupMembers = await this.keycloak.getGroupMembers(ownerGroup.id)
+    // A custom role can map to /console/owner: reconcile must not purge its holders.
+    const ownerPath = `${consoleGroup.path}/owner`
+    const holders = project.members
+      .filter(m => project.roles.some(r => r.oidcGroup === ownerPath && m.roleIds.includes(r.id)))
+      .map(m => m.user.id)
+    await reconcile({
+      current: groupMembers,
+      desired: new Set([project.ownerId]),
+      keep: new Set(holders),
+      keyOf: member => member.id,
+      add: async (userId) => {
+        await this.maybeAddUserToGroup(userId, ownerGroup.id, ownerGroup.name)
+      },
+      remove: async (member) => {
+        if (!member.id) {
+          throw new Error(`Failed to reconcile the virtual owner group for project ${project.slug}`)
+        }
+        await this.maybeRemoveUserFromGroup(member.id, ownerGroup.id, ownerGroup.name)
+      },
+    })
+  }
+
   // Keycloak has no find-children-by-path read: a candidate is deleted only
   // when getGroupByPath resolves it to the same id, proving it was
   // console-created for a role; foreign groups stay untouched. A nested role
@@ -386,6 +419,7 @@ export class KeycloakService {
         .filter(r => isNonEmptyGroupPath(r.oidcGroup))
         .map(r => toRoleRelativeGroupPath(r, consoleGroup)),
     )
+    desiredRelativePaths.add('/owner')
     span?.setAttribute('keycloak.role_groups.desired', desiredRelativePaths.size)
 
     const protectedPaths = new Set(
@@ -492,7 +526,7 @@ export class KeycloakService {
 
     // Managed roles only: the orphan purge would evict the owner otherwise.
     // maybeAddUserToGroup tolerates 409, so no membership pre-check is needed.
-    if (isOwnerRole(project, role)) {
+    if (isAdminRole(project, role)) {
       addedCount++
       await this.maybeAddUserToGroup(project.ownerId, group.id, group.name)
     }
@@ -515,7 +549,7 @@ export class KeycloakService {
     const desiredUserIds = new Set(project.members
       .filter(m => m.roleIds.includes(role.id))
       .map(m => m.user.id))
-    if (isOwnerRole(project, role)) desiredUserIds.add(project.ownerId)
+    if (isAdminRole(project, role)) desiredUserIds.add(project.ownerId)
     let addedCount = 0
     let removedCount = 0
     // Holders of a sibling role mapped to the same group keep access

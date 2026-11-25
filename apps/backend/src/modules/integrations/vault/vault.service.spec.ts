@@ -137,9 +137,8 @@ describe('vaultService', () => {
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`, expect.any(Object))
     expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-security`, expect.any(Object))
-    expect(client.ensureIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`, expect.any(Object))
     expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
-      name: `/${project.slug}/console/owner`,
+      name: `/${project.slug}/console/admin`,
     }))
 
     expect(client.ensureSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--developer`, {
@@ -172,16 +171,11 @@ describe('vaultService', () => {
       name: `/${project.slug}/console/admin`,
       canonical_id: `project-${project.slug}-admin`,
     }))
-    expect(client.createIdentityGroupAlias).toHaveBeenCalledWith(expect.objectContaining({
-      name: `/${project.slug}/console/owner`,
-      canonical_id: `project-${project.slug}-owner`,
-    }))
   })
 
   it('should not recreate an existing group alias on project upsert', async () => {
     const project = makeProjectWithDetails()
     const aliasNameByGroup: Record<string, string | undefined> = {
-      [`project-${project.slug}-owner`]: `/${project.slug}/console/owner`,
       [`project-${project.slug}-admin`]: `/${project.slug}/console/admin`,
     }
     client.getIdentityGroupName.mockImplementation(async (groupName: string) => makeVaultSecret({
@@ -197,9 +191,6 @@ describe('vaultService', () => {
 
     expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
       name: `/${project.slug}/console/admin`,
-    }))
-    expect(client.createIdentityGroupAlias).not.toHaveBeenCalledWith(expect.objectContaining({
-      name: `/${project.slug}/console/owner`,
     }))
   })
 
@@ -218,7 +209,6 @@ describe('vaultService', () => {
     expect(client.deleteSysPoliciesAcl).toHaveBeenCalledWith(`project--${project.slug}--security`)
     expect(client.deleteAuthApproleRole).toHaveBeenCalledWith(project.slug)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-admin`)
-    expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-owner`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-devops`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-developer`)
     expect(client.deleteIdentityGroupName).toHaveBeenCalledWith(`project-${project.slug}-readonly`)

@@ -9,11 +9,11 @@ import { trace } from '@opentelemetry/api'
 import { baseConfigFactory } from '../../../config/base.config'
 import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
-import { isOwnerRole } from '../../integrations/keycloak/keycloak.utils'
+import { isAdminRole } from '../../integrations/keycloak/keycloak.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
-import { deleteProjectMember, upsertProjectMember } from '../project-members/project-members-queries.utils'
+import { upsertProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
   deleteProjectDependencies,
@@ -342,7 +342,10 @@ export class ProjectService {
     requestorUserId: string,
   ): Promise<void> {
     const ownerIdCandidate = effectiveData.ownerId as string | undefined
-    if (!ownerIdCandidate || ownerIdCandidate === project.ownerId) return
+    if (!ownerIdCandidate) return
+    if (ownerIdCandidate === project.ownerId) {
+      throw new BadRequestException('Le propriétaire actuel ne peut pas se transférer le projet à lui-même')
+    }
 
     this.logger.log(`project.update ownerChange started (projectId=${projectId}, requestorUserId=${requestorUserId}, previousOwnerId=${project.ownerId}, nextOwnerId=${ownerIdCandidate})`)
 
@@ -354,14 +357,14 @@ export class ProjectService {
       throw new BadRequestException('Seuls les comptes humains peuvent être propriétaire de projets')
     }
 
-    const ownerRole = project.roles.find(role => isOwnerRole(project, role))
+    const adminRole = project.roles.find(role => isAdminRole(project, role))
     const oldOwner = project.members.find(member => member.userId === project.ownerId)
     await upsertProjectMember(tx, project.id, {
       userId: project.ownerId,
-      roles: [...new Set([...oldOwner?.roleIds ?? [], ownerRole?.id].filter(roleId => roleId !== undefined))],
+      roles: [...new Set([...oldOwner?.roleIds ?? [], adminRole?.id].filter(roleId => roleId !== undefined))],
     })
 
-    await deleteProjectMember(tx, project.id, ownerIdCandidate)
+    await upsertProjectMember(tx, project.id, { userId: ownerIdCandidate, roles: [] })
     await updateProject(tx, project.id, { owner: { connect: { id: ownerIdCandidate } } })
 
     this.logger.log(`project.update ownerChange completed (projectId=${projectId}, requestorUserId=${requestorUserId}, previousOwnerId=${project.ownerId}, nextOwnerId=${ownerIdCandidate})`)

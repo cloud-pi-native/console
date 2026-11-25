@@ -21,9 +21,9 @@ import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import {
+  makeAdminRole,
   makeCreateProjectBody,
   makeListProjectsQuery,
-  makeOwnerRole,
   makeProject,
   makeProjectContext,
   makeProjectMemberWithUser,
@@ -98,6 +98,13 @@ describe('projectService', () => {
       expect(tx.project.findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { slug: { startsWith: body.name } } }),
       )
+      expect(tx.project.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          members: {
+            create: [{ userId, roleIds: [] }],
+          },
+        }),
+      }))
       expect(tx.project.create).toHaveBeenCalled()
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', pwd.id, {
         action: 'Create Project',
@@ -425,6 +432,26 @@ describe('projectService', () => {
       ).rejects.toThrow('Seuls les comptes humains peuvent être propriétaire de projets')
     })
 
+    it('rejects a transfer to the current owner', async () => {
+      const ownerId = faker.string.uuid()
+      const ctx = makeProjectContext({ locked: false })
+      const tx = mockDeep<Prisma.TransactionClient>()
+      const project = makeProjectWithDetails({ id: ctx.id, ownerId })
+      tx.project.findFirst.mockResolvedValue(project)
+      tx.project.findUnique.mockResolvedValue(project)
+      prisma.$transaction.mockImplementation(async cb => cb(tx))
+
+      await expect(
+        service.update(
+          { ownerId },
+          { userId: ownerId, adminPermissions: 0n },
+          ctx.id,
+        ),
+      ).rejects.toThrow('Le propriétaire actuel ne peut pas se transférer le projet à lui-même')
+
+      expect(tx.project.update).not.toHaveBeenCalled()
+    })
+
     it('transfers ownership correctly', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
@@ -450,8 +477,11 @@ describe('projectService', () => {
         ctx.id,
       )
 
-      expect(tx.projectMembers.delete).toHaveBeenCalledWith({
+      expect(tx.projectMembers.delete).not.toHaveBeenCalled()
+      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { userId: newOwnerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: newOwnerId, roleIds: [] },
+        update: { roleIds: [] },
       })
       expect(tx.project.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -463,13 +493,13 @@ describe('projectService', () => {
       expect(result).toBeDefined()
     })
 
-    it('grants the previous owner the owner role on transfer (previous owner not a member)', async () => {
+    it('grants the previous owner the admin role on transfer (previous owner not a member)', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
       const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
-      const ownerRoleId = faker.string.uuid()
-      pwd.roles = [makeOwnerRole(pwd, { id: ownerRoleId })]
+      const adminRoleId = faker.string.uuid()
+      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
 
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findFirst.mockResolvedValue(
@@ -493,19 +523,19 @@ describe('projectService', () => {
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [ownerRoleId] },
-        update: { roleIds: [ownerRoleId] },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [adminRoleId] },
+        update: { roleIds: [adminRoleId] },
       })
     })
 
-    it('grants the previous owner the owner role on transfer, unioned with existing roles (already a member)', async () => {
+    it('grants the previous owner the admin role on transfer, unioned with existing roles (already a member)', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
       const pwd = makeProjectWithDetails({ id: ctx.id, ownerId })
-      const ownerRoleId = faker.string.uuid()
+      const adminRoleId = faker.string.uuid()
       const existingRoleId = faker.string.uuid()
-      pwd.roles = [makeOwnerRole(pwd, { id: ownerRoleId })]
+      pwd.roles = [makeAdminRole(pwd, { id: adminRoleId })]
 
       const tx = mockDeep<Prisma.TransactionClient>()
       tx.project.findFirst.mockResolvedValue(
@@ -533,8 +563,8 @@ describe('projectService', () => {
 
       expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
         where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, ownerRoleId] },
-        update: { roleIds: [existingRoleId, ownerRoleId] },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, adminRoleId] },
+        update: { roleIds: [existingRoleId, adminRoleId] },
       })
     })
   })
