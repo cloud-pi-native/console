@@ -36,6 +36,7 @@ const ListStages = () => import('@/views/admin/ListStages.vue')
 const ListZones = () => import('@/views/admin/ListZones.vue')
 const ListPlugins = () => import('@/views/admin/ListPlugins.vue')
 const SystemSettings = () => import('@/views/admin/SystemSettings.vue')
+const ExperimentalFeatures = () => import('@/views/admin/ExperimentalFeatures.vue')
 const Maintenance = () => import('@/views/DsoMaintenance.vue')
 const AdminTokens = () => import('@/views/admin/AdminTokens.vue')
 
@@ -244,6 +245,11 @@ export const routes: Readonly<RouteRecordRaw[]> = [
         path: 'system-settings',
         name: 'SystemSettings',
         component: SystemSettings,
+      },
+      {
+        path: 'experimental-features',
+        name: 'ExperimentalFeatures',
+        component: ExperimentalFeatures,
       },
       {
         path: 'roles',

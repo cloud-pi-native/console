@@ -9,6 +9,7 @@ import { AuthModule } from './modules/core/auth/auth.module'
 import { ClusterModule } from './modules/core/cluster/cluster.module'
 import { DeploymentModule } from './modules/core/deployment/deployment.module'
 import { EnvironmentModule } from './modules/core/environment/environment.module'
+import { ExperimentalFeatureModule } from './modules/core/experimental-feature/experimental-feature.module'
 import { HealthzModule } from './modules/core/healthz/healthz.module'
 import { LogModule } from './modules/core/log/log.module'
 import { PluginModule } from './modules/core/plugin/plugin.module'
@@ -46,6 +47,7 @@ import { getDotenvPaths } from './utils/dotenv.utils'
     ClusterModule,
     DeploymentModule,
     EnvironmentModule,
+    ExperimentalFeatureModule,
     HealthzModule,
     InfrastructureModule,
     KeycloakModule,
