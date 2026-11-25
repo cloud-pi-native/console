@@ -6,7 +6,7 @@ description:
   onboarding, transitions, drift audit."
 license: Apache-2.0
 metadata:
-  version: '1.2.0'
+  version: '1.2.1'
 ---
 
 # Cartes et statut sur le Projet Socle
@@ -30,14 +30,23 @@ gh auth refresh -s project
 
 - Numéro du Projet confirmé pour la session (mécanique de confirmation :
   `cpn-pi-transition`).
-- **Lecture du board sous le compte qui le voit.** La visibilité est scopée
-  par identité sur `cloud-pi-native` : sous un compte sans accès board, les
+- **Droits du compte actif sur le board.** La visibilité est scopée par
+  identité sur `cloud-pi-native` : sous un compte sans accès board, les
   graphes projet, `issue.projectItems` et les nodes d'item renvoient
   `NOT_FOUND` ou vide — silencieusement, indiscernable d'une suppression
-  réelle. Lire l'existence d'une carte et son Status sous `shikanime` seul
-  (`GH_TOKEN=$(gh auth token --user shikanime)`), et y placer aussi les
-  preuves d'écriture. Ne jamais conclure « supprimé » d'une réponse vide
-  sous un autre compte.
+  réelle. Avant toute lecture ou écriture, vérifier que le compte actif
+  dispose des droits nécessaires sur le Projet Socle (équipe Socle) :
+
+```bash
+gh api graphql -f query='
+  query($owner:String!,$number:Int!){
+    organization(login:$owner){ projectV2(number:$number){ viewerCanUpdate } }
+  }' -f owner=cloud-pi-native -F number=<NUMÉRO>
+```
+
+Un contrôle qui échoue (`NOT_FOUND`, ou `viewerCanUpdate` à `false`) :
+s'arrêter sans mutation et le signaler à l'équipe Socle. Ne jamais
+conclure « supprimé » d'une réponse vide.
 
 Un prérequis manquant est un blocage signalé, jamais un contournement
 silencieux.
