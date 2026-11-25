@@ -33,8 +33,8 @@
     },
     {
       "id": "creation-assignee-current-milestone",
-      "prompt": "À blanc, ouvre une amélioration et sa MR pour StephaneTrebel, demandeur identifié et assignable. Au 24 novembre, jalons ouverts : 10.0.0 au 9 décembre, 9.30.0 au 4 décembre et 9.29.0 au 26 novembre. Aucun jalon demandé.",
-      "expected_output": "Les deux objets sont assignés à StephaneTrebel, dans 9.29.0, et les valeurs sont relues.",
+      "prompt": "À blanc, ouvre une amélioration et sa MR pour Alice, demandeur identifié et assignable. Au 24 novembre, jalons ouverts : 10.0.0 au 9 décembre, 9.30.0 au 4 décembre et 9.29.0 au 26 novembre. Aucun jalon demandé.",
+      "expected_output": "Les deux objets sont assignés à Alice, dans 9.29.0, et les valeurs sont relues.",
       "files": []
     },
     {
