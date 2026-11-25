@@ -1,4 +1,5 @@
 import type { Prisma } from '@prisma/client'
+import { BadRequestException } from '@nestjs/common'
 
 export const projectMemberWithUser = {
   user: {
@@ -71,4 +72,11 @@ export function getHumanUser(tx: Prisma.TransactionClient, opts: { userId?: stri
 
 export function getProjectOwnerId(tx: Prisma.TransactionClient, projectId: string) {
   return tx.project.findUnique({ where: { id: projectId }, select: projectOwnerIdSelect })
+}
+
+export async function assertUserIsNotOwner(tx: Prisma.TransactionClient, projectId: string, userId: string) {
+  const project = await getProjectOwnerId(tx, projectId)
+  if (project?.ownerId === userId) {
+    throw new BadRequestException('Le propriétaire du projet ne peut pas être retiré des membres')
+  }
 }

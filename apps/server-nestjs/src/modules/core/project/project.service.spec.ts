@@ -79,16 +79,19 @@ describe('projectService', () => {
       tx.project.findMany.mockResolvedValue(existingSlugs.map(slug => makeProject({ slug })))
       prisma.$transaction.mockImplementation(async cb => cb(tx))
 
-      const pwd = makeProjectWithDetails({ slug: expectedSlug })
-      pwd.roles = Array.from({ length: 5 }, (_, index) => ({
-        id: faker.string.uuid(),
-        name: `role-${index}`,
-        permissions: 0n,
-        position: index,
-        oidcGroup: '',
-        type: 'managed',
-        projectId: pwd.id,
-      })) as never
+      const pwd = makeProjectWithDetails({ id: faker.string.uuid(), slug: expectedSlug })
+      const ownerRole = makeOwnerRole(pwd)
+      pwd.roles = [
+        ownerRole,
+        ...Array.from({ length: 4 }, (_, index) =>
+          makeOwnerRole(pwd, {
+            name: `role-${index}`,
+            permissions: 0n,
+            position: index,
+            oidcGroup: '',
+            type: 'managed',
+          })),
+      ]
       tx.project.create.mockResolvedValue(makeProject({ id: pwd.id }))
       tx.project.findUnique.mockResolvedValue(pwd)
 
@@ -99,6 +102,11 @@ describe('projectService', () => {
         expect.objectContaining({ where: { slug: { startsWith: body.name } } }),
       )
       expect(tx.project.create).toHaveBeenCalled()
+      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
+        where: { projectId_userId: { projectId: pwd.id, userId } },
+        create: { projectId: pwd.id, userId, roleIds: [ownerRole.id] },
+        update: { roleIds: [ownerRole.id] },
+      })
       expect(appEvents.emitProjectEvent).toHaveBeenCalledWith('project.upsert', pwd.id, {
         action: 'Create Project',
         userId,
@@ -450,9 +458,7 @@ describe('projectService', () => {
         ctx.id,
       )
 
-      expect(tx.projectMembers.delete).toHaveBeenCalledWith({
-        where: { projectId_userId: { userId: newOwnerId, projectId: ctx.id } },
-      })
+      expect(tx.projectMembers.delete).not.toHaveBeenCalled()
       expect(tx.project.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
@@ -463,7 +469,7 @@ describe('projectService', () => {
       expect(result).toBeDefined()
     })
 
-    it('grants the previous owner the owner role on transfer (previous owner not a member)', async () => {
+    it('moves the Propriétaire role to the new owner on transfer (previous owner not a member)', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
@@ -491,14 +497,19 @@ describe('projectService', () => {
         ctx.id,
       )
 
-      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
+      expect(tx.projectMembers.upsert).toHaveBeenNthCalledWith(1, {
+        where: { projectId_userId: { userId: newOwnerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: newOwnerId, roleIds: expect.arrayContaining([ownerRoleId]) },
+        update: { roleIds: expect.arrayContaining([ownerRoleId]) },
+      })
+      expect(tx.projectMembers.upsert).toHaveBeenNthCalledWith(2, {
         where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [ownerRoleId] },
-        update: { roleIds: [ownerRoleId] },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [] },
+        update: { roleIds: [] },
       })
     })
 
-    it('grants the previous owner the owner role on transfer, unioned with existing roles (already a member)', async () => {
+    it('moves the Propriétaire role to the new owner on transfer and strips it from the previous owner, who keeps their other roles', async () => {
       const ownerId = faker.string.uuid()
       const newOwnerId = faker.string.uuid()
       const ctx = makeProjectContext({ locked: false })
@@ -531,10 +542,15 @@ describe('projectService', () => {
         ctx.id,
       )
 
-      expect(tx.projectMembers.upsert).toHaveBeenCalledWith({
-        where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
-        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId, ownerRoleId] },
+      expect(tx.projectMembers.upsert).toHaveBeenNthCalledWith(1, {
+        where: { projectId_userId: { userId: newOwnerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: newOwnerId, roleIds: [existingRoleId, ownerRoleId] },
         update: { roleIds: [existingRoleId, ownerRoleId] },
+      })
+      expect(tx.projectMembers.upsert).toHaveBeenNthCalledWith(2, {
+        where: { projectId_userId: { userId: ownerId, projectId: ctx.id } },
+        create: { projectId: ctx.id, userId: ownerId, roleIds: [existingRoleId] },
+        update: { roleIds: [existingRoleId] },
       })
     })
   })

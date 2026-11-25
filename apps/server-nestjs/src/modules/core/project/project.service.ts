@@ -13,7 +13,7 @@ import { isOwnerRole } from '../../integrations/keycloak/keycloak.utils'
 import { AppEventsService } from '../events/app-events.service'
 import { LogService } from '../log/log.service'
 import { getFailedPlugins } from '../plugin/plugin.utils'
-import { deleteProjectMember, upsertProjectMember } from '../project-members/project-members-queries.utils'
+import { upsertProjectMember } from '../project-members/project-members-queries.utils'
 import {
   createProject,
   deleteProjectDependencies,
@@ -107,6 +107,8 @@ export class ProjectService {
         const created = await createProject(tx, generateProjectCreateInput(body, requestorUserId, slug))
         const loaded = await getProject(tx, created.id)
         if (!loaded) throw new InternalServerErrorException('Project created but cannot be loaded')
+        const ownerRoleId = loaded.roles.find(role => isOwnerRole(loaded, role))?.id
+        await upsertProjectMember(tx, loaded.id, { userId: requestorUserId, roles: ownerRoleId ? [ownerRoleId] : [] })
         return loaded
       })
       await this.appEvents.emitProjectEvent('project.upsert', project.id, {
@@ -357,11 +359,13 @@ export class ProjectService {
     const ownerRole = project.roles.find(role => isOwnerRole(project, role))
     const oldOwner = project.members.find(member => member.userId === project.ownerId)
     await upsertProjectMember(tx, project.id, {
-      userId: project.ownerId,
-      roles: [...new Set([...oldOwner?.roleIds ?? [], ownerRole?.id].filter(roleId => roleId !== undefined))],
+      userId: ownerIdCandidate,
+      roles: [...new Set([...memberCandidate.roleIds, ownerRole?.id].filter(roleId => roleId !== undefined))],
     })
-
-    await deleteProjectMember(tx, project.id, ownerIdCandidate)
+    await upsertProjectMember(tx, project.id, {
+      userId: project.ownerId,
+      roles: (oldOwner?.roleIds ?? []).filter(roleId => roleId !== ownerRole?.id),
+    })
     await updateProject(tx, project.id, { owner: { connect: { id: ownerIdCandidate } } })
 
     this.logger.log(`project.update ownerChange completed (projectId=${projectId}, requestorUserId=${requestorUserId}, previousOwnerId=${project.ownerId}, nextOwnerId=${ownerIdCandidate})`)

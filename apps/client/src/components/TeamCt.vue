@@ -124,7 +124,7 @@ async function transferOwnerShip() {
       :headers="headers"
     >
       <tr
-        v-for="member in [{ ...props.project.owner, roleIds: [], userId: props.project.owner.id }, ...project.members]"
+        v-for="member in project.members"
         :key="member.userId"
       >
         <td>
