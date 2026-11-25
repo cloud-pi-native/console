@@ -57,7 +57,7 @@
         "mustContain": [
           "ISSUE_TEMPLATE",
           "gh issue comment",
-          "sections exactes"
+          "Contexte"
         ],
         "mustNotContain": [
           "gh issue edit --body",

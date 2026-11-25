@@ -5,7 +5,7 @@ description:
   triaging, or closing an issue in this repo."
 license: Apache-2.0
 metadata:
-  version: 1.4.0
+  version: 1.4.1
 ---
 
 # Console issues
@@ -109,11 +109,48 @@ silent metadata edit is the defect this rule prevents.
   auto-close, never close silently — state why. A duplicate links the
   canonical issue and closes **as duplicate**, never as `not planned` —
   whatever the canonical's own state: a closed canonical stays the reference
-  readers are sent to, so the reason is still `duplicate`, not `completed`:
+  readers are sent to, so the reason is still `duplicate`, not `completed`.
+
+  **Check the capability first** — the flag is recent: an older `gh` (at
+  least up to 2.86.0) neither knows `--duplicate-of` nor accepts
+  `--reason duplicate` and fails on a live issue:
+
+  ```bash
+  gh issue close --help | grep -q -- '--duplicate-of' && echo supported
+  ```
+
+  Supported:
 
   ```bash
   gh issue close <N> --repo cloud-pi-native/console \
     --reason duplicate --duplicate-of <M> --comment "<evidence>"
+  ```
+
+  Absent, the verified API path — same closure, same link to the canonical
+  issue:
+
+  ```bash
+  gh api graphql -f query='
+    query { repository(owner:"cloud-pi-native", name:"console") {
+      issue(number:<N>) { id } } }' --jq .data.repository.issue.id   # <NODE-ID>
+  gh api graphql -f query='
+    mutation($i:ID!,$d:ID!) { closeIssue(input:{issueId:$i,
+      stateReason:DUPLICATE, duplicateIssueId:$d}) { issue { number state
+      stateReason } } }' -f i=<NODE-ID> -f d=<CANONICAL-NODE-ID>
+  gh issue comment <N> --repo cloud-pi-native/console --body "<evidence>"
+  ```
+
+  Read the link back **on the canonical issue**, never on the duplicate:
+  its timeline carries a `MarkedAsDuplicateEvent` whose `canonical` is
+  `<M>`; the duplicate's own timeline shows only the `ClosedEvent`.
+
+  ```bash
+  gh api graphql -f query='
+    query { repository(owner:"cloud-pi-native", name:"console") {
+      issue(number:<M>) { timelineItems(first:100) { nodes {
+        __typename ... on MarkedAsDuplicateEvent { canonical { ... on Issue
+        { number } } } } } } } }' --jq '[.data.repository.issue.timelineItems.nodes[]
+        | select(.__typename=="MarkedAsDuplicateEvent") | .canonical.number]'
   ```
 
 ### Issue statuses

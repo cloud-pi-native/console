@@ -65,10 +65,10 @@
     {
       "id": "close-duplicate-with-reason",
       "prompt": "Le ticket #3110 demande la même chose que #3005, déjà ouvert et trié. Ferme #3110 proprement et passe son statut à Duplicate.",
-      "expected_output": "L'agent relie l'issue canonique #3005 et ferme avec --reason duplicate --duplicate-of 3005, jamais not planned ; le statut Duplicate est posé via l'API (ids résolus par dépôt via planningStatuses, jamais codés en dur) puis relu pour vérifier que statut et raison de fermeture concordent.",
+      "expected_output": "L'agent contrôle d'abord la capacité du gh installé (`gh issue close --help`, recherche de `--duplicate-of`). Si le flag est présent, il ferme avec `--reason duplicate --duplicate-of 3005` ; sinon il passe par `closeIssue(stateReason: DUPLICATE, duplicateIssueId)` après avoir résolu les deux node-ids, puis relit le lien sur la timeline du canonique (#3005 : `MarkedAsDuplicateEvent`). Jamais `not planned`, jamais `completed` ; le statut Duplicate est posé via l'API (ids résolus par dépôt via planningStatuses, jamais codés en dur) puis relu pour vérifier que statut et raison de fermeture concordent.",
       "assertions": {
-        "mustContain": ["--reason duplicate", "--duplicate-of", "planningStatuses", "stateReason"],
-        "mustNotContain": ["--reason \"not planned\"", "--reason not planned", "--reason completed", "IS_kgAC"]
+        "mustContain": ["DUPLICATE", "planningStatuses", "stateReason", "issue close --help"],
+        "mustNotContain": ["--reason not planned 3110", "gh issue close 3110 --reason completed", "IS_kgAC"]
       },
       "files": []
     }
