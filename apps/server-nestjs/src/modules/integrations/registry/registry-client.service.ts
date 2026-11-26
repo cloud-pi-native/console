@@ -38,6 +38,7 @@ export interface HarborProject {
 export interface HarborRobot {
   id?: number
   name?: string
+  duration?: number
 }
 
 export interface HarborRobotCreated {
@@ -225,6 +226,17 @@ export class RegistryClientService {
       throw new Error(`Harbor create robot failed (${created.status})`)
     }
     return created.data
+  }
+
+  async updateRobot(robotId: number, body: HarborRobotCreateRequest): Promise<RegistryResponse> {
+    const updated = await this.http.fetch(`robots/${encodeURIComponent(String(robotId))}`, {
+      method: 'PUT',
+      body,
+    })
+    if (updated.status >= HttpStatus.BAD_REQUEST) {
+      throw new Error(`Harbor update robot failed (${updated.status})`)
+    }
+    return updated
   }
 
   async deleteRobot(robotId: number): Promise<RegistryResponse> {

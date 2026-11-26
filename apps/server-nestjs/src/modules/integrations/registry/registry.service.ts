@@ -1,13 +1,10 @@
 import type { ConfigType } from '@nestjs/config'
-import type { RuleTemplate } from '../../../config/harbor.config'
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { VaultSecret } from '../vault/vault-client.service'
 import type {
   HarborAccess,
   HarborGroupMemberRequest,
   HarborMember,
-  HarborRetentionPolicy,
-  HarborRobotCreateRequest,
 } from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { VaultRobotSecret } from './registry.utils'
@@ -33,10 +30,7 @@ import {
   DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIXES,
   DEFAULT_PROJECT_GUEST_GROUP_PATH_SUFFIXES,
   DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIXES,
-  HARBOR_ROLE_DEVELOPER,
-  HARBOR_ROLE_GUEST,
   HARBOR_ROLE_LIMITED_GUEST,
-  HARBOR_ROLE_PROJECT_ADMIN,
   PLATFORM_ADMIN_GROUP_PATH_PLUGIN_KEY,
   PLATFORM_GUEST_GROUP_PATHS_PLUGIN_KEY,
   PLUGIN_NAME,
@@ -49,7 +43,19 @@ import {
   ROBOT_NAME_RO,
   ROBOT_NAME_RW,
 } from './registry.constants'
-import { generateVaultRobotSecret, getHostFromUrl, getProjectVaultPath, parseBytes } from './registry.utils'
+import {
+  generateHarborAccessLevelMapping,
+  generateProjectRoleGroupPath,
+  generateRetentionPolicy,
+  generateRobotFullName,
+  generateRobotPermissions,
+  generateVaultRobotSecret,
+  getHostFromUrl,
+  getPluginConfig,
+  getProjectVaultPath,
+  parseBytes,
+  parseGroupPaths,
+} from './registry.utils'
 
 @Injectable()
 export class RegistryService {
@@ -80,9 +86,15 @@ export class RegistryService {
     return find(this.client.getProjectRobots(harborProjectId), r => r?.name === fullName)
   }
 
+  private robotExpirationDays(robotName: string): number {
+    if (robotName === ROBOT_NAME_RO) return this.harborConfig.robotExpirationRoDays
+    if (robotName === ROBOT_NAME_RW) return this.harborConfig.robotExpirationRwDays
+    return this.harborConfig.robotExpirationProjectDays
+  }
+
   private async ensureProjectRobot(project: ProjectWithDetails, robotName: string, access: HarborAccess[]) {
     const created = await this.client.ensureRobot(
-      generateRobotPermissions(project, robotName, access, this.harborConfig.robotExpirationDays),
+      generateRobotPermissions(project, robotName, access, this.robotExpirationDays(robotName)),
     )
     if (!created) {
       throw new Error(`Harbor robot already exists (${robotName})`)
@@ -110,9 +122,9 @@ export class RegistryService {
       throw error
     })
 
-    const expiring = vaultRobotSecret
-      ? this.isRobotSecretExpiring(vaultRobotSecret)
-      : false
+    const expiring = this.robotExpirationDays(robotName) > 0
+      && !!vaultRobotSecret
+      && this.isRobotSecretExpiring(vaultRobotSecret)
 
     span?.setAttributes({
       'vault.secret.exists': !!vaultRobotSecret,
@@ -120,6 +132,14 @@ export class RegistryService {
     })
 
     if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
+      const targetDuration = this.robotExpirationDays(robotName)
+      const existing = await this.getRobot(project, harborProjectId, robotName)
+      if (existing?.id && existing.duration !== targetDuration) {
+        await this.client.updateRobot(
+          existing.id,
+          generateRobotPermissions(project, robotName, access, targetDuration),
+        )
+      }
       span?.setAttribute('vault.secret.reused', true)
       return vaultRobotSecret.data
     }
@@ -416,88 +436,5 @@ export class RegistryService {
       [`/${project.slug}`, HARBOR_ROLE_LIMITED_GUEST],
       ...roles,
     ])
-  }
-}
-
-function getPluginConfig(project: ProjectWithDetails, key: string) {
-  return project.plugins?.find(p => p.key === key)?.value
-}
-
-function parseGroupPaths(raw: string): string[] {
-  return raw
-    .split(',')
-    .map(path => path.trim())
-    .filter(Boolean)
-}
-
-function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): Set<string> {
-  return new Set(parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`))
-}
-
-function generateHarborAccessLevelMapping(args: { guest: Iterable<string>, developer: Iterable<string>, maintainer: Iterable<string>, admin: Iterable<string>, platformAdmin: Iterable<string>, platformGuest: Iterable<string> }) {
-  const byGroupName = new Map<string, number>()
-  for (const groupName of args.guest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
-  for (const groupName of args.developer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
-  for (const groupName of args.maintainer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
-  for (const groupName of args.admin) byGroupName.set(groupName, HARBOR_ROLE_DEVELOPER)
-  for (const groupName of args.platformAdmin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
-  for (const groupName of args.platformGuest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
-  return byGroupName
-}
-
-function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
-  return `robot$${project.slug}+${robotName}`
-}
-
-function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
-  return {
-    name: robotName,
-    duration: durationDays,
-    description: 'robot for ci builds',
-    disable: false,
-    level: 'project',
-    permissions: [{
-      namespace: project.slug,
-      kind: 'project',
-      access,
-    }],
-  }
-}
-
-function generateRetentionPolicy(
-  projectId: number,
-  options: {
-    harborRuleTemplate?: RuleTemplate
-    harborRuleCount?: number
-    harborRetentionCron: string
-  },
-): HarborRetentionPolicy {
-  const template: RuleTemplate = options.harborRuleTemplate ?? 'latestPushedK'
-  const count = options.harborRuleCount ?? (template === 'always' ? 1 : 10)
-
-  return {
-    algorithm: 'or',
-    scope: { level: 'project', ref: projectId },
-    rules: [
-      {
-        disabled: false,
-        action: 'retain',
-        template,
-        params: { [template]: count },
-        tag_selectors: [
-          { kind: 'doublestar', decoration: 'matches', pattern: '**' },
-        ],
-        scope_selectors: {
-          repository: [
-            { kind: 'doublestar', decoration: 'repoMatches', pattern: '**' },
-          ],
-        },
-      },
-    ],
-    trigger: {
-      kind: 'Schedule',
-      settings: { cron: options.harborRetentionCron },
-      references: [],
-    },
   }
 }

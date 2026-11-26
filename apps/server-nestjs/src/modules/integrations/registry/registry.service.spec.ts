@@ -75,7 +75,9 @@ describe('registryService', () => {
       ruleCount: 10,
       retentionCron: '0 22 2 * * *',
       robotRotationThresholdDays: 90,
-      robotExpirationDays: 90,
+      robotExpirationRoDays: 90,
+      robotExpirationRwDays: 90,
+      robotExpirationProjectDays: -1,
     })
     baseConfig = mockDeep<ConfigType<typeof baseConfigFactory>>({
       projectsRootDir: 'forge',
@@ -195,7 +197,8 @@ describe('registryService', () => {
       expect(vault.read).toHaveBeenCalledTimes(2)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/ro-robot`)
       expect(vault.read).toHaveBeenCalledWith(`forge/${project.slug}/REGISTRY/rw-robot`)
-      expect(client.getProjectRobots).toHaveBeenCalledTimes(1)
+      expect(client.getProjectRobots).toHaveBeenCalledTimes(3)
+      expect(client.updateRobot).not.toHaveBeenCalled()
       expect(client.ensureRobot).not.toHaveBeenCalled()
       expect(client.deleteRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
@@ -309,6 +312,68 @@ describe('registryService', () => {
         name: 'rw-robot',
         duration: 90,
       }))
+    })
+
+    it('creates the project robot with the configured duration when enabled', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
+      vault.read.mockResolvedValue(makeVaultSecret({
+        data: {
+          HOST: 'other.example',
+          DOCKER_CONFIG: '{}',
+          USERNAME: `robot$${project.slug}+robot`,
+          TOKEN: 'old',
+        },
+      }))
+      client.ensureRobot.mockResolvedValue({ id: 22, name: 'project-robot', secret: 'newsecret' })
+
+      await service.handleUpsert(project)
+
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'ro-robot',
+        duration: 90,
+      }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'rw-robot',
+        duration: 90,
+      }))
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+    })
+
+    it('converges a drifted project robot in place without rotating its secret', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: 90 }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateRobot).toHaveBeenCalledWith(42, expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+      expect(client.ensureRobot).not.toHaveBeenCalledWith(expect.objectContaining({ name: ROBOT_NAME_PROJECT }))
+      expect(client.deleteRobot).not.toHaveBeenCalled()
+      expect(vault.write).not.toHaveBeenCalled()
+    })
+
+    it('leaves a project robot already matching the configured duration untouched', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: -1 }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateRobot).not.toHaveBeenCalled()
+      expect(vault.write).not.toHaveBeenCalled()
     })
 
     it('parses plugin config and enables project robot publishing', async () => {

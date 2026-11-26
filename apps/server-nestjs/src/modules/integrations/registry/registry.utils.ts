@@ -1,8 +1,19 @@
+import type { RuleTemplate } from '../../../config/harbor.config'
+import type {
+  HarborAccess,
+  HarborRetentionPolicy,
+  HarborRobotCreateRequest,
+} from './registry-client.service'
 import type { ProjectWithDetails } from './registry-datastore.service'
 import type { RegistryResponse } from './registry-http-client.service'
 import { removeTrailingSlash } from '@cpn-console/shared'
 import { HttpStatus } from '@nestjs/common'
 import z from 'zod'
+import {
+  HARBOR_ROLE_DEVELOPER,
+  HARBOR_ROLE_GUEST,
+  HARBOR_ROLE_PROJECT_ADMIN,
+} from './registry.constants'
 
 // Harbor signals an "already exists" race either as a plain HTTP 409
 // (project create) or as a 400 whose body carries code CONFLICT.
@@ -123,4 +134,91 @@ function parseUnit(unit: string) {
     default:
       return 0
   }
+}
+
+export function getPluginConfig(project: ProjectWithDetails, key: string) {
+  return project.plugins?.find(p => p.key === key)?.value
+}
+
+export function parseGroupPaths(raw: string): string[] {
+  return raw
+    .split(',')
+    .map(path => path.trim())
+    .filter(Boolean)
+}
+
+export function generateProjectRoleGroupPath(projectSlug: string, rawGroupPathSuffixes: string): Set<string> {
+  return new Set(parseGroupPaths(rawGroupPathSuffixes).map(path => `/${projectSlug}${path}`))
+}
+
+export function generateHarborAccessLevelMapping(args: { guest: Iterable<string>, developer: Iterable<string>, maintainer: Iterable<string>, admin: Iterable<string>, platformAdmin: Iterable<string>, platformGuest: Iterable<string> }) {
+  const byGroupName = new Map<string, number>()
+  for (const groupName of args.guest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  for (const groupName of args.developer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  for (const groupName of args.maintainer) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  for (const groupName of args.admin) byGroupName.set(groupName, HARBOR_ROLE_DEVELOPER)
+  for (const groupName of args.platformAdmin) byGroupName.set(groupName, HARBOR_ROLE_PROJECT_ADMIN)
+  for (const groupName of args.platformGuest) byGroupName.set(groupName, HARBOR_ROLE_GUEST)
+  return byGroupName
+}
+
+export function generateRobotFullName(project: ProjectWithDetails, robotName: string) {
+  return `robot$${project.slug}+${robotName}`
+}
+
+export function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
+  return {
+    name: robotName,
+    duration: durationDays,
+    description: 'robot for ci builds',
+    disable: false,
+    level: 'project',
+    permissions: [{
+      namespace: project.slug,
+      kind: 'project',
+      access,
+    }],
+  }
+}
+
+export function generateRetentionPolicy(
+  projectId: number,
+  options: {
+    harborRuleTemplate?: RuleTemplate
+    harborRuleCount?: number
+    harborRetentionCron: string
+  },
+): HarborRetentionPolicy {
+  const template: RuleTemplate = options.harborRuleTemplate ?? 'latestPushedK'
+  const count = options.harborRuleCount ?? (template === 'always' ? 1 : 10)
+
+  return {
+    algorithm: 'or',
+    scope: { level: 'project', ref: projectId },
+    rules: [
+      {
+        disabled: false,
+        action: 'retain',
+        template,
+        params: { [template]: count },
+        tag_selectors: [
+          { kind: 'doublestar', decoration: 'matches', pattern: '**' },
+        ],
+        scope_selectors: {
+          repository: [
+            { kind: 'doublestar', decoration: 'repoMatches', pattern: '**' },
+          ],
+        },
+      },
+    ],
+    trigger: {
+      kind: 'Schedule',
+      settings: { cron: options.harborRetentionCron },
+      references: [],
+    },
+  }
+}
+
+export function formatRobotDuration(days: number): string {
+  return days < 0 ? 'jamais' : `${days} jours`
 }
