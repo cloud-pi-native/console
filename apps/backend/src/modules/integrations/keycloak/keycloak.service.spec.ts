@@ -656,6 +656,29 @@ describe('keycloakService', () => {
 
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-1', 'role-group-id')
     })
+
+    it('removes the OIDC group member when a member is removed through ProjectMembersService', async () => {
+      keycloak.ensureRoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'role-group-id', name: 'dev', path: '/test-project/console/dev' }))
+      keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'project-group-id', name: 'test-project', path: '/test-project' }))
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+      keycloak.getGroupMembers.mockResolvedValue([makeUserRepresentation({ id: 'user-1' })])
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.projectMembers.findMany.mockResolvedValue([])
+      prisma.$transaction.mockImplementation(async callback => callback(tx))
+
+      datastore.getProject.mockResolvedValue(makeProjectWithDetails({
+        id: 'project-id',
+        slug: 'test-project',
+        ownerId: 'owner-id',
+        everyonePerms: 0n,
+        roles: [makeProjectRole({ id: 'role-1', permissions: 0n, oidcGroup: '/test-project/console/dev', type: 'managed' })],
+        members: [],
+      }))
+
+      await projectMembers.remove('project-id', 'user-1')
+
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-1', 'role-group-id')
+    })
   })
 
   describe('handleAdminRoleUpsert', () => {
