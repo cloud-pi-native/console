@@ -23,6 +23,7 @@ import {
   ROBOT_NAME_PROJECT,
 } from './registry.constants'
 import { RegistryService } from './registry.service'
+import { generateRobotFullName } from './registry.utils'
 
 describe('registryService', () => {
   let service: RegistryService
@@ -355,7 +356,7 @@ describe('registryService', () => {
       await service.handleUpsert(project)
 
       expect(client.updateRobot).toHaveBeenCalledWith(42, expect.objectContaining({
-        name: ROBOT_NAME_PROJECT,
+        name: generateRobotFullName(project, ROBOT_NAME_PROJECT),
         duration: -1,
       }))
       expect(client.ensureRobot).not.toHaveBeenCalledWith(expect.objectContaining({ name: ROBOT_NAME_PROJECT }))

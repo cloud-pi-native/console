@@ -137,7 +137,7 @@ export class RegistryService {
       if (existing?.id && existing.duration !== targetDuration) {
         await this.client.updateRobot(
           existing.id,
-          generateRobotPermissions(project, robotName, access, targetDuration),
+          generateRobotPermissions(project, generateRobotFullName(project, robotName), access, targetDuration),
         )
       }
       span?.setAttribute('vault.secret.reused', true)
