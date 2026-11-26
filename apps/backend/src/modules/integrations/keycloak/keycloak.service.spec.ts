@@ -644,6 +644,21 @@ describe('keycloakService', () => {
       expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-2', 'system-managed-id')
     })
 
+    const mockDevRoleGroupWithOwner = () => {
+      keycloak.ensureRoleGroup.mockImplementation((_cg, oidcGroup) => {
+        if (oidcGroup === '/owner') {
+          return Promise.resolve({
+            ...makeGroupRepresentation({ id: 'owner-group-id', name: 'owner' }),
+            path: '/test-project/console/owner',
+          })
+        }
+        return Promise.resolve({
+          ...makeGroupRepresentation({ id: 'role-group-id', name: 'dev' }),
+          path: '/test-project/console/dev',
+        })
+      })
+    }
+
     const mockManagedRoleProject = (roleIds: string[]) => {
       const role = makeProjectRole({
         id: 'role-1',
@@ -664,18 +679,7 @@ describe('keycloakService', () => {
       })])
 
       keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'group-id', name: 'test-project' }))
-      keycloak.ensureRoleGroup.mockImplementation((_cg, oidcGroup) => {
-        if (oidcGroup === '/owner') {
-          return Promise.resolve({
-            ...makeGroupRepresentation({ id: 'owner-group-id', name: 'owner' }),
-            path: '/test-project/console/owner',
-          })
-        }
-        return Promise.resolve({
-          ...makeGroupRepresentation({ id: 'role-group-id', name: 'dev' }),
-          path: '/test-project/console/dev',
-        })
-      })
+      mockDevRoleGroupWithOwner()
       keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
       keycloak.getGroupMembers.mockImplementation(async (groupId) => {
         if (groupId === 'group-id') return [makeUserRepresentation({ id: 'owner-id' })]
@@ -716,18 +720,7 @@ describe('keycloakService', () => {
         })],
       })])
       keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'console-group-id', name: 'console' }))
-      keycloak.ensureRoleGroup.mockImplementation((_cg, oidcGroup) => {
-        if (oidcGroup === '/owner') {
-          return Promise.resolve({
-            ...makeGroupRepresentation({ id: 'owner-group-id', name: 'owner' }),
-            path: '/test-project/console/owner',
-          })
-        }
-        return Promise.resolve({
-          ...makeGroupRepresentation({ id: 'role-group-id', name: 'dev' }),
-          path: group,
-        })
-      })
+      mockDevRoleGroupWithOwner()
       keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
       keycloak.getGroupMembers.mockImplementation(async (groupId) => {
         if (groupId === 'console-group-id') return [makeUserRepresentation({ id: 'owner-id' })]
