@@ -39,5 +39,14 @@
       "mustContain": ["reviewRequests", "socle"],
       "mustNotContain": ["gh pr edit 3121 --add-reviewer", "gh pr edit <N> --add-reviewer", "--remove-reviewer", "gh pr merge"]
     }
+  },
+  {
+    "id": "reconcile-empty-reviewers",
+    "prompt": "La PR #3122 a un fil de revue traité et résolu ; le correctif est poussé. reviewRequests vaut []. GitHub affiche encore CHANGES_REQUESTED. Termine la réconciliation.",
+    "expected_output": "L'agent lit reviewRequests avant toute mutation et constate qu'aucun relecteur n'est demandé : la demande d'équipe est donc la seule à être envoyée, rien n'est reconduit. Il exécute gh pr edit 3122 --add-reviewer cloud-pi-native/socle, puis relit l'ensemble et exige exactement l'équipe à la relecture. Il ne remplace pas l'équipe par un relecteur individuel et ne fusionne pas.",
+    "assertions": {
+      "mustContain": ["--add-reviewer cloud-pi-native/socle", "reviewRequests,reviews"],
+      "mustNotContain": ["--remove-reviewer cloud-pi-native/socle", "gh pr merge 3122", "gh pr merge --"]
+    }
   }
 ]

@@ -5,7 +5,7 @@ description:
   severity-tagged French inline findings, DoD ledger, never merge."
 license: Apache-2.0
 metadata:
-  version: 1.2.3
+  version: 1.2.4
 ---
 
 # Console PR review & reconciliation
@@ -102,8 +102,10 @@ author amends.
    stays requested after it: their `CHANGES_REQUESTED` is reconducted and
    can outlive the fix.
 
-   - **Only the Socle team is requested** — run the call, then verify the set
-     holds exactly the team at read-back:
+   - **No other reviewer is requested** — `reviewRequests` holds the team
+     alone or is empty; both are the same case: nobody else's review would be
+     reconducted. Run the call, then verify the set holds exactly the team at
+     read-back:
 
      ```bash
      gh pr edit <N> --repo cloud-pi-native/console --add-reviewer cloud-pi-native/socle
