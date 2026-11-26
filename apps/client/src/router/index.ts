@@ -9,6 +9,7 @@ import {
   createWebHistory,
 } from 'vue-router'
 import { useProjectStore } from '@/stores/project.js'
+import { useSnackbarStore } from '@/stores/snackbar.js'
 import { useSystemSettingsStore } from '@/stores/system-settings.js'
 
 import { useUserStore } from '@/stores/user.js'
@@ -285,7 +286,12 @@ export function createAppRouter(base?: string) {
     const validPath = new Set(['Login', 'Home', 'Doc', 'NotFound', 'ServicesHealth', 'Maintenance', 'Logout', 'Swagger-server-nestjs'])
     const userStore = useUserStore()
     const systemStore = useSystemSettingsStore()
-    await userStore.setIsLoggedIn()
+    let navigationError: unknown
+    try {
+      await userStore.setIsLoggedIn()
+    } catch (error) {
+      navigationError = error
+    }
     if (
       !validPath.has(to.name?.toString() ?? '')
       && !userStore.isLoggedIn
@@ -299,8 +305,15 @@ export function createAppRouter(base?: string) {
       !validPath.has(to.name?.toString() ?? '')
       && userStore.isLoggedIn
     ) {
-      await systemStore.listSystemSettings()
+      try {
+        await systemStore.listSystemSettings()
+      } catch (error) {
+        navigationError = navigationError ?? error
+      }
       if (systemStore.systemSettingsByKey.maintenance?.value === 'on' && !AdminAuthorized.Manage(userStore.adminPerms)) return next('/maintenance')
+    }
+    if (navigationError !== undefined) {
+      useSnackbarStore().setMessage(navigationError instanceof Error ? navigationError.message : String(navigationError), 'error')
     }
     next()
   })

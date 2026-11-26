@@ -196,6 +196,7 @@ const activeAccordion = ref<number>()
                             name: item.title,
                             // @ts-ignore Sisi il y a potentiellement un placeholder
                             placeholder: item.placeholder || '',
+                            initialValue: item.kind === 'switch' ? item.initialValue : undefined,
                             disabled: !item.permissions[permissionTarget].write || props.disabled,
                           }"
                           @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
@@ -232,6 +233,7 @@ const activeAccordion = ref<number>()
                             name: item.title,
                             // @ts-ignore si si il y a potentiellement un placeholder
                             placeholder: item.placeholder || '',
+                            initialValue: item.kind === 'switch' ? item.initialValue : undefined,
                             disabled: !item.permissions[permissionTarget].write,
                           }"
                           @update="(value: string) => update({ key: item.key, value, plugin: service.name })"
