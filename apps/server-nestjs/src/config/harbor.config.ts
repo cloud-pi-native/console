@@ -12,6 +12,10 @@ const ruleTemplateSchema = z.enum([
 
 export type RuleTemplate = z.infer<typeof ruleTemplateSchema>
 
+function robotDurationSchema(defaultDays: number) {
+  return z.coerce.number().int().refine(days => days === -1 || days > 0, 'Harbor robot duration must be -1 or a positive number').default(defaultDays)
+}
+
 const harborFeatureSchema = z.object({
   HARBOR_URL: z.string().url(),
   HARBOR_INTERNAL_URL: z.string().url().optional(),
@@ -21,9 +25,9 @@ const harborFeatureSchema = z.object({
   HARBOR_RULE_COUNT: z.coerce.number().int().positive().optional(),
   HARBOR_RETENTION_CRON: cronSchema.default('0 22 2 * * *'),
   HARBOR_ROBOT_ROTATION_THRESHOLD_DAYS: z.coerce.number().int().positive().default(30),
-  HARBOR_ROBOT_EXPIRATION_RO_DAYS: z.coerce.number().int().refine(days => days === -1 || days > 0, 'Harbor robot duration must be -1 or a positive number').default(60),
-  HARBOR_ROBOT_EXPIRATION_RW_DAYS: z.coerce.number().int().refine(days => days === -1 || days > 0, 'Harbor robot duration must be -1 or a positive number').default(60),
-  HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS: z.coerce.number().int().refine(days => days === -1 || days > 0, 'Harbor robot duration must be -1 or a positive number').default(-1),
+  HARBOR_ROBOT_EXPIRATION_RO_DAYS: robotDurationSchema(60),
+  HARBOR_ROBOT_EXPIRATION_RW_DAYS: robotDurationSchema(60),
+  HARBOR_ROBOT_EXPIRATION_PROJECT_DAYS: robotDurationSchema(-1),
   HARBOR_PROJECT_SLUG_CACHE_TTL_MS: z.coerce.number().int().positive().default(300_000),
 }).superRefine((raw, ctx) => {
   // Rotation must trigger strictly before expiration, otherwise robots die
