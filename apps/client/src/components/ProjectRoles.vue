@@ -3,6 +3,7 @@ import type { Member, ProjectRole, ProjectRoleBigint, Role, RoleBigint } from '@
 import type { Project } from '@/utils/project-utils.js'
 import { useSnackbarStore } from '@/stores/snackbar.js'
 import { toKebabCase } from '@/utils/func.js'
+import { createMemberRoleSync } from '@/utils/member-role-sync.js'
 
 const props = defineProps<{
   project: Project
@@ -38,18 +39,23 @@ async function deleteRole(roleId: Role['id']) {
   selectedId.value = undefined
 }
 
+const memberRoleSync = createMemberRoleSync(
+  ({ userId, roles }) => props.project.Members.patch([{ userId, roles }]),
+  () => snackbarStore.setMessage('Rôle mis à jour', 'success'),
+)
+
 async function updateMember(checked: boolean, userId: Member['userId']) {
   if (!selectedRole.value) return
   const matchingMember = props.project.members.find(member => member.userId === userId)
   if (!matchingMember) return
 
-  const newRoleList = checked
-    ? [...matchingMember.roleIds, selectedRole.value.id]
-    : matchingMember.roleIds.filter(id => id !== selectedRole.value?.id)
-
-  await props.project.Members.patch([{ userId, roles: newRoleList }])
-  reload()
-  snackbarStore.setMessage('Rôle mis à jour', 'success')
+  try {
+    await memberRoleSync.toggle(checked, userId, selectedRole.value.id, matchingMember.roleIds)
+    reload()
+  } catch (error) {
+    snackbarStore.setMessage(error instanceof Error ? error.message : String(error), 'error')
+    reload()
+  }
 }
 
 async function saveEveryoneRole(role: { permissions: bigint }) {
