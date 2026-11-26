@@ -17,12 +17,12 @@ export const DEFAULT_AUDITOR_GROUP_PATH = '/console/readonly'
 export const DEFAULT_SECURITY_GROUP_PATH = '/console/security'
 
 // Default suffixes for project-scoped group paths
-export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin,/console/owner'
+export const DEFAULT_PROJECT_MAINTAINER_GROUP_PATH_SUFFIX = '/console/admin'
 export const DEFAULT_PROJECT_DEVELOPER_GROUP_PATH_SUFFIX = '/console/developer'
 export const DEFAULT_PROJECT_DEVOPS_GROUP_PATH_SUFFIX = '/console/devops'
 export const DEFAULT_PROJECT_REPORTER_GROUP_PATH_SUFFIX = '/console/readonly'
 export const DEFAULT_PROJECT_SECURITY_GROUP_PATH_SUFFIX = '/console/security'
-export const BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX = '/console/owner'
+export const BASE_MAINTAINER_PROJECT_GROUP_PATH_SUFFIX = '/console/admin'
 
 // Plugin configuration keys for custom group paths
 export const ADMIN_GROUP_PATH_PLUGIN_KEY = 'adminGroupPath'

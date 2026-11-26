@@ -34,19 +34,15 @@ export function generateProjectCreateInput(
     prodGpu: data.prodGpu,
     prodMemory: data.prodMemory,
     owner: { connect: { id: ownerId } },
+    members: {
+      create: [{ userId: ownerId, roleIds: [] }],
+    },
     roles: {
       create: [
         {
-          name: 'Propriétaire',
-          permissions: PROJECT_PERMS.MANAGE,
-          position: 0,
-          oidcGroup: `/${slug}/console/owner`,
-          type: 'system:managed',
-        },
-        {
           name: 'Administrateur',
           permissions: PROJECT_PERMS.MANAGE,
-          position: 1,
+          position: 0,
           oidcGroup: `/${slug}/console/admin`,
           type: 'system:managed',
         },
@@ -58,7 +54,7 @@ export function generateProjectCreateInput(
             | PROJECT_PERMS.SEE_SECRETS
             | PROJECT_PERMS.LIST_ENVIRONMENTS
             | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 2,
+          position: 1,
           oidcGroup: `/${slug}/console/devops`,
           type: 'system:managed',
         },
@@ -67,14 +63,14 @@ export function generateProjectCreateInput(
           permissions: PROJECT_PERMS.MANAGE_REPOSITORIES
             | PROJECT_PERMS.LIST_ENVIRONMENTS
             | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 3,
+          position: 2,
           oidcGroup: `/${slug}/console/developer`,
           type: 'system:managed',
         },
         {
           name: 'Lecture seule',
           permissions: PROJECT_PERMS.LIST_ENVIRONMENTS | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 4,
+          position: 3,
           oidcGroup: `/${slug}/console/readonly`,
           type: 'system:managed',
         },
@@ -83,7 +79,7 @@ export function generateProjectCreateInput(
           permissions: PROJECT_PERMS.SEE_SECRETS
             | PROJECT_PERMS.LIST_ENVIRONMENTS
             | PROJECT_PERMS.LIST_REPOSITORIES,
-          position: 5,
+          position: 4,
           oidcGroup: `/${slug}/console/security`,
           type: 'system:managed',
         },

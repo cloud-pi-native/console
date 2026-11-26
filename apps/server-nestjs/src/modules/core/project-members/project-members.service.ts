@@ -146,6 +146,10 @@ export class ProjectMembersService {
     this.logger.log(`projectMembers.removeMember started (projectId=${projectId}, userId=${userId})`)
     try {
       const members = await this.prisma.$transaction(async (tx) => {
+        const ownerId = await getProjectOwnerId(tx, projectId)
+        if (ownerId?.ownerId === userId) {
+          throw new BadRequestException('Le propriétaire du projet ne peut pas être retiré des membres')
+        }
         await deleteProjectMember(tx, projectId, userId)
         return listProjectMembersWithUser(tx, projectId)
       })

@@ -51,13 +51,6 @@ export function toRoleRelativeGroupPath(
 }
 
 // Path equality against the role groups seeded in project.utils.ts.
-export function isOwnerRole(
-  project: Pick<ProjectWithDetails, 'slug'>,
-  role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,
-): boolean {
-  return role.oidcGroup === `/${project.slug}/${CONSOLE_GROUP_NAME}/owner`
-}
-
 export function isAdminRole(
   project: Pick<ProjectWithDetails, 'slug'>,
   role: Pick<ProjectWithDetails['roles'][number], 'oidcGroup'>,

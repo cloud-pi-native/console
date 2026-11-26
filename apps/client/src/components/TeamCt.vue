@@ -76,10 +76,12 @@ watch(() => props.project.members, () => {
 const isTransferingProject = ref(false)
 const nextOwnerId = ref<string | undefined>(undefined)
 
-const transferSelectOptions = props.project.members.map(member => ({
-  text: `${member.lastName} ${member.firstName} (${member.email})`,
-  value: member.userId,
-}))
+const transferSelectOptions = props.project.members
+  .filter(member => member.userId !== props.project.ownerId)
+  .map(member => ({
+    text: `${member.lastName} ${member.firstName} (${member.email})`,
+    value: member.userId,
+  }))
 
 async function addUserToProject() {
   if (!newUserEmail.value) return
@@ -104,7 +106,7 @@ async function removeUserFromProject(userId: string) {
 }
 
 async function transferOwnerShip() {
-  if (nextOwnerId.value && props.project.members.some(member => member.userId === nextOwnerId.value)) {
+  if (nextOwnerId.value && transferSelectOptions.some(option => option.value === nextOwnerId.value)) {
     await props.project.Commands.update({ ownerId: nextOwnerId.value })
       .then(() => emit('transfer'))
       .catch(() => emit('refresh'))
@@ -124,7 +126,7 @@ async function transferOwnerShip() {
       :headers="headers"
     >
       <tr
-        v-for="member in [{ ...props.project.owner, roleIds: [], userId: props.project.owner.id }, ...project.members]"
+        v-for="member in project.members"
         :key="member.userId"
       >
         <td>
