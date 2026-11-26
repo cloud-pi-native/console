@@ -3,7 +3,7 @@ import type { AdminRoleEventPayload } from '../../core/events/app-events.service
 import type { RequiredPluginResult } from '../../core/plugin/plugin.utils'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import type { GroupRepresentationWith, GroupRepresentationWithIdNamePath } from './keycloak.utils'
-import { getBaseRoleType, isExternalRoleType } from '@cpn-console/shared'
+import { getBaseRoleType, isExternalRoleType, reconcile } from '@cpn-console/shared'
 import { Inject, Injectable, Logger } from '@nestjs/common'
 import { OnEvent } from '@nestjs/event-emitter'
 import { trace } from '@opentelemetry/api'
@@ -13,7 +13,7 @@ import { capturePluginResult } from '../../core/plugin/plugin.utils'
 import { StartActiveSpan } from '../../infrastructure/telemetry/telemetry.decorator'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
-import { isMember, isNonEmptyGroupPath, isOwnedProjectGroup, isOwnerRole, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
+import { isAdminRole, isMember, isNonEmptyGroupPath, isOwnedProjectGroup, splitGroupPath, toGroupPath, toRoleRelativeGroupPath } from './keycloak.utils'
 
 @Injectable()
 export class KeycloakService {
@@ -161,6 +161,7 @@ export class KeycloakService {
     const consoleGroup = await this.keycloak.ensureConsoleGroup(group)
     this.logger.verbose(`Reconciling Keycloak console group (${project.slug}): projectGroupId=${group.id} consoleGroupId=${consoleGroup.id}`)
     await this.ensureRoleGroups(project, consoleGroup)
+    await this.ensureOwnerGroup(project, consoleGroup)
     // A deleted role emits only project.upsert and the ensure pass is purely
     // additive: without this purge the role's Keycloak group survives forever.
     await this.purgeOrphanRoleGroups(project, consoleGroup)
@@ -340,6 +341,38 @@ export class KeycloakService {
     await Promise.all(rolesWithOidcGroup.map(role => this.ensureRoleGroup(project, role, group)))
   }
 
+  @StartActiveSpan()
+  private async ensureOwnerGroup(
+    project: ProjectWithDetails,
+    consoleGroup: GroupRepresentationWithIdNamePath,
+  ) {
+    const span = trace.getActiveSpan()
+    span?.setAttribute('project.slug', project.slug)
+    const ownerGroup = await this.keycloak.ensureRoleGroup(consoleGroup, '/owner')
+    span?.setAttribute('keycloak.group.id', ownerGroup.id)
+    const groupMembers = await this.keycloak.getGroupMembers(ownerGroup.id)
+    // A custom role can map to /console/owner: reconcile must not purge its holders.
+    const ownerPath = `${consoleGroup.path}/owner`
+    const holders = project.members
+      .filter(m => project.roles.some(r => r.oidcGroup === ownerPath && m.roleIds.includes(r.id)))
+      .map(m => m.user.id)
+    await reconcile({
+      current: groupMembers,
+      desired: new Set([project.ownerId]),
+      keep: new Set(holders),
+      keyOf: member => member.id,
+      add: async (userId) => {
+        await this.maybeAddUserToGroup(userId, ownerGroup.id, ownerGroup.name)
+      },
+      remove: async (member) => {
+        if (!member.id) {
+          throw new Error(`Failed to reconcile the virtual owner group for project ${project.slug}`)
+        }
+        await this.maybeRemoveUserFromGroup(member.id, ownerGroup.id, ownerGroup.name)
+      },
+    })
+  }
+
   // Keycloak has no find-children-by-path read: a candidate is deleted only
   // when getGroupByPath resolves it to the same id, proving it was
   // console-created for a role; foreign groups stay untouched. A nested role
@@ -358,6 +391,7 @@ export class KeycloakService {
         .filter(r => isNonEmptyGroupPath(r.oidcGroup))
         .map(r => toRoleRelativeGroupPath(r, consoleGroup)),
     )
+    desiredRelativePaths.add('/owner')
     span?.setAttribute('keycloak.role_groups.desired', desiredRelativePaths.size)
 
     const protectedPaths = new Set(
@@ -467,7 +501,7 @@ export class KeycloakService {
 
     // Managed roles only: the orphan purge would evict the owner otherwise.
     // maybeAddUserToGroup tolerates 409, so no membership pre-check is needed.
-    if (isOwnerRole(project, role)) {
+    if (isAdminRole(project, role)) {
       addedCount++
       await this.maybeAddUserToGroup(project.ownerId, group.id, group.name)
     }
@@ -489,6 +523,10 @@ export class KeycloakService {
     span?.setAttribute('keycloak.group.id', group.id)
     span?.setAttribute('keycloak.group.members.current', members.length)
 
+    const desiredUserIds = new Set(project.members
+      .filter(m => m.roleIds.includes(role.id))
+      .map(m => m.user.id))
+    if (isAdminRole(project, role)) desiredUserIds.add(project.ownerId)
     let removedCount = 0
     await Promise.all(members.map(async (member) => {
       const memberRecord = project.members.find(m => m.user.id === member.id)
