@@ -34,6 +34,8 @@ export class KeycloakService {
   @OnEvent('deployment.delete')
   @OnEvent('repository.upsert')
   @OnEvent('repository.delete')
+  @OnEvent('projectMember.upsert')
+  @OnEvent('projectMember.delete')
   async handleUpsert(payload: ProjectEventPayload): Promise<RequiredPluginResult<'keycloak'>> {
     return capturePluginResult('keycloak', async () => {
       const project = await this.datastore.getProject(payload.projectId)

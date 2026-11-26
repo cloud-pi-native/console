@@ -1,10 +1,17 @@
+import type { ConfigType } from '@nestjs/config'
+import type { Prisma } from '@prisma/client'
 import type { DeepMockProxy } from 'vitest-mock-extended'
 import type { AdminRoleWithDetails, ProjectWithDetails, UserWithAdminRoles } from './keycloak-datastore.service'
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter'
 import { Test } from '@nestjs/testing'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockDeep } from 'vitest-mock-extended'
+import { baseConfigFactory } from '../../../config/base.config'
 import { makeAdminRoleEventPayload } from '../../core/events/app-events-testing.utils'
+import { AppEventsService } from '../../core/events/app-events.service'
+import { LogService } from '../../core/log/log.service'
+import { ProjectMembersService } from '../../core/project-members/project-members.service'
+import { PrismaService } from '../../infrastructure/database/prisma.service'
 import { KeycloakClientService } from './keycloak-client.service'
 import { KeycloakDatastoreService } from './keycloak-datastore.service'
 import {
@@ -22,6 +29,8 @@ describe('keycloakService', () => {
   let keycloak: DeepMockProxy<KeycloakClientService>
   let datastore: DeepMockProxy<KeycloakDatastoreService>
   let events: EventEmitter2
+  let projectMembers: ProjectMembersService
+  let prisma: DeepMockProxy<PrismaService>
 
   beforeEach(async () => {
     keycloak = mockDeep<KeycloakClientService>({
@@ -38,18 +47,25 @@ describe('keycloakService', () => {
       getAllAdminRoles: vi.fn().mockResolvedValue([]),
       getAllUsersWithAdminRoleIds: vi.fn().mockResolvedValue([]),
     })
+    prisma = mockDeep<PrismaService>()
 
     const moduleRef = await Test.createTestingModule({
       imports: [EventEmitterModule.forRoot()],
       providers: [
         KeycloakService,
+        ProjectMembersService,
+        AppEventsService,
+        LogService,
         { provide: KeycloakClientService, useValue: keycloak },
         { provide: KeycloakDatastoreService, useValue: datastore },
+        { provide: PrismaService, useValue: prisma },
+        { provide: baseConfigFactory.KEY, useValue: { appVersion: 'test' } satisfies ConfigType<typeof baseConfigFactory> },
       ],
     }).compile()
 
     await moduleRef.init()
     service = moduleRef.get(KeycloakService)
+    projectMembers = moduleRef.get(ProjectMembersService)
     events = moduleRef.get(EventEmitter2)
   })
 
@@ -741,7 +757,7 @@ describe('keycloakService', () => {
     })
   })
 
-  describe('handleUpsert (projectRole.delete regression #3049)', () => {
+  describe('handleUpsert', () => {
     it('reconciles OIDC groups when a project role event fires', async () => {
       const project = makeProjectWithDetails({ id: 'project-id', slug: 'test-project', ownerId: 'owner-id', everyonePerms: 0n, members: [], roles: [] })
       datastore.getProject.mockResolvedValue(project)
@@ -757,6 +773,55 @@ describe('keycloakService', () => {
       // reconciliation — the granular projectRole.delete routes here.
       expect(datastore.getProject).toHaveBeenCalledWith('project-id')
       expect(keycloak.ensureGroupByPath).toHaveBeenCalledWith('/test-project')
+    })
+
+    it('removes the OIDC group member when a role is withdrawn through ProjectMembersService', async () => {
+      keycloak.ensureRoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'role-group-id', name: 'dev', path: '/test-project/console/dev' }))
+      keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'project-group-id', name: 'test-project', path: '/test-project' }))
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+      keycloak.getGroupMembers.mockImplementation(async (groupId) => {
+        if (groupId === 'role-group-id') return [makeUserRepresentation({ id: 'user-1' })]
+        return []
+      })
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.projectMembers.findMany.mockResolvedValue([])
+      prisma.$transaction.mockImplementation(async callback => callback(tx))
+
+      datastore.getProject.mockResolvedValue(makeProjectWithDetails({
+        id: 'project-id',
+        slug: 'test-project',
+        ownerId: 'owner-id',
+        everyonePerms: 0n,
+        roles: [makeProjectRole({ id: 'role-1', permissions: 0n, oidcGroup: '/test-project/console/dev', type: 'managed' })],
+        members: [makeProjectMember({ user: makeProjectUser({ id: 'user-1' }), roleIds: [] })],
+      }))
+
+      await projectMembers.patch('project-id', [{ userId: 'user-1', roles: [] }])
+
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-1', 'role-group-id')
+    })
+
+    it('removes the OIDC group member when a member is removed through ProjectMembersService', async () => {
+      keycloak.ensureRoleGroup.mockResolvedValue(makeGroupRepresentation({ id: 'role-group-id', name: 'dev', path: '/test-project/console/dev' }))
+      keycloak.ensureGroupByPath.mockResolvedValue(makeGroupRepresentation({ id: 'project-group-id', name: 'test-project', path: '/test-project' }))
+      keycloak.getSubGroups.mockImplementation(async function* () { /* empty */ })
+      keycloak.getGroupMembers.mockResolvedValue([makeUserRepresentation({ id: 'user-1' })])
+      const tx = mockDeep<Prisma.TransactionClient>()
+      tx.projectMembers.findMany.mockResolvedValue([])
+      prisma.$transaction.mockImplementation(async callback => callback(tx))
+
+      datastore.getProject.mockResolvedValue(makeProjectWithDetails({
+        id: 'project-id',
+        slug: 'test-project',
+        ownerId: 'owner-id',
+        everyonePerms: 0n,
+        roles: [makeProjectRole({ id: 'role-1', permissions: 0n, oidcGroup: '/test-project/console/dev', type: 'managed' })],
+        members: [],
+      }))
+
+      await projectMembers.remove('project-id', 'user-1')
+
+      expect(keycloak.removeUserFromGroup).toHaveBeenCalledWith('user-1', 'role-group-id')
     })
   })
 
