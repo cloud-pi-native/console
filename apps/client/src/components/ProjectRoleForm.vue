@@ -16,6 +16,7 @@ const props = defineProps<{
   allMembers: Member[]
   projectId: ProjectV2['id']
   isEveryone: boolean
+  isOwner?: boolean
   oidcGroup?: string
   type?: string
 }>()
@@ -146,6 +147,24 @@ function updateChecked(checked: boolean, value: bigint) {
           :hint="member.email"
           :disabled="isEveryone"
           :model-value="true"
+        />
+      </template>
+      <template v-else-if="props.isOwner">
+        <DsfrNotice
+          class="mb-5"
+          style="width: fit-content"
+          title="Le rôle 'Propriétaire' est réservé au propriétaire du projet et ne peut pas être assigné à d'autres membres"
+        />
+        <DsfrCheckbox
+          v-for="member in role.allMembers"
+          :id="`${member.userId}-cbx`"
+          :key="member.email"
+          value=""
+          name="'checkbox-' + member.id"
+          :label="`${member.lastName} ${member.firstName}`"
+          :hint="member.email"
+          :disabled="true"
+          :model-value="member.roleIds.includes(role.id)"
         />
       </template>
       <template v-else>

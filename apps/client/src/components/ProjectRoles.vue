@@ -12,7 +12,7 @@ const snackbarStore = useSnackbarStore()
 
 const selectedId = ref<string>()
 
-type RoleItem = Omit<ProjectRole, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean }
+type RoleItem = Omit<ProjectRole, 'permissions'> & { permissions: bigint, memberCounts: number, isEveryone: boolean, isOwner: boolean }
 
 const roleList = ref<RoleItem[]>([])
 
@@ -84,6 +84,7 @@ function reload() {
     ...role,
     memberCounts: props.project.members.filter(member => member.roleIds.includes(role.id)).length ?? 0,
     isEveryone: false,
+    isOwner: role.oidcGroup === `/${props.project.slug}/console/owner`,
     permissions: BigInt(role.permissions),
   }))
   roles.push({
@@ -93,6 +94,7 @@ function reload() {
     permissions: BigInt(props.project.everyonePerms),
     position: 1000,
     isEveryone: true,
+    isOwner: false,
     projectId: props.project.id,
   })
   roleList.value = roles
@@ -150,6 +152,7 @@ watch(props.project, reload, { immediate: true })
       :permissions="BigInt(selectedRole.permissions)"
       :project-id="project.id"
       :is-everyone="selectedRole.isEveryone"
+      :is-owner="selectedRole.isOwner"
       :oidc-group="selectedRole.oidcGroup"
       :type="selectedRole.type"
       :all-members="project.members"
