@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { CleanLog, Log, XOR } from '@cpn-console/shared'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 // @ts-ignore 'vue3-json-viewer' missing types
 import { JsonViewer } from 'vue3-json-viewer'
 import router from '@/router/index.js'
@@ -16,6 +16,8 @@ const props = withDefaults(defineProps<{
   hideTotalEvents?: boolean
   headerClass?: string
   bodyClass?: string
+  hideLogs?: boolean
+  hideLogDetails?: boolean
 }>(), {
   step: 10,
   totalLength: 0,
@@ -23,13 +25,34 @@ const props = withDefaults(defineProps<{
   hideTotalEvents: false,
   headerClass: '',
   bodyClass: '',
+  // explicit undefined beats Vue's Boolean casting (absent → false), keeping the uncontrolled path detectable
+  hideLogs: undefined,
+  hideLogDetails: undefined,
 })
 const emits = defineEmits<{
   movePage: [index: number]
+  'update:hideLogs': [value: boolean]
+  'update:hideLogDetails': [value: boolean]
 }>()
 
-const hideLogs = ref(props.mode === 'hide')
-const hideLogDetails = ref(props.mode === 'hideDetails')
+// ponytail: uncontrolled fallback keeps every parent working; drop when all callers bind the props
+const localHideLogs = ref(props.mode === 'hide')
+const localHideLogDetails = ref(props.mode === 'hideDetails')
+
+const hideLogs = computed({
+  get: () => props.hideLogs ?? localHideLogs.value,
+  set: (value) => {
+    localHideLogs.value = value
+    emits('update:hideLogs', value)
+  },
+})
+const hideLogDetails = computed({
+  get: () => props.hideLogDetails ?? localHideLogDetails.value,
+  set: (value) => {
+    localHideLogDetails.value = value
+    emits('update:hideLogDetails', value)
+  },
+})
 
 type LogModelSliced = Omit<Log['data'], 'failed'>
   | Omit<Log['data'], 'failed' | 'totalExecutionTime'>
