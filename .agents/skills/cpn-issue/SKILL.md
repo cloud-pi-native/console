@@ -5,7 +5,7 @@ description:
   triaging, or closing an issue in this repo."
 license: Apache-2.0
 metadata:
-  version: 1.4.1
+  version: 1.4.2
 ---
 
 # Console issues
@@ -141,17 +141,33 @@ silent metadata edit is the defect this rule prevents.
   ```
 
   Read the link back **on the canonical issue**, never on the duplicate:
-  its timeline carries a `MarkedAsDuplicateEvent` whose `canonical` is
-  `<M>`; the duplicate's own timeline shows only the `ClosedEvent`.
+  its timeline carries a `MarkedAsDuplicateEvent`; the duplicate's own
+  timeline shows only the `ClosedEvent`. The canonical's number alone
+  proves nothing: it is the same for every duplicate, so an old link
+  would vouch for a closure that never happened. Select the duplicate
+  too, filter on the event type, and page while `hasNextPage` is true:
 
   ```bash
   gh api graphql -f query='
-    query { repository(owner:"cloud-pi-native", name:"console") {
-      issue(number:<M>) { timelineItems(first:100) { nodes {
-        __typename ... on MarkedAsDuplicateEvent { canonical { ... on Issue
-        { number } } } } } } } }' --jq '[.data.repository.issue.timelineItems.nodes[]
-        | select(.__typename=="MarkedAsDuplicateEvent") | .canonical.number]'
+    query($o:String!,$n:String!,$m:Int!,$a:String) {
+    repository(owner:$o,name:$n) {
+      issue(number:$m) { timelineItems(first:100,after:$a,
+        itemTypes:[MARKED_AS_DUPLICATE_EVENT]) { totalCount
+      pageInfo { hasNextPage endCursor }
+      nodes { ... on MarkedAsDuplicateEvent { canonical { ... on Issue {
+      number repository { name } } } duplicate { ... on Issue { number
+      repository { name } } } } } } } } }' -f o=cloud-pi-native -f n=console \
+      -F m=<M> -f a="" \
+      --jq '.data.repository.issue.timelineItems'
   ```
+
+  `<M>` is the canonical, `<N>` the duplicate just closed. The link holds
+  only when one event has `canonical.number == <M>` and
+  `duplicate.number == <N>`, both in this repository; follow `endCursor`
+  while `hasNextPage` is true and read every page. A missing event is a
+  failed closure to report, never a success. The same query with `-F m=<N>`
+  must return `totalCount: 0`: the duplicate's timeline carries only the
+  `ClosedEvent`, so the link is never read there.
 
 ### Issue statuses
 
