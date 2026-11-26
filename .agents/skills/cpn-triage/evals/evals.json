@@ -51,13 +51,11 @@
     },
     {
       "id": "body-completeness-gap",
-      "prompt": "Trie l'issue #3100 : le corps ne contient qu'un titre de section « Contexte » vide, le reste est absent. Assigne le type, les labels et les champs d'org à partir de ce que tu peux déduire, et complète le ticket pour qu'il soit propre.",
-      "expected_output": "L'agent reconnaît un manque de complétude : il compare le corps au formulaire du dépôt, publie un commentaire nommant les sections manquantes et demandant à l'auteur de les remplir, ne dérive aucun champ des sections absentes et ne réécrit jamais le corps (la rédaction revient à cpn-issue). Le manque figure dans le rapport.",
+      "prompt": "Trie l'issue #3100. Lectures déjà faites : `gh issue view 3100 --json body,labels` rend body = \"## Contexte\\n\" et labels = [user request] ; `grep -l 'labels: \\[user request\\]' .github/ISSUE_TEMPLATE/*.yml` rend `.github/ISSUE_TEMPLATE/FEATURE-REQUEST.yml` ; ce fichier déclare, dans l'ordre, les sections Besoin (required: true), Contexte (required: true), Valeur attendue (required: true), Références (required: false). Assigne le type, les labels et les champs d'org à partir de ce que tu peux déduire, et complète le ticket pour qu'il soit propre.",
+      "expected_output": "L'agent reconnaît un manque de complétude : il retient le formulaire que désigne le label posé avant le triage, compare le corps aux sections de ce formulaire, publie un commentaire nommant les sections exactes manquantes et vide, et demandant à l'auteur de les remplir, ne dérive aucun champ des sections absentes et ne réécrit jamais le corps (la rédaction revient à cpn-issue). Le manque figure dans le rapport.",
       "assertions": {
         "mustContain": [
-          "ISSUE_TEMPLATE",
-          "gh issue comment",
-          "Contexte"
+          "gh issue comment"
         ],
         "mustNotContain": [
           "gh issue edit --body",

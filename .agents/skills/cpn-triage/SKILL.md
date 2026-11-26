@@ -7,7 +7,7 @@ description:
   whose evidence moved after triage."
 license: Apache-2.0
 metadata:
-  version: '1.2.0'
+  version: '1.2.1'
 ---
 
 # Triage console
@@ -75,9 +75,15 @@ vide, aucune valeur inventée. Ne jamais poser une valeur qu'il ne liste pas.
 ## Auditer d'abord la complétude du corps
 
 Avant de dériver un champ du contenu, comparer le corps au formulaire que le
-dépôt livre réellement (`.github/ISSUE_TEMPLATE/`) : une section requise
-absente, vide ou encore en texte de remplissage est un manque de complétude.
-Publier un commentaire nommant les sections exactes (`gh issue comment
+dépôt livre réellement (`.github/ISSUE_TEMPLATE/`). Le dépôt en livre
+plusieurs : le formulaire de l'item est celui qui pose le label que porte
+l'item **avant** le triage (`bug`, `question`, `user request`, `enhancement`,
+`internal`) ; un label posé par le triage n'en désigne aucun. Sans label
+antérieur, demander le formulaire plutôt que d'en choisir un. Une section
+requise absente, vide ou encore en texte de remplissage est
+un manque de complétude.
+Publier un commentaire nommant les sections exactes, chacune d'après le
+formulaire retenu (`gh issue comment
 --body-file`), demander à l'auteur de les remplir — ne jamais réécrire le
 corps pendant un triage, la rédaction revient à `cpn-issue`. Ne dériver
 aucun champ d'une section manquante : les champs viennent du contenu
@@ -87,7 +93,9 @@ manque est une preuve déplacée : ne redériver que les champs dont la
 dérivation a changé.
 
 ```bash
-gh issue view <N> --repo cloud-pi-native/console --json body
+gh issue view <N> --repo cloud-pi-native/console --json body,labels
+grep -l 'labels: \[<LABEL>\]' .github/ISSUE_TEMPLATE/*.yml # le formulaire retenu
+cat .github/ISSUE_TEMPLATE/<FORM>.yml # ses sections requises
 ```
 
 ## Remplir (par item)
