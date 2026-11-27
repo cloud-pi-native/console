@@ -44,6 +44,7 @@ describe('registryService', () => {
       ensureRetention: vi.fn(),
       getGroupMembers: vi.fn().mockResolvedValue(makeOkResponse([])),
       getProjectRobots: vi.fn(async function* () {}),
+      ensureRobot: vi.fn().mockResolvedValue({ id: 22, name: 'robot', secret: 'newsecret' }),
       ensureGroupMember: vi.fn(),
       removeGroupMember: vi.fn().mockResolvedValue(makeNoContent()),
       deleteProjectByName: vi.fn().mockResolvedValue(makeNoContent()),
@@ -192,6 +193,10 @@ describe('registryService', () => {
 
     it('reuses robot secret when vault secret host matches', async () => {
       const project = makeProjectWithDetails()
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot`, duration: 90 }
+        yield { id: 12, name: `robot$${project.slug}+rw-robot`, duration: 90 }
+      })
 
       await service.handleUpsert(project)
 
@@ -346,10 +351,29 @@ describe('registryService', () => {
       }))
     })
 
+    it('recreates a permanent project robot absent from Harbor despite a usable vault secret', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+
+      await service.handleUpsert(project)
+
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+      expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
+        HOST: 'harbor.example',
+        USERNAME: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`,
+        TOKEN: 'newsecret',
+      }), `forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
+    })
+
     it('converges a drifted project robot in place without rotating its secret', async () => {
       const project = makeProjectWithDetails()
       registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
       client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot`, duration: 90 }
+        yield { id: 12, name: `robot$${project.slug}+rw-robot`, duration: 90 }
         yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: 90 }
       })
 
@@ -368,6 +392,8 @@ describe('registryService', () => {
       const project = makeProjectWithDetails()
       registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
       client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot`, duration: 90 }
+        yield { id: 12, name: `robot$${project.slug}+rw-robot`, duration: 90 }
         yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: -1 }
       })
 
