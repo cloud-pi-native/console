@@ -131,10 +131,11 @@ export class RegistryService {
       'registry.robot.secret.expiring': expiring,
     })
 
-    if (vaultRobotSecret?.data?.HOST === this.host && !expiring) {
+    const existing = await this.getRobot(project, harborProjectId, robotName)
+
+    if (vaultRobotSecret?.data?.HOST === this.host && !expiring && existing?.id) {
       const targetDuration = this.robotExpirationDays(robotName)
-      const existing = await this.getRobot(project, harborProjectId, robotName)
-      if (existing?.id && existing.duration !== targetDuration) {
+      if (existing.duration !== targetDuration) {
         await this.client.updateRobot(
           existing.id,
           generateRobotPermissions(project, generateRobotFullName(project, robotName), access, targetDuration),
@@ -144,7 +145,6 @@ export class RegistryService {
       return vaultRobotSecret.data
     }
 
-    const existing = await this.getRobot(project, harborProjectId, robotName)
     const created = existing
       ? await this.rotateRobot(project, harborProjectId, robotName, access)
       : await this.ensureProjectRobot(project, robotName, access)
