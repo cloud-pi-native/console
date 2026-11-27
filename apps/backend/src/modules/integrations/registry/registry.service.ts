@@ -123,6 +123,18 @@ export class RegistryService {
       throw error
     })
 
+    if (this.robotExpirationDays(robotName) <= 0 && vaultRobotSecret?.data?.HOST === this.host) {
+      const existing = await this.getRobot(project, harborProjectId, robotName)
+      if (!existing?.id) {
+        const created = await this.ensureProjectRobot(project, robotName, access)
+        const fullName = generateRobotFullName(project, robotName)
+        const secret = generateVaultRobotSecret(this.host, fullName, created.secret)
+        await this.vault.write(secret, vaultPath)
+        span?.setAttribute('vault.secret.written', true)
+        return secret
+      }
+    }
+
     const expiring = this.robotExpirationDays(robotName) > 0
       && !!vaultRobotSecret
       && this.isRobotSecretExpiring(vaultRobotSecret)
@@ -138,7 +150,7 @@ export class RegistryService {
       if (existing?.id && existing.duration !== targetDuration) {
         await this.client.updateRobot(
           existing.id,
-          generateRobotPermissions(project, generateRobotFullName(project, robotName), access, targetDuration),
+          generateRobotPermissions(project, generateRobotFullName(project, robotName), access, targetDuration, existing.disabled ?? false),
         )
       }
       span?.setAttribute('vault.secret.reused', true)

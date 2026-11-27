@@ -39,6 +39,7 @@ export interface HarborRobot {
   id?: number
   name?: string
   duration?: number
+  disabled?: boolean
 }
 
 export interface HarborRobotCreated {
