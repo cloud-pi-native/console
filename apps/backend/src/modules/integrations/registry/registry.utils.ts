@@ -166,12 +166,12 @@ export function generateRobotFullName(project: ProjectWithDetails, robotName: st
   return `robot$${project.slug}+${robotName}`
 }
 
-export function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number): HarborRobotCreateRequest {
+export function generateRobotPermissions(project: ProjectWithDetails, robotName: string, access: HarborAccess[], durationDays: number, disable = false): HarborRobotCreateRequest {
   return {
     name: robotName,
     duration: durationDays,
     description: 'robot for ci builds',
-    disable: false,
+    disable,
     level: 'project',
     permissions: [{
       namespace: project.slug,

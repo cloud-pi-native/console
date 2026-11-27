@@ -21,6 +21,7 @@ import {
   REGISTRY_CONFIG_KEY_PUBLISH_PROJECT_ROBOT,
   REGISTRY_CONFIG_KEY_QUOTA_HARD_LIMIT,
   ROBOT_NAME_PROJECT,
+  ROBOT_NAME_RO,
 } from './registry.constants'
 import { RegistryService } from './registry.service'
 import { generateRobotFullName } from './registry.utils'
@@ -373,6 +374,44 @@ describe('registryService', () => {
       expect(client.ensureRobot).not.toHaveBeenCalledWith(expect.objectContaining({ name: ROBOT_NAME_PROJECT }))
       expect(client.deleteRobot).not.toHaveBeenCalled()
       expect(vault.write).not.toHaveBeenCalled()
+    })
+
+    it('preserves the disabled state when converging a drifted robot duration', async () => {
+      const project = makeProjectWithDetails()
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+${ROBOT_NAME_RO}`, duration: 30, disabled: true }
+      })
+      datastore.getProject.mockResolvedValue(project)
+
+      await service.handleUpsert({ projectId: project.id })
+
+      expect(client.updateRobot).toHaveBeenCalledWith(11, expect.objectContaining({
+        name: generateRobotFullName(project, ROBOT_NAME_RO),
+        duration: 90,
+        disable: true,
+      }))
+      expect(vault.write).not.toHaveBeenCalled()
+    })
+
+    it('recreates a permanent robot missing from Harbor while its vault secret survives', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectByName.mockResolvedValue(makeOkResponse({ project_id: 1, metadata: {} }))
+      client.ensureProject.mockResolvedValue({ project_id: 1, metadata: {} })
+      client.ensureRobot.mockResolvedValue({ id: 22, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, secret: 'newsecret' })
+      datastore.getProject.mockResolvedValue(project)
+
+      await service.handleUpsert({ projectId: project.id })
+
+      expect(client.ensureRobot).toHaveBeenCalledWith(expect.objectContaining({
+        name: ROBOT_NAME_PROJECT,
+        duration: -1,
+      }))
+      expect(vault.write).toHaveBeenCalledWith(expect.objectContaining({
+        HOST: 'harbor.example',
+        USERNAME: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`,
+        TOKEN: 'newsecret',
+      }), `forge/${project.slug}/REGISTRY/${ROBOT_NAME_PROJECT}`)
     })
 
     it('leaves a project robot already matching the configured duration untouched', async () => {
