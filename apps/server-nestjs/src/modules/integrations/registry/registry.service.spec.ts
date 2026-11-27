@@ -403,6 +403,27 @@ describe('registryService', () => {
       expect(vault.write).not.toHaveBeenCalled()
     })
 
+    it('does not re-enable a disabled robot when converging its duration', async () => {
+      const project = makeProjectWithDetails()
+      registryPlugin.isProjectRobotEnabled.mockResolvedValue(true)
+      client.getProjectRobots.mockImplementation(async function* () {
+        yield { id: 11, name: `robot$${project.slug}+ro-robot`, duration: 90 }
+        yield { id: 12, name: `robot$${project.slug}+rw-robot`, duration: 90 }
+        yield { id: 42, name: `robot$${project.slug}+${ROBOT_NAME_PROJECT}`, duration: 90, disable: true }
+      })
+
+      await service.handleUpsert(project)
+
+      expect(client.updateRobot).toHaveBeenCalledWith(42, expect.objectContaining({
+        name: generateRobotFullName(project, ROBOT_NAME_PROJECT),
+        duration: -1,
+        disable: true,
+      }))
+      expect(client.ensureRobot).not.toHaveBeenCalledWith(expect.objectContaining({ name: ROBOT_NAME_PROJECT }))
+      expect(client.deleteRobot).not.toHaveBeenCalled()
+      expect(vault.write).not.toHaveBeenCalled()
+    })
+
     it('parses plugin config and enables project robot publishing', async () => {
       const project = makeProjectWithDetails({
         plugins: [
